@@ -4,31 +4,30 @@
 
 **Type:** Explainer
 **Status:** Draft
-**Systems:** Brooks, Expo App, Exact App, Agent Development
+**Systems:** Brooks, Expo App, Agent Development
 **Role:** Root
 **Author:** Charlie Cheever / Codex
 **Date:** 2026-07-13
-**Revised:** 2026-07-13
+**Revised:** 2026-08-12
 **Related:** LLP 0001, LLP 0002, LLP 0003, LLP 0004, [ccheever/llp](https://github.com/ccheever/llp)
 
 ## Summary
 
 [confirmed — Charlie Cheever, 2026-07-13] Brooks is a working mobile-commerce
-prototype inspired by the store on the Brooks Running website. The repository
-will contain two implementations of that experience: a production-quality Expo
-app and a more experimental Exact app.
+prototype inspired by the store on the Brooks Running website. The Expo app is
+the primary output. It should feel exceptionally polished and demonstrate to
+Brooks executives that Expo is a compelling way to build the company's mobile
+app experience.
 
-[confirmed — Charlie Cheever, 2026-07-13] The Expo app is the primary output.
-It should feel exceptionally polished and demonstrate to Brooks executives that
-Expo is a compelling way to build the company's mobile app experience.
-
-[confirmed — Charlie Cheever, 2026-07-13] The Exact app is a secondary research
-vehicle. It should test how far the current Exact implementation can go, expose
-its limits, and generate concrete lessons that can improve Exact.
+[observed — port, 2026-08-12] This repository is the standalone home of that
+Expo app, ported from the original two-app research monorepo. The companion
+Exact app stayed behind in the monorepo; its research record
+([LLP 0004](./0004-building-on-exact.research.md)) travels with this corpus as
+history because LLP numbers are never reused and other documents cite it.
 
 ## Product experience
 
-[confirmed — Charlie Cheever, 2026-07-13] Both apps should mirror the useful
+[confirmed — Charlie Cheever, 2026-07-13] The app should mirror the useful
 shopping functionality of the Brooks Running website. A user should be able to
 explore real merchandise and progress through the shopping journey through
 adding products to a cart. Completing a purchase is explicitly out of scope.
@@ -36,6 +35,10 @@ adding products to a cart. Completing a purchase is explicitly out of scope.
 [confirmed — Charlie Cheever, 2026-07-13] The Expo app should work on iOS and
 Android, should ideally work on the web, and must target Expo SDK 57 so that it
 can be run with Expo Go.
+
+[observed — port, 2026-08-12] The port preserves Expo Go compatibility: the
+storage layer uses `expo-sqlite` and the splash animation uses
+`lottie-react-native`, both of which ship inside Expo Go.
 
 ### Required website surfaces
 
@@ -68,13 +71,10 @@ with every page on the website.
   product configuration and add it to a working cart.
 - [confirmed — Charlie Cheever, 2026-07-13] iOS and Android are first-class
   targets; web is an additional target where practical.
-- [confirmed — Charlie Cheever, 2026-07-13] The Exact implementation produces
-  useful evidence about what Exact handles well, where agents struggle, and
-  what should improve.
 
 ## Live Brooks data
 
-[confirmed — Charlie Cheever, 2026-07-13] The prototypes should use the real
+[confirmed — Charlie Cheever, 2026-07-13] The prototype should use the real
 data and network APIs used by the Brooks Running website. Development should
 inspect the website's behavior and network traffic, determine the requests and
 responses needed for the in-scope shopping journey, and record the resulting
@@ -110,21 +110,19 @@ mobile interaction.
 canonical source for brand and scope; Nike, Zappos, adidas, and GOAT provide
 complementary native-commerce benchmarks.
 
-## Planned product surfaces
+## Repository layout
 
-[confirmed — Charlie Cheever, 2026-07-13] The repository is expected to contain
-an Expo app and an Exact app that pursue the same product experience with
-different implementation goals.
+[observed — port, 2026-08-12] The app lives at the repository root
+(`src/app` routes, `src/screens` bodies, `src/components`, `src/theme`).
+`packages/catalog` is the source of truth for the harvested data layer;
+`tools/harvest` captures and syncs it. Design tokens follow the
+expo-design-system file layout while keeping the values documented in
+LLP 0003 byte-for-byte.
 
-[confirmed — Charlie Cheever, 2026-07-13] The Exact app should use the `main`
-branch from `origin` at [ccheever/exact](https://github.com/ccheever/exact) for
-now rather than pinning a release. Exact may be fixed during this project, and
-the prototype should continue following upstream `origin/main` as those changes
-land.
-
-[inferred] Shared schemas, captured API knowledge, design tokens, assets, and
-test fixtures may belong in common packages, but the sharing boundary should be
-chosen only after both runtimes' constraints are understood.
+[observed — LLP 0002] `packages/catalog` is *copied* into the app by
+`tools/harvest/sync.js` rather than workspace-linked. Metro resolves outside
+its project root only with extra configuration, and a demo that fails to
+bundle on an unfamiliar machine is worth less than a duplicated file.
 
 ## AI-agent development diaries
 
@@ -136,10 +134,10 @@ covering:
 - where they became blocked or lost time;
 - what was technically tricky or unexpectedly hard;
 - what they believe would have been easier in another system; and
-- actionable ideas for improving Expo and Exact.
+- actionable ideas for improving Expo.
 
 [confirmed — Charlie Cheever, 2026-07-13] These diaries are a project output
-that will be used to improve Expo and Exact.
+that will be used to improve Expo.
 
 [inferred] Entries should favor concise observations, reproducible evidence,
 decisions, and useful retrospectives. They should not contain secrets or attempt
@@ -178,11 +176,6 @@ task slug so parallel agents can contribute without editing a shared log.
   own CDN rather than copied. A single, checkpointed harvest pass keeps request
   volume negligible. None of this survives contact with a public release, and it
   is not meant to.
-- [inferred — LLP 0002] **Code-sharing boundary:** `packages/catalog` is the source
-  of truth and is *copied* into each app by `tools/harvest run sync`. Metro and
-  Vite both resolve outside their project root only with extra configuration, and a
-  demo that fails to bundle on an unfamiliar machine is worth less than a
-  duplicated file.
 
 ## Open questions
 
@@ -191,13 +184,6 @@ task slug so parallel agents can contribute without editing a shared log.
   first executive demo?
 - What accessibility, responsiveness, performance, offline behavior, analytics,
   automated testing, and device coverage define “demo ready”?
-- ~~How should Brooks consume Exact's `origin/main`?~~ **Resolved
-  [confirmed — Charlie Cheever, 2026-07-13]: use a fresh clone of
-  `origin/main`.** The clone lives at `~/projects/exact-main` (c3f49e50,
-  `vendor/ibex` submodule initialized); `apps/exact` was scaffolded from it
-  with `exact new` and links back to it via `exact.links.json`. The dirty tree
-  at `~/projects/exact` was never touched. Build record:
-  [diaries/2026-07-13-exact-app.md](../diaries/2026-07-13-exact-app.md).
 - Does the catalog snapshot need re-harvesting on a schedule to stay truthful, or
   is a dated snapshot honest enough if the app says when it was captured?
 - Who can confirm the remaining inferred claims and promote this root LLP from

@@ -12,9 +12,11 @@ import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AnimatedSplash } from '@/components/animated-splash';
 import { CartProvider } from '@/store/cart';
 import { colors } from '@/theme';
 
@@ -30,7 +32,6 @@ export default function RootLayout() {
     Figtree_900Black,
     Caveat_600SemiBold,
   });
-
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
@@ -75,6 +76,9 @@ export default function RootLayout() {
               }}
             />
           </Stack>
+          {/* Native only: web has no native splash to hand off from, and
+              lottie-react-native's web renderer would be an extra dependency. */}
+          {Platform.OS !== 'web' && <AnimatedSplash />}
         </CartProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

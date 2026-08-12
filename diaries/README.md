@@ -1,7 +1,7 @@
 # AI-agent development diaries
 
 Create one concise diary entry for each substantial implementation or research
-task. The goal is to preserve evidence that can improve Expo and Exact, not to
+task. The goal is to preserve evidence that can improve Expo, not to
 capture private chain-of-thought or duplicate normal code documentation.
 
 ## File naming
@@ -17,7 +17,6 @@ Examples:
 ```text
 diaries/2026-07-13-research-brooks-api.md
 diaries/2026-07-14-expo-product-grid.md
-diaries/2026-07-14-exact-product-grid.md
 ```
 
 If a filename already exists, add a short distinguishing suffix. Do not append
@@ -30,7 +29,7 @@ unrelated work to another agent's entry.
 
 **Date:** YYYY-MM-DD
 **Agent:** <agent/model or human name>
-**System:** Expo | Exact | Shared | Research
+**System:** Expo | Shared | Research
 **Scope:** <issue, commit, or short task description>
 
 ## Outcome
@@ -50,14 +49,14 @@ summary level.
 
 The technically tricky or surprising parts and why they matter.
 
-## Expo and Exact comparison
+## Comparative friction
 
 What would have been easier or harder in the other system? Write `Not observed`
 when the task provides no evidence.
 
 ## Improvement ideas
 
-Specific, actionable changes that could improve Expo, Exact, their tooling, or
+Specific, actionable changes that could improve Expo, its tooling, or
 their documentation.
 
 ## Follow-ups
