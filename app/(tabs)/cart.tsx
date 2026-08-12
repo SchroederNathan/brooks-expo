@@ -63,8 +63,6 @@ export default function Cart() {
     if (undoTimer.current) clearTimeout(undoTimer.current);
   }, []);
 
-  if (!cart.hydrated) return <View style={styles.root} />;
-
   if (cart.items.length === 0) {
     return (
       <View style={[styles.root, styles.empty, { paddingTop: insets.top + 90 }]}>

@@ -29,7 +29,8 @@
       "expo-router",
       "expo-image",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sqlite"
     ],
     "scheme": "brooks",
     "newArchEnabled": true,

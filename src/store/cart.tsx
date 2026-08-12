@@ -7,7 +7,6 @@
  * cart itself lives on the device: adding to a stranger's real Brooks basket
  * from a prototype would be both unreliable (Akamai) and rude.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
   createContext,
   useCallback,
@@ -20,6 +19,7 @@ import React, {
 import { catalog } from '../data/catalog';
 import { byId, colorwayOf, variantId } from '../data/query';
 import type { Product } from '../data/types';
+import { storage } from '../utils/kv-storage';
 
 const STORAGE_KEY = 'brooks.cart.v1';
 const FREE_SHIPPING_OVER = 100;
@@ -37,11 +37,9 @@ export interface CartLine {
 
 interface State {
   lines: CartLine[];
-  hydrated: boolean;
 }
 
 type Action =
-  | { type: 'hydrate'; lines: CartLine[] }
   | { type: 'add'; line: Omit<CartLine, 'addedAt'> }
   | { type: 'setQuantity'; variantId: string; quantity: number }
   | { type: 'remove'; variantId: string }
@@ -49,8 +47,6 @@ type Action =
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'hydrate':
-      return { lines: action.lines, hydrated: true };
     case 'add': {
       const existing = state.lines.find((l) => l.variantId === action.line.variantId);
       if (existing) {
@@ -98,7 +94,6 @@ interface CartContextValue {
   shipping: number;
   total: number;
   freeShippingRemaining: number;
-  hydrated: boolean;
   add(input: {
     productId: string;
     colorCode: string;
@@ -114,32 +109,18 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { lines: [], hydrated: false });
+  // Storage is synchronous, so the cart hydrates at first render — no
+  // `hydrated` flag, no blank first frame on the bag screen.
+  const [state, dispatch] = useReducer(reducer, undefined, () => ({
+    // Drop lines whose product left the catalog between snapshots.
+    lines: storage
+      .get<CartLine[]>(STORAGE_KEY, [])
+      .filter((l) => byId(catalog, l.productId)),
+  }));
 
   useEffect(() => {
-    let cancelled = false;
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        if (cancelled) return;
-        let lines: CartLine[] = [];
-        try {
-          lines = raw ? JSON.parse(raw) : [];
-        } catch {
-          lines = [];
-        }
-        // Drop lines whose product left the catalog between snapshots.
-        dispatch({ type: 'hydrate', lines: lines.filter((l) => byId(catalog, l.productId)) });
-      })
-      .catch(() => dispatch({ type: 'hydrate', lines: [] }));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!state.hydrated) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state.lines)).catch(() => {});
-  }, [state.lines, state.hydrated]);
+    storage.set(STORAGE_KEY, state.lines);
+  }, [state.lines]);
 
   const add = useCallback<CartContextValue['add']>((input) => {
     const id = variantId(input.productId, input.width, input.colorCode, input.size);
@@ -187,7 +168,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       shipping,
       total: subtotal + shipping,
       freeShippingRemaining: Math.max(0, FREE_SHIPPING_OVER - subtotal),
-      hydrated: state.hydrated,
       add,
       setQuantity: (variantId, quantity) => dispatch({ type: 'setQuantity', variantId, quantity }),
       remove: (variantId) => dispatch({ type: 'remove', variantId }),
