@@ -17,10 +17,10 @@ import {
 import { catalog } from '../../src/data/catalog';
 import { VOICE } from '../../src/data/editorial';
 import type { Product } from '../../src/data/types';
-import { color, space } from '../../src/theme/tokens';
+import { colors, spacing } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
-const TILE_W = Math.floor((W - space.gutter * 2 - space.lg) / 2);
+const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
 
 /**
  * The Shoe Finder.
@@ -303,17 +303,17 @@ export default function Finder() {
     return (
       <View style={[styles.intro, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + 110 }]}>
         <Animated.View entering={FadeInDown.duration(400)}>
-          <Txt variant="eyebrow" c={color.lime}>
+          <Txt variant="eyebrow" c={colors.lime}>
             Shoe Finder
           </Txt>
         </Animated.View>
         <Animated.View entering={FadeInDown.duration(400).delay(80)}>
-          <Txt variant="hero" c={color.surface} style={{ marginTop: space.md }}>
+          <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.md }}>
             {VOICE.finderWelcome}
           </Txt>
         </Animated.View>
         <Animated.View entering={FadeInDown.duration(400).delay(160)}>
-          <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: space.lg }}>
+          <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.lg }}>
             {VOICE.finderBlurb}
           </Txt>
         </Animated.View>
@@ -329,26 +329,26 @@ export default function Finder() {
   if (phase === 'results') {
     return (
       <ScrollView
-        style={{ backgroundColor: color.surface }}
-        contentContainerStyle={{ paddingTop: insets.top + space.xl, paddingBottom: insets.bottom + 110 }}
+        style={{ backgroundColor: colors.surface }}
+        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + 110 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ paddingHorizontal: space.gutter }}>
-          <Txt variant="eyebrow" c={color.inkMuted}>
+        <View style={{ paddingHorizontal: spacing.gutter }}>
+          <Txt variant="eyebrow" c={colors.inkMuted}>
             Your matches
           </Txt>
           <Squiggle />
           <Txt variant="h1">
             {results.length ? 'Found your run.' : 'Hmm — nothing quite fits.'}
           </Txt>
-          <Txt variant="body" c={color.inkMuted} style={{ marginTop: space.sm }}>
+          <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             {results.length
               ? 'Ranked for how you actually run, from the real Brooks catalog.'
               : 'Try loosening an answer or two.'}
           </Txt>
         </View>
 
-        <View style={{ marginTop: space.xl, gap: space.xxl }}>
+        <View style={{ marginTop: spacing.xl, gap: spacing.xxl }}>
           {results.map((r, i) => (
             <Animated.View
               key={r.product.id}
@@ -357,18 +357,18 @@ export default function Finder() {
             >
               {i === 0 && (
                 <View style={styles.topPick}>
-                  <Txt variant="eyebrow" c={color.blue} style={{ fontSize: 10 }}>
+                  <Txt variant="eyebrow" c={colors.blue} style={{ fontSize: 10 }}>
                     Top pick
                   </Txt>
                 </View>
               )}
-              <View style={{ flexDirection: 'row', gap: space.lg }}>
+              <View style={{ flexDirection: 'row', gap: spacing.lg }}>
                 <ProductTile product={r.product} width={TILE_W} index={i} />
-                <View style={{ flex: 1, gap: space.sm, paddingTop: space.sm }}>
+                <View style={{ flex: 1, gap: spacing.sm, paddingTop: spacing.sm }}>
                   {r.reasons.map((why) => (
                     <View key={why} style={styles.why}>
                       <View style={styles.whyTick} />
-                      <Txt variant="bodySmall" c={color.inkSoft} style={{ flex: 1 }}>
+                      <Txt variant="bodySmall" c={colors.inkSoft} style={{ flex: 1 }}>
                         {why}
                       </Txt>
                     </View>
@@ -379,7 +379,7 @@ export default function Finder() {
           ))}
         </View>
 
-        <View style={{ paddingHorizontal: space.gutter, marginTop: space.xxl, gap: space.md }}>
+        <View style={{ paddingHorizontal: spacing.gutter, marginTop: spacing.xxl, gap: spacing.md }}>
           <Button
             title="Retake the quiz"
             variant="secondary"
@@ -389,8 +389,8 @@ export default function Finder() {
               setPhase('quiz');
             }}
           />
-          <Press onPress={reset} haptic={false} style={{ alignSelf: 'center', padding: space.sm }}>
-            <Txt variant="caption" c={color.inkMuted}>
+          <Press onPress={reset} haptic={false} style={{ alignSelf: 'center', padding: spacing.sm }}>
+            <Txt variant="caption" c={colors.inkMuted}>
               Start over
             </Txt>
           </Press>
@@ -404,27 +404,27 @@ export default function Finder() {
     return (
       <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + 110 }]}>
         <Animated.View entering={FadeInDown.duration(400)} exiting={FadeOut}>
-          <Txt variant="eyebrow" c={color.blue}>
+          <Txt variant="eyebrow" c={colors.blue}>
             Quick checkpoint
           </Txt>
         </Animated.View>
         <Animated.View entering={FadeInDown.duration(420).delay(90)}>
-          <Txt variant="hero" style={{ marginTop: space.md }}>
+          <Txt variant="hero" style={{ marginTop: spacing.md }}>
             Take 'em off.
           </Txt>
-          <Txt variant="script" c={color.inkMuted} style={{ marginTop: space.sm }}>
+          <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             Your shoes, that is.
           </Txt>
         </Animated.View>
         <Animated.View entering={FadeInDown.duration(420).delay(180)}>
-          <Txt variant="body" c={color.inkSoft} style={{ marginTop: space.xl }}>
+          <Txt variant="body" c={colors.inkSoft} style={{ marginTop: spacing.xl }}>
             The next question works best barefoot. Stand up, find your balance on one
             foot, and hold it for ten seconds. We'll wait.
           </Txt>
         </Animated.View>
         <View style={{ flex: 1 }} />
         <Progress flow={flow} index={stepIndex} />
-        <Animated.View entering={FadeInDown.duration(400).delay(260)} style={{ marginTop: space.lg }}>
+        <Animated.View entering={FadeInDown.duration(400).delay(260)} style={{ marginTop: spacing.lg }}>
           <Button title="Done — one foot survived" onPress={() => advance(answers)} />
         </Animated.View>
       </View>
@@ -436,36 +436,36 @@ export default function Finder() {
   const selected = (answers as Record<string, unknown>)[step.id];
 
   return (
-    <View style={[styles.quiz, { paddingTop: insets.top + space.xl, paddingBottom: insets.bottom + 110 }]}>
+    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + 110 }]}>
       <View style={styles.quizHead}>
         <Press
           haptic={false}
           hitSlop={10}
           onPress={() => (stepIndex === 0 ? reset() : setStepIndex(stepIndex - 1))}
         >
-          <Txt variant="h3" c={color.inkMuted}>
+          <Txt variant="h3" c={colors.inkMuted}>
             ‹
           </Txt>
         </Press>
-        <Txt variant="tiny" c={color.inkMuted}>
+        <Txt variant="tiny" c={colors.inkMuted}>
           {stepIndex + 1} of {flow.length}
         </Txt>
       </View>
 
       <Animated.View key={step.id} entering={FadeInDown.duration(300)} style={{ flex: 1 }}>
-        <Txt variant="eyebrow" c={color.inkMuted} style={{ marginTop: space.xl }}>
+        <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginTop: spacing.xl }}>
           {step.eyebrow}
         </Txt>
-        <Txt variant="h1" style={{ marginTop: space.sm }}>
+        <Txt variant="h1" style={{ marginTop: spacing.sm }}>
           {step.question}
         </Txt>
         {step.hint ? (
-          <Txt variant="body" c={color.inkMuted} style={{ marginTop: space.sm }}>
+          <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             {step.hint}
           </Txt>
         ) : null}
 
-        <View style={{ marginTop: space.xl, gap: space.md }}>
+        <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
           {step.options.map((o, i) => {
             const isOn = selected === o.value;
             return (
@@ -477,13 +477,13 @@ export default function Finder() {
                   style={[styles.option, isOn && styles.optionOn]}
                 >
                   <View style={{ flex: 1 }}>
-                    <Txt variant="h3" c={isOn ? color.surface : color.ink}>
+                    <Txt variant="h3" c={isOn ? colors.surface : colors.ink}>
                       {o.label}
                     </Txt>
                     {o.caption ? (
                       <Txt
                         variant="bodySmall"
-                        c={isOn ? 'rgba(255,255,255,0.7)' : color.inkMuted}
+                        c={isOn ? 'rgba(255,255,255,0.7)' : colors.inkMuted}
                         style={{ marginTop: 2 }}
                       >
                         {o.caption}
@@ -517,10 +517,10 @@ function Progress({ flow, index }: { flow: string[]; index: number }) {
 const styles = StyleSheet.create({
   intro: {
     flex: 1,
-    backgroundColor: color.navy,
-    paddingHorizontal: space.gutter,
+    backgroundColor: colors.navy,
+    paddingHorizontal: spacing.gutter,
   },
-  quiz: { flex: 1, backgroundColor: color.surface, paddingHorizontal: space.gutter },
+  quiz: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: spacing.gutter },
   quizHead: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -530,36 +530,36 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    padding: space.lg,
+    gap: spacing.md,
+    padding: spacing.lg,
     borderWidth: 2,
-    borderColor: color.hairline,
-    backgroundColor: color.surface,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surface,
   },
-  optionOn: { backgroundColor: color.ink, borderColor: color.ink },
-  optionTick: { width: 14, height: 14, borderWidth: 2, borderColor: color.hairline },
-  optionTickOn: { backgroundColor: color.lime, borderColor: color.lime },
+  optionOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  optionTick: { width: 14, height: 14, borderWidth: 2, borderColor: colors.hairline },
+  optionTickOn: { backgroundColor: colors.lime, borderColor: colors.lime },
 
   // Lime is a spark, never a surface (LLP 0003) — the checkpoint gets the
   // product-photography field instead, with lime reserved for the accents.
   checkpoint: {
     flex: 1,
-    backgroundColor: color.surfaceAlt,
-    paddingHorizontal: space.gutter,
+    backgroundColor: colors.surfaceAlt,
+    paddingHorizontal: spacing.gutter,
   },
 
-  progress: { flexDirection: 'row', gap: 4, marginTop: space.lg },
-  progressSeg: { flex: 1, height: 5, backgroundColor: color.surfaceSunken },
-  progressSegOn: { backgroundColor: color.blue },
+  progress: { flexDirection: 'row', gap: 4, marginTop: spacing.lg },
+  progressSeg: { flex: 1, height: 5, backgroundColor: colors.surfaceSunken },
+  progressSegOn: { backgroundColor: colors.blue },
 
-  resultCard: { paddingHorizontal: space.gutter },
+  resultCard: { paddingHorizontal: spacing.gutter },
   topPick: {
     alignSelf: 'flex-start',
-    backgroundColor: color.lime,
-    paddingHorizontal: space.sm,
+    backgroundColor: colors.lime,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
-    marginBottom: space.sm,
+    marginBottom: spacing.sm,
   },
-  why: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start' },
-  whyTick: { width: 7, height: 7, backgroundColor: color.lime, marginTop: 6 },
+  why: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  whyTick: { width: 7, height: 7, backgroundColor: colors.lime, marginTop: 6 },
 });

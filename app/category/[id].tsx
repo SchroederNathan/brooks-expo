@@ -21,11 +21,11 @@ import {
   type SortKey,
 } from '../../src/data/query';
 import type { Product } from '../../src/data/types';
-import { color, space } from '../../src/theme/tokens';
+import { colors, spacing } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
-const GRID_GAP = space.lg;
-const TILE_W = Math.floor((W - space.gutter * 2 - GRID_GAP) / 2);
+const GRID_GAP = spacing.lg;
+const TILE_W = Math.floor((W - spacing.gutter * 2 - GRID_GAP) / 2);
 /** Where the large title sits; past it the bar title fades in. */
 const TITLE_ZONE = 64;
 
@@ -122,7 +122,7 @@ export default function Category() {
             <Animated.ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: space.sm, paddingRight: space.gutter }}
+              contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.gutter }}
             >
               {franchises.map((f) => (
                 <Chip
@@ -145,28 +145,28 @@ export default function Category() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        columnWrapperStyle={{ gap: GRID_GAP, paddingHorizontal: space.gutter }}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 40, gap: space.xl }}
+        columnWrapperStyle={{ gap: GRID_GAP, paddingHorizontal: spacing.gutter }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40, gap: spacing.xl }}
         ListHeaderComponent={
           <View style={styles.head}>
             <Txt variant="h1">{activeFranchise ?? screenTitle}</Txt>
-            <Txt variant="caption" c={color.inkMuted} style={{ marginTop: 4 }}>
+            <Txt variant="caption" c={colors.inkMuted} style={{ marginTop: 4 }}>
               {products.length} {products.length === 1 ? 'style' : 'styles'}
             </Txt>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Txt variant="eyebrow" c={color.inkMuted}>
+            <Txt variant="eyebrow" c={colors.inkMuted}>
               Nothing here yet
             </Txt>
             <Squiggle />
-            <Txt variant="body" c={color.inkMuted} style={{ textAlign: 'center' }}>
+            <Txt variant="body" c={colors.inkMuted} style={{ textAlign: 'center' }}>
               No styles match that combination. Try clearing a filter.
             </Txt>
             <Chip
               label="Clear filters"
-              style={{ marginTop: space.lg }}
+              style={{ marginTop: spacing.lg }}
               onPress={() => {
                 setFilters({});
                 setActiveFranchise(null);
@@ -193,33 +193,33 @@ export default function Category() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
+  root: { flex: 1, backgroundColor: colors.surface },
   bar: {
-    backgroundColor: color.surface,
+    backgroundColor: colors.surface,
     zIndex: 10,
     borderBottomWidth: 1,
-    borderBottomColor: color.hairline,
+    borderBottomColor: colors.hairline,
   },
   barRow: {
     height: 48,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: space.md,
+    paddingHorizontal: spacing.md,
   },
   barBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   barTitle: { flex: 1, alignItems: 'center' },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.gutter,
-    paddingBottom: space.md,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.gutter,
+    paddingBottom: spacing.md,
   },
-  controlDivider: { width: 1, height: 22, backgroundColor: color.hairline },
-  head: { paddingHorizontal: space.gutter, paddingTop: space.lg, paddingBottom: space.sm },
+  controlDivider: { width: 1, height: 22, backgroundColor: colors.hairline },
+  head: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, paddingBottom: spacing.sm },
   empty: {
     alignItems: 'center',
-    paddingHorizontal: space.xxl,
+    paddingHorizontal: spacing.xxl,
     paddingTop: 80,
   },
 });

@@ -31,7 +31,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { brooksImage } from '../data/images';
-import { color, font, motion, radius, space, type } from '../theme/tokens';
+import { colors, font, motion, radius, spacing, type } from '../theme';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -55,7 +55,7 @@ export function notify(t: Haptics.NotificationFeedbackType) {
 
 export function Txt({
   variant = 'body',
-  c = color.ink,
+  c = colors.ink,
   style,
   ...rest
 }: TextProps & { variant?: keyof typeof type; c?: string }) {
@@ -128,14 +128,14 @@ export function Button({
   }));
 
   const bg =
-    disabled ? color.surfaceSunken
-    : variant === 'primary' ? color.ink
-    : variant === 'onDark' ? color.surface
-    : color.surface;
+    disabled ? colors.surfaceSunken
+    : variant === 'primary' ? colors.ink
+    : variant === 'onDark' ? colors.surface
+    : colors.surface;
   const fg =
-    disabled ? color.inkFaint
-    : variant === 'primary' ? color.surface
-    : color.ink;
+    disabled ? colors.inkFaint
+    : variant === 'primary' ? colors.surface
+    : colors.ink;
 
   const inert = disabled || loading;
 
@@ -158,7 +158,7 @@ export function Button({
         style={[
           styles.button,
           { backgroundColor: bg },
-          variant === 'secondary' && { borderWidth: 3, borderColor: color.ink },
+          variant === 'secondary' && { borderWidth: 3, borderColor: colors.ink },
           animated,
         ]}
       >
@@ -213,15 +213,15 @@ export function Chip({
       scaleTo={0.94}
       style={[
         styles.chip,
-        size === 'sm' && { height: 34, paddingHorizontal: space.md, minWidth: 0 },
-        selected && { backgroundColor: color.ink, borderColor: color.ink },
-        disabled && { borderColor: color.hairline, backgroundColor: color.surface },
+        size === 'sm' && { height: 34, paddingHorizontal: spacing.md, minWidth: 0 },
+        selected && { backgroundColor: colors.ink, borderColor: colors.ink },
+        disabled && { borderColor: colors.hairline, backgroundColor: colors.surface },
         style,
       ]}
     >
       <Txt
         variant="caption"
-        c={disabled ? color.inkFaint : selected ? color.surface : color.ink}
+        c={disabled ? colors.inkFaint : selected ? colors.surface : colors.ink}
         style={disabled ? styles.struck : undefined}
       >
         {label}
@@ -250,15 +250,15 @@ export function Price({
   const pct = onSale ? Math.round((1 - value! / listValue!) * 100) : 0;
   return (
     <View style={styles.row}>
-      <Txt variant={large ? 'priceLarge' : 'price'} c={onSale ? color.sale : color.ink}>
+      <Txt variant={large ? 'priceLarge' : 'price'} c={onSale ? colors.sale : colors.ink}>
         {value == null ? '—' : fmt(value)}
       </Txt>
       {onSale && (
         <>
-          <Txt variant={large ? 'body' : 'bodySmall'} c={color.inkMuted} style={styles.struck}>
+          <Txt variant={large ? 'body' : 'bodySmall'} c={colors.inkMuted} style={styles.struck}>
             {fmt(listValue)}
           </Txt>
-          <Txt variant={large ? 'caption' : 'tiny'} c={color.sale}>
+          <Txt variant={large ? 'caption' : 'tiny'} c={colors.sale}>
             {pct}% off
           </Txt>
         </>
@@ -274,13 +274,13 @@ export function Stars({ value, count }: { value: number | null; count?: number }
   const full = Math.round(value);
   return (
     <View style={[styles.row, { gap: 5 }]}>
-      <Txt variant="tiny" c={color.ink}>
+      <Txt variant="tiny" c={colors.ink}>
         {'★'.repeat(full)}
-        <Txt variant="tiny" c={color.hairline}>
+        <Txt variant="tiny" c={colors.hairline}>
           {'★'.repeat(Math.max(0, 5 - full))}
         </Txt>
       </Txt>
-      <Txt variant="tiny" c={color.inkMuted}>
+      <Txt variant="tiny" c={colors.inkMuted}>
         {value.toFixed(1)}
         {count ? ` (${count})` : ''}
       </Txt>
@@ -298,11 +298,11 @@ export function Badge({
   tone?: 'ink' | 'lime' | 'sale' | 'light';
 }) {
   const bg =
-    tone === 'lime' ? color.lime
-    : tone === 'sale' ? color.sale
-    : tone === 'light' ? color.surface
-    : color.ink;
-  const fg = tone === 'lime' ? color.blue : tone === 'light' ? color.ink : color.surface;
+    tone === 'lime' ? colors.lime
+    : tone === 'sale' ? colors.sale
+    : tone === 'light' ? colors.surface
+    : colors.ink;
+  const fg = tone === 'lime' ? colors.blue : tone === 'light' ? colors.ink : colors.surface;
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       <Txt variant="eyebrow" c={fg} style={{ fontSize: 10, letterSpacing: 0.8 }}>
@@ -327,7 +327,7 @@ export function Skeleton({ style }: { style?: ViewProps['style'] }) {
     );
   }, [o]);
   const a = useAnimatedStyle(() => ({ opacity: o.value }));
-  return <Animated.View style={[{ backgroundColor: color.surfaceSunken }, style, a]} />;
+  return <Animated.View style={[{ backgroundColor: colors.surfaceSunken }, style, a]} />;
 }
 
 /* ------------------------------------------------------------ brooks image - */
@@ -408,12 +408,12 @@ export function SectionHeader({
   onAction?: () => void;
   onDark?: boolean;
 }) {
-  const fg = onDark ? color.surface : color.ink;
+  const fg = onDark ? colors.surface : colors.ink;
   return (
     <View style={styles.sectionHeader}>
       <View style={{ flex: 1 }}>
         {eyebrow ? (
-          <Txt variant="eyebrow" c={onDark ? color.lime : color.inkMuted} style={{ marginBottom: 6 }}>
+          <Txt variant="eyebrow" c={onDark ? colors.lime : colors.inkMuted} style={{ marginBottom: 6 }}>
             {eyebrow}
           </Txt>
         ) : null}
@@ -434,16 +434,16 @@ export function SectionHeader({
 }
 
 export function Divider({ style }: { style?: ViewProps['style'] }) {
-  return <View style={[{ height: 1, backgroundColor: color.hairline }, style]} />;
+  return <View style={[{ height: 1, backgroundColor: colors.hairline }, style]} />;
 }
 
 /** Empty/error state illustration stand-in — a Brooks-ish hand-drawn squiggle. */
-export function Squiggle({ w = 120, c = color.lime }: { w?: number; c?: string }) {
-  return <View style={{ width: w, height: 6, backgroundColor: c, marginVertical: space.md }} />;
+export function Squiggle({ w = 120, c = colors.lime }: { w?: number; c?: string }) {
+  return <View style={{ width: w, height: 6, backgroundColor: c, marginVertical: spacing.md }} />;
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   buttonWrap: { position: 'relative' },
   buttonShadow: {
     position: 'absolute',
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     top: 4,
     right: -4,
     bottom: -4,
-    backgroundColor: color.ink,
+    backgroundColor: colors.ink,
   },
   button: {
     height: 50,
@@ -459,18 +459,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    paddingHorizontal: space.lg,
+    paddingHorizontal: spacing.lg,
   },
   chip: {
     minWidth: 58,
-    paddingHorizontal: space.md,
+    paddingHorizontal: spacing.md,
     height: 44,
     borderRadius: radius.none,
     borderWidth: 1.5,
-    borderColor: color.hairline,
+    borderColor: colors.hairline,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: color.surface,
+    backgroundColor: colors.surface,
   },
   struck: { textDecorationLine: 'line-through' },
   badge: {
@@ -482,9 +482,9 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: space.gutter,
-    marginBottom: space.lg,
-    gap: space.md,
+    paddingHorizontal: spacing.gutter,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
   },
   sectionAction: { paddingVertical: 4, gap: 3 },
   underline: { height: 3, width: '100%' },

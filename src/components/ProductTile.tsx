@@ -6,7 +6,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { heroImage } from '../data/images';
 import { priceRange } from '../data/query';
 import type { Product } from '../data/types';
-import { color, radius, space } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme';
 import { Badge, Press, Price, ShoeImage, Stars, Txt, select } from './primitives';
 
 /**
@@ -77,7 +77,7 @@ function ProductTileImpl({
               </Press>
             ))}
             {product.colors.length > 5 ? (
-              <Txt variant="tiny" c={color.inkMuted} style={{ marginLeft: 2 }}>
+              <Txt variant="tiny" c={colors.inkMuted} style={{ marginLeft: 2 }}>
                 +{product.colors.length - 5}
               </Txt>
             ) : null}
@@ -89,7 +89,7 @@ function ProductTileImpl({
         <Txt variant="productTitle" numberOfLines={1}>
           {product.name}
         </Txt>
-        <Txt variant="tiny" c={color.inkMuted} numberOfLines={1} style={{ marginTop: 1 }}>
+        <Txt variant="tiny" c={colors.inkMuted} numberOfLines={1} style={{ marginTop: 1 }}>
           {[product.cushion && `${product.cushion} cushion`, colorway.name]
             .filter(Boolean)
             .join(' · ')}
@@ -117,11 +117,11 @@ export const ProductTile = memo(ProductTileImpl);
 const styles = StyleSheet.create({
   card: {},
   imageWrap: {
-    backgroundColor: color.surfaceAlt,
+    backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
-    marginBottom: space.sm,
+    marginBottom: spacing.sm,
   },
-  badges: { position: 'absolute', top: space.sm, left: space.sm, gap: 4, alignItems: 'flex-start' },
+  badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
   swatches: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 28 },
   swatch: {
     width: 26,
@@ -132,5 +132,5 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     borderRadius: radius.none,
   },
-  swatchOn: { borderColor: color.blue },
+  swatchOn: { borderColor: colors.blue },
 });

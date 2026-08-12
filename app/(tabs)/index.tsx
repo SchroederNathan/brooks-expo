@@ -28,7 +28,7 @@ import { BrooksWordmark } from '../../src/components/Wordmark';
 import { catalog } from '../../src/data/catalog';
 import { HERO, STORIES, USE_CASES, VOICE } from '../../src/data/editorial';
 import { productsIn } from '../../src/data/query';
-import { color, motion, space, type } from '../../src/theme/tokens';
+import { colors, motion, spacing, type } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
 const HERO_H = Math.round(W * 1.25);
@@ -78,7 +78,7 @@ export default function Home() {
           {Platform.OS === 'ios' ? (
             <BlurView tint="light" intensity={70} style={StyleSheet.absoluteFill} />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: color.surface }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
           )}
           <View style={styles.headerHairline} />
         </Animated.View>
@@ -86,10 +86,10 @@ export default function Home() {
         <View style={styles.headerRow}>
           <View>
             <Animated.View style={logoStyle}>
-              <BrooksWordmark width={104} color={color.surface} />
+              <BrooksWordmark width={104} color={colors.surface} />
             </Animated.View>
             <Animated.View style={[StyleSheet.absoluteFill, logoDarkStyle]}>
-              <BrooksWordmark width={104} color={color.ink} />
+              <BrooksWordmark width={104} color={colors.ink} />
             </Animated.View>
           </View>
           <View style={styles.headerActions}>
@@ -121,27 +121,27 @@ export default function Home() {
               <Countdown target={HERO.attemptAt} />
             </Animated.View>
             <Animated.View entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger)}>
-              <Txt variant="eyebrow" c={color.lime} style={{ marginTop: space.lg }}>
+              <Txt variant="eyebrow" c={colors.lime} style={{ marginTop: spacing.lg }}>
                 {HERO.eyebrow}
               </Txt>
             </Animated.View>
             <Animated.View
               entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 2)}
             >
-              <Txt variant="hero" c={color.surface} style={{ marginTop: space.sm }}>
+              <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.sm }}>
                 {HERO.title}
               </Txt>
             </Animated.View>
             <Animated.View
               entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 3)}
             >
-              <Txt variant="body" c="rgba(255,255,255,0.88)" style={{ marginTop: space.md }}>
+              <Txt variant="body" c="rgba(255,255,255,0.88)" style={{ marginTop: spacing.md }}>
                 {HERO.body}
               </Txt>
             </Animated.View>
             <Animated.View
               entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 4)}
-              style={{ marginTop: space.xl, alignSelf: 'flex-start' }}
+              style={{ marginTop: spacing.xl, alignSelf: 'flex-start' }}
             >
               <Button
                 title={HERO.cta}
@@ -164,7 +164,7 @@ export default function Home() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.rail}
-            snapToInterval={148 + space.md}
+            snapToInterval={148 + spacing.md}
             decelerationRate="fast"
           >
             {USE_CASES.map((u) => (
@@ -180,9 +180,9 @@ export default function Home() {
                 }
               >
                 <UseCaseArt id={u.id} />
-                <View style={{ padding: space.md }}>
+                <View style={{ padding: spacing.md }}>
                   <Txt variant="h3">{u.label}</Txt>
-                  <Txt variant="tiny" c={color.inkMuted}>
+                  <Txt variant="tiny" c={colors.inkMuted}>
                     {u.caption}
                   </Txt>
                 </View>
@@ -208,7 +208,7 @@ export default function Home() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.rail}
-            snapToInterval={TILE_W + space.lg}
+            snapToInterval={TILE_W + spacing.lg}
             decelerationRate="fast"
           >
             {newArrivals.map((p, i) => (
@@ -224,17 +224,17 @@ export default function Home() {
           onPress={() => router.push('/login')}
         >
           <View style={{ flex: 1 }}>
-            <Txt variant="eyebrow" c={color.lime}>
+            <Txt variant="eyebrow" c={colors.lime}>
               Brooks Run Club
             </Txt>
-            <Txt variant="h2" c={color.surface} style={{ marginTop: space.sm }}>
+            <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
               {VOICE.runClub}
             </Txt>
-            <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: space.sm }}>
+            <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
               Free shipping, early access, and a birthday gift.
             </Txt>
             <View style={styles.joinRow}>
-              <Txt variant="eyebrow" c={color.surface} style={{ fontSize: 11 }}>
+              <Txt variant="eyebrow" c={colors.surface} style={{ fontSize: 11 }}>
                 Join now
               </Txt>
               <View style={styles.joinUnderline} />
@@ -259,7 +259,7 @@ export default function Home() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.rail}
-            snapToInterval={TILE_W + space.lg}
+            snapToInterval={TILE_W + spacing.lg}
             decelerationRate="fast"
           >
             {bestSellers.map((p, i) => (
@@ -275,7 +275,7 @@ export default function Home() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.rail}
-            snapToInterval={W * 0.76 + space.md}
+            snapToInterval={W * 0.76 + spacing.md}
             decelerationRate="fast"
           >
             {STORIES.map((s) => (
@@ -304,16 +304,16 @@ export default function Home() {
                     <Badge label={s.eyebrow} tone="light" />
                   </View>
                 </View>
-                <View style={{ paddingVertical: space.md }}>
+                <View style={{ paddingVertical: spacing.md }}>
                   <Txt variant="h3">{s.title}</Txt>
-                  <Txt variant="tiny" c={color.inkMuted} style={{ marginTop: 4 }}>
+                  <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: 4 }}>
                     {s.readTime}
                   </Txt>
                   <View style={styles.joinRow}>
-                    <Txt variant="eyebrow" c={color.ink} style={{ fontSize: 11 }}>
+                    <Txt variant="eyebrow" c={colors.ink} style={{ fontSize: 11 }}>
                       {s.shopLabel}
                     </Txt>
-                    <View style={[styles.joinUnderline, { backgroundColor: color.ink }]} />
+                    <View style={[styles.joinUnderline, { backgroundColor: colors.ink }]} />
                   </View>
                 </View>
               </Press>
@@ -323,14 +323,14 @@ export default function Home() {
 
         {/* -------------------------------------------------------- PROMISE -- */}
         <View style={styles.promise}>
-          <Txt variant="eyebrow" c={color.inkMuted}>
+          <Txt variant="eyebrow" c={colors.inkMuted}>
             {VOICE.promiseTitle}
           </Txt>
           <Squiggle />
           <Txt variant="h2" style={{ textAlign: 'center' }}>
             {VOICE.promise}
           </Txt>
-          <Txt variant="script" c={color.inkMuted} style={{ marginTop: space.md }}>
+          <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.md }}>
             {VOICE.tagline}
           </Txt>
         </View>
@@ -351,8 +351,8 @@ function HeaderIcon({
 }) {
   const style = useAnimatedStyle(() => ({
     color: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [1, 0], 'clamp') > 0.5
-      ? color.surface
-      : color.ink,
+      ? colors.surface
+      : colors.ink,
   }));
   return (
     <Press onPress={onPress} scaleTo={0.9} hitSlop={10}>
@@ -370,14 +370,14 @@ function UseCaseArt({ id }: { id: string }) {
       {img ? (
         <Photo url={img} width={148} height={110} />
       ) : (
-        <View style={{ flex: 1, backgroundColor: color.surfaceSunken }} />
+        <View style={{ flex: 1, backgroundColor: colors.surfaceSunken }} />
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
+  root: { flex: 1, backgroundColor: colors.surface },
   header: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   headerHairline: {
     position: 'absolute',
@@ -385,56 +385,56 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: color.hairline,
+    backgroundColor: colors.hairline,
   },
   headerRow: {
     height: 52,
-    paddingHorizontal: space.gutter,
+    paddingHorizontal: spacing.gutter,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerActions: { flexDirection: 'row', gap: space.lg, alignItems: 'center' },
+  headerActions: { flexDirection: 'row', gap: spacing.lg, alignItems: 'center' },
 
-  hero: { width: '100%', overflow: 'hidden', backgroundColor: color.ink },
+  hero: { width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
   heroContent: {
     position: 'absolute',
-    left: space.gutter,
-    right: space.gutter,
-    bottom: space.xl,
+    left: spacing.gutter,
+    right: spacing.gutter,
+    bottom: spacing.xl,
   },
 
-  block: { marginTop: space.xxxl },
-  rail: { paddingHorizontal: space.gutter, gap: space.lg },
+  block: { marginTop: spacing.xxxl },
+  rail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
 
   useCase: {
     width: 148,
     borderWidth: 1,
-    borderColor: color.hairline,
-    backgroundColor: color.surface,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surface,
   },
-  useCaseArt: { height: 110, backgroundColor: color.surfaceAlt, overflow: 'hidden' },
+  useCaseArt: { height: 110, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
 
   runClub: {
-    backgroundColor: color.navy,
-    marginTop: space.xxxl,
-    marginHorizontal: space.gutter,
-    padding: space.xl,
+    backgroundColor: colors.navy,
+    marginTop: spacing.xxxl,
+    marginHorizontal: spacing.gutter,
+    padding: spacing.xl,
     flexDirection: 'row',
   },
-  joinRow: { marginTop: space.lg, alignSelf: 'flex-start', gap: 3 },
-  joinUnderline: { height: 3, backgroundColor: color.lime, width: '100%' },
+  joinRow: { marginTop: spacing.lg, alignSelf: 'flex-start', gap: 3 },
+  joinUnderline: { height: 3, backgroundColor: colors.lime, width: '100%' },
 
   story: { marginRight: 0 },
-  storyImage: { height: 200, backgroundColor: color.surfaceAlt, overflow: 'hidden' },
-  storyBadge: { position: 'absolute', top: space.md, left: space.md },
+  storyImage: { height: 200, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  storyBadge: { position: 'absolute', top: spacing.md, left: spacing.md },
 
   promise: {
-    marginTop: space.xxxl,
-    marginBottom: space.xl,
-    paddingHorizontal: space.xxl,
-    paddingVertical: space.xxxl,
-    backgroundColor: color.surfaceAlt,
+    marginTop: spacing.xxxl,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.xxxl,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
   },
 });

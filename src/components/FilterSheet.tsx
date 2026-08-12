@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { applyFilters, facetsFor, type Filters, type SortKey } from '../data/query';
 import { genderLabel, supportLabel } from '../data/labels';
 import type { Product } from '../data/types';
-import { color, space } from '../theme/tokens';
+import { colors, spacing } from '../theme';
 import { Button, Chip, Divider, Press, Txt, select } from './primitives';
 
 /**
@@ -95,7 +95,7 @@ export function FilterSheet({
 
         <Animated.View
           entering={FadeInDown.duration(240)}
-          style={[styles.sheet, { paddingBottom: insets.bottom + space.md }]}
+          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}
         >
           <View style={styles.grabberRow}>
             <View style={styles.grabber} />
@@ -111,7 +111,7 @@ export function FilterSheet({
                   setDraft({});
                 }}
               >
-                <Txt variant="caption" c={color.blue}>
+                <Txt variant="caption" c={colors.blue}>
                   Clear all ({activeCount})
                 </Txt>
               </Press>
@@ -282,7 +282,7 @@ export function FilterSheet({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={styles.section}>
-      <Txt variant="eyebrow" c={color.inkMuted} style={{ marginBottom: space.md }}>
+      <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
         {title}
       </Txt>
       {children}
@@ -298,25 +298,25 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: color.overlay,
+    backgroundColor: colors.overlay,
   },
   sheet: {
-    backgroundColor: color.surface,
+    backgroundColor: colors.surface,
     maxHeight: '88%',
     borderTopWidth: 3,
-    borderTopColor: color.ink,
+    borderTopColor: colors.ink,
   },
-  grabberRow: { alignItems: 'center', paddingVertical: space.sm },
-  grabber: { width: 44, height: 4, backgroundColor: color.hairline },
+  grabberRow: { alignItems: 'center', paddingVertical: spacing.sm },
+  grabber: { width: 44, height: 4, backgroundColor: colors.hairline },
   head: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: space.gutter,
-    paddingBottom: space.md,
+    paddingHorizontal: spacing.gutter,
+    paddingBottom: spacing.md,
   },
-  body: { paddingHorizontal: space.gutter, paddingBottom: space.lg },
-  section: { marginTop: space.lg },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  footer: { paddingHorizontal: space.gutter, paddingTop: space.md },
+  body: { paddingHorizontal: spacing.gutter, paddingBottom: spacing.lg },
+  section: { marginTop: spacing.lg },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  footer: { paddingHorizontal: spacing.gutter, paddingTop: spacing.md },
 });

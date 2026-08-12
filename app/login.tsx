@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Press, Txt, notify } from '../src/components/primitives';
 import { join } from '../src/store/member';
-import { RUN_CLUB_PERKS, color, font, space } from '../src/theme/tokens';
+import { RUN_CLUB_PERKS } from '../src/constants';
+import { colors, font, spacing } from '../src/theme';
 
 /**
  * Join Brooks Run Club.
@@ -52,13 +53,13 @@ export default function Login() {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingTop: Platform.OS === 'ios' ? space.xl : insets.top + space.xl,
-          paddingBottom: insets.bottom + space.xl,
+          paddingTop: Platform.OS === 'ios' ? spacing.xl : insets.top + spacing.xl,
+          paddingBottom: insets.bottom + spacing.xl,
         }}
       >
         <View style={styles.head}>
           <Press haptic={false} hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
-            <Txt variant="h3" c={color.inkMuted}>
+            <Txt variant="h3" c={colors.inkMuted}>
               ✕
             </Txt>
           </Press>
@@ -66,13 +67,13 @@ export default function Login() {
 
         {/* --------------------------------------------------- THE PITCH --- */}
         <Animated.View entering={FadeInDown.duration(320)} style={styles.card}>
-          <Txt variant="eyebrow" c={color.lime}>
+          <Txt variant="eyebrow" c={colors.lime}>
             Brooks Run Club
           </Txt>
-          <Txt variant="h1" c={color.surface} style={{ marginTop: space.sm }}>
+          <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.sm }}>
             Join the club.{'\n'}Run happier.
           </Txt>
-          <View style={{ marginTop: space.xl, gap: space.md }}>
+          <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
             {RUN_CLUB_PERKS.map((perk, i) => (
               <Animated.View
                 key={perk}
@@ -80,7 +81,7 @@ export default function Login() {
                 style={styles.perk}
               >
                 <View style={styles.perkTick}>
-                  <Txt variant="tiny" c={color.blue}>
+                  <Txt variant="tiny" c={colors.blue}>
                     ✓
                   </Txt>
                 </View>
@@ -110,16 +111,16 @@ export default function Login() {
             error={touched && !emailOk ? 'That email doesn’t look right.' : null}
           />
 
-          <Txt variant="tiny" c={color.inkFaint} style={{ marginTop: space.sm }}>
+          <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
             Prototype: membership lives on this device only. Nothing is sent anywhere.
           </Txt>
 
-          <Button title="Join the club" style={{ marginTop: space.lg }} onPress={onJoin} />
+          <Button title="Join the club" style={{ marginTop: spacing.lg }} onPress={onJoin} />
 
           {/* The guest path is always visible — a commerce demo that forces
               auth dies on stage. */}
           <Press haptic={false} onPress={() => router.back()} style={styles.guest}>
-            <Txt variant="caption" c={color.inkMuted}>
+            <Txt variant="caption" c={colors.inkMuted}>
               Continue as guest
             </Txt>
             <View style={styles.guestUnderline} />
@@ -146,22 +147,22 @@ function Field({
   error?: string | null;
 }) {
   return (
-    <View style={{ marginBottom: space.lg }}>
-      <Txt variant="eyebrow" c={color.inkMuted} style={{ fontSize: 11, marginBottom: space.sm }}>
+    <View style={{ marginBottom: spacing.lg }}>
+      <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 11, marginBottom: spacing.sm }}>
         {label}
       </Txt>
       <TextInput
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor={color.inkFaint}
+        placeholderTextColor={colors.inkFaint}
         keyboardType={keyboardType}
         autoCapitalize={keyboardType === 'email-address' ? 'none' : 'words'}
         autoCorrect={false}
-        style={[styles.input, error ? { borderColor: color.sale } : null]}
+        style={[styles.input, error ? { borderColor: colors.sale } : null]}
       />
       {error ? (
-        <Txt variant="tiny" c={color.sale} style={{ marginTop: 4 }}>
+        <Txt variant="tiny" c={colors.sale} style={{ marginTop: 4 }}>
           {error}
         </Txt>
       ) : null}
@@ -170,32 +171,32 @@ function Field({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
-  head: { paddingHorizontal: space.gutter, marginBottom: space.sm },
+  root: { flex: 1, backgroundColor: colors.surface },
+  head: { paddingHorizontal: spacing.gutter, marginBottom: spacing.sm },
   card: {
-    marginHorizontal: space.gutter,
-    backgroundColor: color.navy,
-    padding: space.xl,
+    marginHorizontal: spacing.gutter,
+    backgroundColor: colors.navy,
+    padding: spacing.xl,
   },
-  perk: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  perk: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   perkTick: {
     width: 22,
     height: 22,
-    backgroundColor: color.lime,
+    backgroundColor: colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  form: { paddingHorizontal: space.gutter, marginTop: space.xl },
+  form: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
   input: {
     height: 50,
     borderWidth: 1.5,
-    borderColor: color.hairline,
-    paddingHorizontal: space.md,
+    borderColor: colors.hairline,
+    paddingHorizontal: spacing.md,
     fontFamily: font.regular,
     fontSize: 16,
-    color: color.ink,
-    backgroundColor: color.surface,
+    color: colors.ink,
+    backgroundColor: colors.surface,
   },
-  guest: { alignSelf: 'center', marginTop: space.lg, alignItems: 'center', gap: 3 },
-  guestUnderline: { height: 2, alignSelf: 'stretch', backgroundColor: color.hairline },
+  guest: { alignSelf: 'center', marginTop: spacing.lg, alignItems: 'center', gap: 3 },
+  guestUnderline: { height: 2, alignSelf: 'stretch', backgroundColor: colors.hairline },
 });

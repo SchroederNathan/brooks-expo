@@ -32,7 +32,7 @@ import { heroImage } from '../../src/data/images';
 import { supportLabel } from '../../src/data/labels';
 import { byId, colorwayOf, formatPrice } from '../../src/data/query';
 import { useCart } from '../../src/store/cart';
-import { color, shadow, space } from '../../src/theme/tokens';
+import { colors, shadows, spacing } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
 const GALLERY_H = Math.round(W * 0.92);
@@ -105,10 +105,10 @@ export default function ProductDetail() {
     return (
       <View style={[styles.root, styles.missing, { paddingTop: insets.top + 80 }]}>
         <Txt variant="h2">We lost that one</Txt>
-        <Txt variant="body" c={color.inkMuted} style={{ marginTop: space.md, textAlign: 'center' }}>
+        <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.md, textAlign: 'center' }}>
           That product isn't in this catalog snapshot.
         </Txt>
-        <Button title="Back" variant="secondary" style={{ marginTop: space.xl }} onPress={() => router.back()} />
+        <Button title="Back" variant="secondary" style={{ marginTop: spacing.xl }} onPress={() => router.back()} />
       </View>
     );
   }
@@ -146,7 +146,7 @@ export default function ProductDetail() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
       >
         {/* ------------------------------------------------------- GALLERY -- */}
-        <View style={{ height: GALLERY_H, backgroundColor: color.surfaceAlt }}>
+        <View style={{ height: GALLERY_H, backgroundColor: colors.surfaceAlt }}>
           <FlatList
             ref={galleryRef}
             data={images}
@@ -187,7 +187,7 @@ export default function ProductDetail() {
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               {product.franchise ? (
-                <Txt variant="eyebrow" c={color.inkMuted}>
+                <Txt variant="eyebrow" c={colors.inkMuted}>
                   {product.gender === 'womens' ? "Women's" : product.gender === 'mens' ? "Men's" : ''}{' '}
                   {product.franchise}
                 </Txt>
@@ -199,7 +199,7 @@ export default function ProductDetail() {
             <Price value={price} listValue={listPrice} large />
           </View>
           {product.rating ? (
-            <View style={{ marginTop: space.sm }}>
+            <View style={{ marginTop: spacing.sm }}>
               <Stars value={product.rating} count={product.reviewCount} />
             </View>
           ) : null}
@@ -208,10 +208,10 @@ export default function ProductDetail() {
         {/* -------------------------------------------------------- COLORS -- */}
         <View style={styles.block}>
           <View style={styles.rowBetween}>
-            <Txt variant="eyebrow" c={color.inkMuted}>
+            <Txt variant="eyebrow" c={colors.inkMuted}>
               Color
             </Txt>
-            <Txt variant="caption" c={color.inkMuted} numberOfLines={1} style={{ flex: 1, textAlign: 'right' }}>
+            <Txt variant="caption" c={colors.inkMuted} numberOfLines={1} style={{ flex: 1, textAlign: 'right' }}>
               {colorway.name}
             </Txt>
           </View>
@@ -242,7 +242,7 @@ export default function ProductDetail() {
         {/* --------------------------------------------------------- WIDTH -- */}
         {colorway.widths.length > 0 && (
           <View style={styles.block}>
-            <Txt variant="eyebrow" c={color.inkMuted} style={{ marginBottom: space.md }}>
+            <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               Width
             </Txt>
             <View style={styles.chipWrap}>
@@ -256,7 +256,7 @@ export default function ProductDetail() {
                 />
               ))}
             </View>
-            <Txt variant="tiny" c={color.inkMuted} style={{ marginTop: space.sm }}>
+            <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
               Four widths is the Brooks difference — most running brands stop at one.
             </Txt>
           </View>
@@ -270,16 +270,16 @@ export default function ProductDetail() {
           }}
         >
           <View style={styles.rowBetween}>
-            <Txt variant="eyebrow" c={needsSize && !size ? color.sale : color.inkMuted}>
+            <Txt variant="eyebrow" c={needsSize && !size ? colors.sale : colors.inkMuted}>
               Select {sizeUnit}
             </Txt>
             {needsSize && !size ? (
-              <Txt variant="caption" c={color.sale}>
+              <Txt variant="caption" c={colors.sale}>
                 Pick a size first
               </Txt>
             ) : null}
           </View>
-          <View style={[styles.chipWrap, { marginTop: space.md }]}>
+          <View style={[styles.chipWrap, { marginTop: spacing.md }]}>
             {colorway.sizes.map((s) => (
               <Chip
                 key={s.value}
@@ -294,8 +294,8 @@ export default function ProductDetail() {
             ))}
           </View>
           {colorway.sizes.some((s) => !s.available) ? (
-            <Txt variant="tiny" c={color.inkMuted} style={{ marginTop: space.sm }}>
-              Struck-through sizes are out of stock in this color.
+            <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
+              Struck-through sizes are out of stock in this colors.
             </Txt>
           ) : null}
         </Animated.View>
@@ -303,10 +303,10 @@ export default function ProductDetail() {
         {/* ---------------------------------------------------------- FIT --- */}
         {(product.cushion || product.support) && (
           <View style={[styles.block, styles.fitCard]}>
-            <Txt variant="h3" style={{ marginBottom: space.lg }}>
+            <Txt variant="h3" style={{ marginBottom: spacing.lg }}>
               How it runs
             </Txt>
-            <View style={{ gap: space.xl }}>
+            <View style={{ gap: spacing.xl }}>
               <SpecMeter label="Feel under foot" stops={CUSHION_STOPS} value={product.cushion} />
               {product.support ? (
                 <SpecMeter
@@ -317,8 +317,8 @@ export default function ProductDetail() {
               ) : null}
             </View>
             {product.bestFor.length > 0 && (
-              <View style={{ marginTop: space.xl }}>
-                <Txt variant="eyebrow" c={color.inkMuted} style={{ fontSize: 11, marginBottom: space.sm }}>
+              <View style={{ marginTop: spacing.xl }}>
+                <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 11, marginBottom: spacing.sm }}>
                   Best for
                 </Txt>
                 <View style={styles.chipWrap}>
@@ -336,10 +336,10 @@ export default function ProductDetail() {
         {/* ---------------------------------------------------- DESCRIPTION -- */}
         {product.description ? (
           <View style={styles.block}>
-            <Txt variant="h3" style={{ marginBottom: space.md }}>
+            <Txt variant="h3" style={{ marginBottom: spacing.md }}>
               About this {product.productType === 'Shoes' ? 'shoe' : 'piece'}
             </Txt>
-            <Txt variant="body" c={color.inkSoft}>
+            <Txt variant="body" c={colors.inkSoft}>
               {product.description}
             </Txt>
           </View>
@@ -347,11 +347,11 @@ export default function ProductDetail() {
 
         {product.features.length > 0 && (
           <View style={styles.block}>
-            <Divider style={{ marginBottom: space.lg }} />
+            <Divider style={{ marginBottom: spacing.lg }} />
             {product.features.map((f) => (
               <View key={f} style={styles.feature}>
                 <View style={styles.featureTick} />
-                <Txt variant="body" c={color.inkSoft} style={{ flex: 1 }}>
+                <Txt variant="body" c={colors.inkSoft} style={{ flex: 1 }}>
                   {f}
                 </Txt>
               </View>
@@ -361,17 +361,17 @@ export default function ProductDetail() {
 
         {/* ------------------------------------------------------- PROMISE -- */}
         <View style={[styles.block, styles.promise]}>
-          <Txt variant="eyebrow" c={color.inkMuted}>
+          <Txt variant="eyebrow" c={colors.inkMuted}>
             Run Happy Promise
           </Txt>
-          <Txt variant="body" style={{ marginTop: space.sm }}>
+          <Txt variant="body" style={{ marginTop: spacing.sm }}>
             Take it for a 90-day trial run. If you're not happy, we're not happy.
           </Txt>
         </View>
       </ScrollView>
 
       {/* ------------------------------------------------------ TOP BUTTONS -- */}
-      <View style={[styles.topBar, { top: insets.top + space.sm }]}>
+      <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
         <Press onPress={() => router.back()} scaleTo={0.9} style={styles.circleBtn}>
           <Txt variant="h3">‹</Txt>
         </Press>
@@ -385,7 +385,7 @@ export default function ProductDetail() {
       </View>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
-      <View style={[styles.stickyBar, { paddingBottom: insets.bottom + space.md }]}>
+      <View style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }]}>
         <Button
           title={
             colorway.soldOut ? 'Sold out' : size ? 'Add to bag' : `Select ${sizeUnit}`
@@ -439,7 +439,7 @@ function AddedToast({
         <ShoeImage url={image} width={54} height={54} />
       </View>
       <View style={{ flex: 1 }}>
-        <Txt variant="caption" c={color.surface} numberOfLines={1}>
+        <Txt variant="caption" c={colors.surface} numberOfLines={1}>
           {name}
         </Txt>
         <Txt variant="tiny" c="rgba(255,255,255,0.7)">
@@ -454,7 +454,7 @@ function AddedToast({
         scaleTo={0.94}
         style={styles.toastCta}
       >
-        <Txt variant="eyebrow" c={color.blue} style={{ fontSize: 10 }}>
+        <Txt variant="eyebrow" c={colors.blue} style={{ fontSize: 10 }}>
           View bag
         </Txt>
       </Press>
@@ -463,40 +463,40 @@ function AddedToast({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
-  missing: { alignItems: 'center', paddingHorizontal: space.xxl },
+  root: { flex: 1, backgroundColor: colors.surface },
+  missing: { alignItems: 'center', paddingHorizontal: spacing.xxl },
 
-  galleryBadges: { position: 'absolute', top: 108, left: space.gutter },
+  galleryBadges: { position: 'absolute', top: 108, left: spacing.gutter },
   dots: {
     position: 'absolute',
-    bottom: space.md,
+    bottom: spacing.md,
     alignSelf: 'center',
     flexDirection: 'row',
     gap: 6,
   },
-  dot: { width: 6, height: 6, backgroundColor: color.inkFaint },
-  dotOn: { backgroundColor: color.ink, width: 18 },
+  dot: { width: 6, height: 6, backgroundColor: colors.inkFaint },
+  dotOn: { backgroundColor: colors.ink, width: 18 },
 
-  block: { paddingHorizontal: space.gutter, marginTop: space.xl },
-  titleRow: { flexDirection: 'row', gap: space.lg, alignItems: 'flex-start' },
+  block: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
+  titleRow: { flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' },
   rowBetween: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: space.md,
+    gap: spacing.md,
   },
 
-  swatchRail: { gap: space.sm, marginTop: space.md },
+  swatchRail: { gap: spacing.sm, marginTop: spacing.md },
   swatch: {
     width: 72,
     height: 72,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: color.hairline,
-    backgroundColor: color.surfaceAlt,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surfaceAlt,
   },
-  swatchOn: { borderColor: color.ink },
+  swatchOn: { borderColor: colors.ink },
   swatchSoldOut: {
     position: 'absolute',
     top: 0,
@@ -506,48 +506,48 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
 
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 
   fitCard: {
-    backgroundColor: color.surfaceAlt,
-    marginHorizontal: space.gutter,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.xl,
+    backgroundColor: colors.surfaceAlt,
+    marginHorizontal: spacing.gutter,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
   bestFor: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
-    backgroundColor: color.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: color.hairline,
+    borderColor: colors.hairline,
   },
 
-  feature: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start', marginBottom: space.md },
-  featureTick: { width: 8, height: 8, backgroundColor: color.lime, marginTop: 8 },
+  feature: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start', marginBottom: spacing.md },
+  featureTick: { width: 8, height: 8, backgroundColor: colors.lime, marginTop: 8 },
 
   promise: {
     borderWidth: 1,
-    borderColor: color.hairline,
-    marginHorizontal: space.gutter,
-    padding: space.lg,
+    borderColor: colors.hairline,
+    marginHorizontal: spacing.gutter,
+    padding: spacing.lg,
   },
 
   topBar: {
     position: 'absolute',
-    left: space.gutter,
-    right: space.gutter,
+    left: spacing.gutter,
+    right: spacing.gutter,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   circleBtn: {
     minWidth: 40,
     height: 40,
-    paddingHorizontal: space.md,
-    backgroundColor: color.surface,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: color.hairline,
+    borderColor: colors.hairline,
   },
 
   stickyBar: {
@@ -555,28 +555,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: space.gutter,
-    paddingTop: space.md,
-    backgroundColor: color.surface,
+    paddingHorizontal: spacing.gutter,
+    paddingTop: spacing.md,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: color.hairline,
-    ...shadow.bar,
+    borderTopColor: colors.hairline,
+    ...shadows.bar,
   },
 
   toast: {
     position: 'absolute',
-    left: space.gutter,
-    right: space.gutter,
-    backgroundColor: color.ink,
+    left: spacing.gutter,
+    right: spacing.gutter,
+    backgroundColor: colors.ink,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    padding: space.md,
+    gap: spacing.md,
+    padding: spacing.md,
   },
-  toastImage: { backgroundColor: color.surfaceAlt },
+  toastImage: { backgroundColor: colors.surfaceAlt },
   toastCta: {
-    backgroundColor: color.lime,
-    paddingHorizontal: space.md,
+    backgroundColor: colors.lime,
+    paddingHorizontal: spacing.md,
     height: 34,
     alignItems: 'center',
     justifyContent: 'center',

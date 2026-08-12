@@ -5,7 +5,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import { Txt } from '../../src/components/primitives';
 import { useCart } from '../../src/store/cart';
-import { color, font, radius } from '../../src/theme/tokens';
+import { colors, font, radius } from '../../src/theme';
 
 /**
  * Tab icons are drawn rather than pulled from an icon font: five glyphs is a
@@ -13,7 +13,7 @@ import { color, font, radius } from '../../src/theme/tokens';
  * whole set sharing one stroke weight.
  */
 function Icon({ name, active }: { name: string; active: boolean }) {
-  const c = active ? color.ink : color.inkFaint;
+  const c = active ? colors.ink : colors.inkFaint;
   const w = active ? 2.2 : 1.8;
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
@@ -71,7 +71,7 @@ function TabIcon({ name, focused, badge }: { name: string; focused: boolean; bad
       {badge ? (
         <View style={styles.badge}>
           {/* Lime fill with blue text — the site's exact cart-badge treatment. */}
-          <Txt variant="caption" c={color.blue} style={styles.badgeText}>
+          <Txt variant="caption" c={colors.blue} style={styles.badgeText}>
             {badge > 9 ? '9+' : badge}
           </Txt>
         </View>
@@ -87,16 +87,16 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: color.ink,
-        tabBarInactiveTintColor: color.inkFaint,
+        tabBarActiveTintColor: colors.ink,
+        tabBarInactiveTintColor: colors.inkFaint,
         tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10, letterSpacing: 0.2 },
         tabBarStyle: {
           position: 'absolute',
           borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: color.hairline,
+          borderTopColor: colors.hairline,
           // A translucent bar lets product photography scroll under it, which is
           // most of why the app reads as native rather than as a page.
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : color.surface,
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.surface,
           elevation: 0,
         },
         tabBarBackground:
@@ -153,11 +153,11 @@ const styles = StyleSheet.create({
     height: 18,
     paddingHorizontal: 4,
     borderRadius: radius.pill,
-    backgroundColor: color.lime,
+    backgroundColor: colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: color.surface,
+    borderColor: colors.surface,
   },
   badgeText: { fontSize: 10, lineHeight: 13 },
 });

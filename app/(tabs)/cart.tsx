@@ -28,7 +28,7 @@ import {
 import { heroImage } from '../../src/data/images';
 import { VOICE } from '../../src/data/editorial';
 import { useCart, type CartItemView } from '../../src/store/cart';
-import { color, space } from '../../src/theme/tokens';
+import { colors, spacing } from '../../src/theme';
 
 const FREE_SHIPPING_OVER = 100;
 
@@ -68,7 +68,7 @@ export default function Cart() {
   if (cart.items.length === 0) {
     return (
       <View style={[styles.root, styles.empty, { paddingTop: insets.top + 90 }]}>
-        <Txt variant="eyebrow" c={color.inkMuted}>
+        <Txt variant="eyebrow" c={colors.inkMuted}>
           Your bag
         </Txt>
         <Squiggle />
@@ -77,7 +77,7 @@ export default function Cart() {
         </Txt>
         <Button
           title="Find your run"
-          style={{ marginTop: space.xl, alignSelf: 'stretch' }}
+          style={{ marginTop: spacing.xl, alignSelf: 'stretch' }}
           onPress={() => router.push('/shop')}
         />
         {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} insets={insets.bottom} />}
@@ -91,7 +91,7 @@ export default function Cart() {
     <View style={styles.root}>
       <ScrollView
         contentContainerStyle={{
-          paddingTop: insets.top + space.lg,
+          paddingTop: insets.top + spacing.lg,
           paddingBottom: insets.bottom + 120,
         }}
         showsVerticalScrollIndicator={false}
@@ -99,7 +99,7 @@ export default function Cart() {
         <View style={styles.head}>
           <Txt variant="h1">
             Bag{' '}
-            <Txt variant="h3" c={color.inkMuted}>
+            <Txt variant="h3" c={colors.inkMuted}>
               ({cart.count})
             </Txt>
           </Txt>
@@ -111,7 +111,7 @@ export default function Cart() {
             {cart.freeShippingRemaining > 0 ? (
               <>
                 You're{' '}
-                <Txt variant="caption" c={color.blue}>
+                <Txt variant="caption" c={colors.blue}>
                   {fmt(cart.freeShippingRemaining)}
                 </Txt>{' '}
                 from free shipping
@@ -129,7 +129,7 @@ export default function Cart() {
         </View>
 
         {/* ----------------------------------------------------- LINE ITEMS -- */}
-        <View style={{ marginTop: space.lg }}>
+        <View style={{ marginTop: spacing.lg }}>
           {cart.items.map((item) => (
             <Animated.View
               key={item.variantId}
@@ -163,15 +163,15 @@ export default function Cart() {
                     <Txt variant="productTitle" numberOfLines={1}>
                       {item.product.name}
                     </Txt>
-                    <Txt variant="tiny" c={color.inkMuted} numberOfLines={1}>
+                    <Txt variant="tiny" c={colors.inkMuted} numberOfLines={1}>
                       {item.colorName}
                     </Txt>
-                    <Txt variant="tiny" c={color.inkMuted}>
+                    <Txt variant="tiny" c={colors.inkMuted}>
                       Size {item.size}
                       {item.width ? ` · ${widthLabel(item)}` : ''}
                     </Txt>
                     {/* The real Brooks variant id — the cart's proof of fidelity. */}
-                    <Txt variant="tiny" c={color.inkFaint}>
+                    <Txt variant="tiny" c={colors.inkFaint}>
                       #{item.variantId}
                     </Txt>
 
@@ -189,7 +189,7 @@ export default function Cart() {
                   </View>
                 </View>
               </ReanimatedSwipeable>
-              <Divider style={{ marginHorizontal: space.gutter }} />
+              <Divider style={{ marginHorizontal: spacing.gutter }} />
             </Animated.View>
           ))}
         </View>
@@ -200,18 +200,18 @@ export default function Cart() {
           <Row
             label="Shipping"
             value={cart.shipping === 0 ? 'Free' : fmt(cart.shipping)}
-            valueColor={cart.shipping === 0 ? color.success : color.ink}
+            valueColor={cart.shipping === 0 ? colors.success : colors.ink}
           />
-          <Divider style={{ marginVertical: space.md }} />
+          <Divider style={{ marginVertical: spacing.md }} />
           <Row label="Total" value={fmt(cart.total)} big />
         </View>
 
         {scopeNote && (
           <Animated.View entering={FadeInDown.duration(240)} style={styles.scopeNote}>
-            <Txt variant="eyebrow" c={color.lime} style={{ fontSize: 10 }}>
+            <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 10 }}>
               Prototype note
             </Txt>
-            <Txt variant="bodySmall" c={color.surface} style={{ marginTop: space.xs }}>
+            <Txt variant="bodySmall" c={colors.surface} style={{ marginTop: spacing.xs }}>
               The journey ends here by design — no order is ever placed. Every line
               above already carries the exact variant id Brooks's own Cart-AddProduct
               endpoint accepts, so the last mile is documented, not guessed.
@@ -220,10 +220,10 @@ export default function Cart() {
         )}
 
         <View style={styles.promise}>
-          <Txt variant="eyebrow" c={color.inkMuted} style={{ fontSize: 10 }}>
+          <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 10 }}>
             {VOICE.promiseTitle}
           </Txt>
-          <Txt variant="bodySmall" c={color.inkSoft} style={{ marginTop: 4 }}>
+          <Txt variant="bodySmall" c={colors.inkSoft} style={{ marginTop: 4 }}>
             {VOICE.promise}
           </Txt>
         </View>
@@ -271,7 +271,7 @@ function restore(
 function Row({
   label,
   value,
-  valueColor = color.ink,
+  valueColor = colors.ink,
   big,
 }: {
   label: string;
@@ -281,7 +281,7 @@ function Row({
 }) {
   return (
     <View style={styles.totalRow}>
-      <Txt variant={big ? 'h3' : 'body'} c={big ? color.ink : color.inkMuted}>
+      <Txt variant={big ? 'h3' : 'body'} c={big ? colors.ink : colors.inkMuted}>
         {label}
       </Txt>
       <Txt variant={big ? 'priceLarge' : 'price'} c={valueColor}>
@@ -296,7 +296,7 @@ function Stepper({ value, onChange }: { value: number; onChange: (v: number) => 
   return (
     <View style={styles.stepper}>
       <Press haptic={false} onPress={() => onChange(value - 1)} hitSlop={8} style={styles.stepBtn}>
-        <Txt variant="h3" c={color.ink}>
+        <Txt variant="h3" c={colors.ink}>
           −
         </Txt>
       </Press>
@@ -304,7 +304,7 @@ function Stepper({ value, onChange }: { value: number; onChange: (v: number) => 
         {value}
       </Txt>
       <Press haptic={false} onPress={() => onChange(value + 1)} hitSlop={8} style={styles.stepBtn}>
-        <Txt variant="h3" c={color.ink}>
+        <Txt variant="h3" c={colors.ink}>
           +
         </Txt>
       </Press>
@@ -319,7 +319,7 @@ function DeleteAction({ drag, onPress }: { drag: SharedValue<number>; onPress: (
   return (
     <Animated.View style={[styles.deleteAction, style]}>
       <Press haptic={false} onPress={onPress} style={styles.deletePress}>
-        <Txt variant="eyebrow" c={color.surface} style={{ fontSize: 11 }}>
+        <Txt variant="eyebrow" c={colors.surface} style={{ fontSize: 11 }}>
           Remove
         </Txt>
       </Press>
@@ -342,11 +342,11 @@ function UndoBar({
       exiting={FadeOut.duration(160)}
       style={[styles.undo, { bottom: insets + 130 }]}
     >
-      <Txt variant="caption" c={color.surface} numberOfLines={1} style={{ flex: 1 }}>
+      <Txt variant="caption" c={colors.surface} numberOfLines={1} style={{ flex: 1 }}>
         Removed {item.product.name}
       </Txt>
       <Press haptic={false} onPress={onUndo} hitSlop={8}>
-        <Txt variant="eyebrow" c={color.lime} style={{ fontSize: 11 }}>
+        <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 11 }}>
           Undo
         </Txt>
       </Press>
@@ -355,66 +355,66 @@ function UndoBar({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
-  empty: { alignItems: 'center', paddingHorizontal: space.xxl },
-  head: { paddingHorizontal: space.gutter, marginBottom: space.lg },
+  root: { flex: 1, backgroundColor: colors.surface },
+  empty: { alignItems: 'center', paddingHorizontal: spacing.xxl },
+  head: { paddingHorizontal: spacing.gutter, marginBottom: spacing.lg },
 
   shipCard: {
-    marginHorizontal: space.gutter,
-    padding: space.lg,
-    backgroundColor: color.surfaceAlt,
-    gap: space.md,
+    marginHorizontal: spacing.gutter,
+    padding: spacing.lg,
+    backgroundColor: colors.surfaceAlt,
+    gap: spacing.md,
   },
-  track: { height: 8, backgroundColor: color.surface, overflow: 'hidden' },
-  fill: { height: 8, backgroundColor: color.lime, borderWidth: 1, borderColor: color.ink },
+  track: { height: 8, backgroundColor: colors.surface, overflow: 'hidden' },
+  fill: { height: 8, backgroundColor: colors.lime, borderWidth: 1, borderColor: colors.ink },
 
   line: {
     flexDirection: 'row',
-    gap: space.lg,
-    paddingHorizontal: space.gutter,
-    paddingVertical: space.lg,
-    backgroundColor: color.surface,
+    gap: spacing.lg,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.surface,
   },
-  lineImage: { backgroundColor: color.surfaceAlt },
+  lineImage: { backgroundColor: colors.surfaceAlt },
   lineFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: space.sm,
+    marginTop: spacing.sm,
   },
 
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: color.hairline,
+    borderColor: colors.hairline,
   },
   stepBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   stepValue: { minWidth: 26, textAlign: 'center' },
 
-  deleteAction: { width: 96, backgroundColor: color.sale },
+  deleteAction: { width: 96, backgroundColor: colors.sale },
   deletePress: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  totals: { paddingHorizontal: space.gutter, marginTop: space.xl },
+  totals: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: space.sm,
+    marginBottom: spacing.sm,
   },
 
   scopeNote: {
-    marginHorizontal: space.gutter,
-    marginTop: space.lg,
-    backgroundColor: color.navy,
-    padding: space.lg,
+    marginHorizontal: spacing.gutter,
+    marginTop: spacing.lg,
+    backgroundColor: colors.navy,
+    padding: spacing.lg,
   },
 
   promise: {
-    marginHorizontal: space.gutter,
-    marginTop: space.lg,
-    padding: space.lg,
+    marginHorizontal: spacing.gutter,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: color.hairline,
+    borderColor: colors.hairline,
   },
 
   stickyBar: {
@@ -422,22 +422,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: space.gutter,
-    paddingTop: space.md,
-    backgroundColor: color.surface,
+    paddingHorizontal: spacing.gutter,
+    paddingTop: spacing.md,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: color.hairline,
+    borderTopColor: colors.hairline,
   },
 
   undo: {
     position: 'absolute',
-    left: space.gutter,
-    right: space.gutter,
-    backgroundColor: color.ink,
+    left: spacing.gutter,
+    right: spacing.gutter,
+    backgroundColor: colors.ink,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.md,
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
 });

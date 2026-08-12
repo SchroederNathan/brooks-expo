@@ -16,7 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CartProvider } from '../src/store/cart';
-import { color } from '../src/theme/tokens';
+import { colors } from '../src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -48,7 +48,7 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: color.surface },
+              contentStyle: { backgroundColor: colors.surface },
             }}
           >
             <Stack.Screen name="(tabs)" />

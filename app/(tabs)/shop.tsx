@@ -7,7 +7,7 @@ import { Photo, Press, Txt } from '../../src/components/primitives';
 import { catalog } from '../../src/data/catalog';
 import { heroImage } from '../../src/data/images';
 import { productsIn } from '../../src/data/query';
-import { color, space } from '../../src/theme/tokens';
+import { colors, spacing } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
 
@@ -42,21 +42,21 @@ export default function Shop() {
 
   return (
     <ScrollView
-      style={{ backgroundColor: color.surface }}
-      contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 96 }}
+      style={{ backgroundColor: colors.surface }}
+      contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 96 }}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.head}>
         <Txt variant="h1">Shop</Txt>
         <Press onPress={() => router.push('/search')} scaleTo={0.97} style={styles.searchBar}>
-          <Txt variant="body" c={color.inkMuted}>
+          <Txt variant="body" c={colors.inkMuted}>
             ⌕　Search shoes, apparel…
           </Txt>
         </Press>
       </View>
 
       {/* Franchise shortcuts — the fastest path for a runner who knows the shoe. */}
-      <Txt variant="eyebrow" c={color.inkMuted} style={styles.railLabel}>
+      <Txt variant="eyebrow" c={colors.inkMuted} style={styles.railLabel}>
         Franchises
       </Txt>
       <ScrollView
@@ -83,7 +83,7 @@ export default function Shop() {
                     <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
                   ) : null}
                 </View>
-                <Txt variant="caption" style={{ padding: space.sm }}>
+                <Txt variant="caption" style={{ padding: spacing.sm }}>
                   {f}
                 </Txt>
               </Press>
@@ -94,10 +94,10 @@ export default function Shop() {
 
       {SECTIONS.map((s) => (
         <View key={s.title} style={styles.section}>
-          <Txt variant="eyebrow" c={color.inkMuted} style={{ paddingHorizontal: space.gutter }}>
+          <Txt variant="eyebrow" c={colors.inkMuted} style={{ paddingHorizontal: spacing.gutter }}>
             {s.title}
           </Txt>
-          <View style={{ marginTop: space.md }}>
+          <View style={{ marginTop: spacing.md }}>
             {s.rows.map((r) => {
               const n = productsIn(catalog, r.id).length;
               return (
@@ -114,10 +114,10 @@ export default function Shop() {
                 >
                   <Txt variant="h3">{r.label}</Txt>
                   <View style={styles.rowRight}>
-                    <Txt variant="tiny" c={color.inkMuted}>
+                    <Txt variant="tiny" c={colors.inkMuted}>
                       {n}
                     </Txt>
-                    <Txt variant="h3" c={color.inkFaint}>
+                    <Txt variant="h3" c={colors.inkFaint}>
                       ›
                     </Txt>
                   </View>
@@ -132,26 +132,26 @@ export default function Shop() {
 }
 
 const styles = StyleSheet.create({
-  head: { paddingHorizontal: space.gutter, gap: space.lg, marginBottom: space.xl },
+  head: { paddingHorizontal: spacing.gutter, gap: spacing.lg, marginBottom: spacing.xl },
   searchBar: {
     height: 48,
-    backgroundColor: color.surfaceAlt,
+    backgroundColor: colors.surfaceAlt,
     justifyContent: 'center',
-    paddingHorizontal: space.lg,
+    paddingHorizontal: spacing.lg,
   },
-  railLabel: { paddingHorizontal: space.gutter, marginBottom: space.md },
-  rail: { paddingHorizontal: space.gutter, gap: space.md },
-  franchise: { width: 120, borderWidth: 1, borderColor: color.hairline },
-  franchiseArt: { height: 80, backgroundColor: color.surfaceAlt, overflow: 'hidden' },
-  section: { marginTop: space.xxl },
+  railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },
+  rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
+  franchise: { width: 120, borderWidth: 1, borderColor: colors.hairline },
+  franchiseArt: { height: 80, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  section: { marginTop: spacing.xxl },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: space.gutter,
-    paddingVertical: space.lg,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: color.hairline,
+    borderBottomColor: colors.hairline,
   },
-  rowRight: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
 });

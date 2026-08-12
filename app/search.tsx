@@ -16,7 +16,7 @@ import { catalog } from '../src/data/catalog';
 import { autocomplete, type SearchHit, type Suggestions } from '../src/data/constructor';
 import { heroImage } from '../src/data/images';
 import { byId } from '../src/data/query';
-import { color, font, space } from '../src/theme/tokens';
+import { colors, font, spacing } from '../src/theme';
 
 /**
  * Search.
@@ -93,11 +93,11 @@ export default function Search() {
   };
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top + space.md }]}>
+    <View style={[styles.root, { paddingTop: insets.top + spacing.md }]}>
       {/* ------------------------------------------------------- INPUT BAR -- */}
       <View style={styles.barRow}>
         <View style={styles.inputWrap}>
-          <Txt variant="h3" c={color.inkMuted}>
+          <Txt variant="h3" c={colors.inkMuted}>
             ⌕
           </Txt>
           <TextInput
@@ -105,23 +105,23 @@ export default function Search() {
             value={query}
             onChangeText={setQuery}
             placeholder="Shoes, apparel, franchises…"
-            placeholderTextColor={color.inkFaint}
+            placeholderTextColor={colors.inkFaint}
             autoFocus
             autoCorrect={false}
             returnKeyType="search"
             style={styles.input}
           />
-          {loading ? <ActivityIndicator size="small" color={color.inkMuted} /> : null}
+          {loading ? <ActivityIndicator size="small" color={colors.inkMuted} /> : null}
           {!loading && query.length > 0 ? (
             <Press haptic={false} hitSlop={8} onPress={() => setQuery('')}>
-              <Txt variant="caption" c={color.inkMuted}>
+              <Txt variant="caption" c={colors.inkMuted}>
                 ✕
               </Txt>
             </Press>
           ) : null}
         </View>
-        <Press haptic={false} hitSlop={8} onPress={() => router.back()} style={{ padding: space.sm }}>
-          <Txt variant="caption" c={color.ink}>
+        <Press haptic={false} hitSlop={8} onPress={() => router.back()} style={{ padding: spacing.sm }}>
+          <Txt variant="caption" c={colors.ink}>
             Cancel
           </Txt>
         </Press>
@@ -129,13 +129,13 @@ export default function Search() {
 
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + space.xxl }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
         showsVerticalScrollIndicator={false}
       >
         {/* --------------------------------------------------------- EMPTY -- */}
         {query.trim().length < 2 && (
           <Animated.View entering={FadeIn.duration(200)} style={styles.block}>
-            <Txt variant="eyebrow" c={color.inkMuted} style={{ marginBottom: space.md }}>
+            <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               Trending
             </Txt>
             <View style={styles.chips}>
@@ -143,7 +143,7 @@ export default function Search() {
                 <Chip key={t} label={t} size="sm" onPress={() => setQuery(t)} />
               ))}
             </View>
-            <Txt variant="tiny" c={color.inkFaint} style={{ marginTop: space.xl }}>
+            <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.xl }}>
               Search is live against the same index brooksrunning.com uses.
             </Txt>
           </Animated.View>
@@ -162,7 +162,7 @@ export default function Search() {
 
         {/* -------------------------------------------------- PRODUCT HITS -- */}
         {live && live.products.length > 0 && (
-          <View style={{ marginTop: space.md }}>
+          <View style={{ marginTop: spacing.md }}>
             {live.products.map((hit, i) => {
               const local = byId(catalog, hit.id);
               const imageUrl = local ? heroImage(local.colors[0]?.images ?? []) : hit.imageUrl;
@@ -176,7 +176,7 @@ export default function Search() {
                       <Txt variant="productTitle" numberOfLines={1}>
                         {hit.name}
                       </Txt>
-                      <Txt variant="tiny" c={color.inkMuted} numberOfLines={1}>
+                      <Txt variant="tiny" c={colors.inkMuted} numberOfLines={1}>
                         {[
                           hit.gender === 'womens' ? "Women's" : hit.gender === 'mens' ? "Men's" : null,
                           hit.cushion ? `${hit.cushion} cushion` : null,
@@ -189,16 +189,16 @@ export default function Search() {
                           <Price value={local.price} listValue={local.listPrice} />
                         </View>
                       ) : (
-                        <Txt variant="tiny" c={color.inkFaint} style={{ marginTop: 3 }}>
+                        <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: 3 }}>
                           Live index — not in this snapshot
                         </Txt>
                       )}
                     </View>
-                    <Txt variant="h3" c={color.inkFaint}>
+                    <Txt variant="h3" c={colors.inkFaint}>
                       ›
                     </Txt>
                   </Press>
-                  <Divider style={{ marginLeft: space.gutter + 64 + space.lg }} />
+                  <Divider style={{ marginLeft: spacing.gutter + 64 + spacing.lg }} />
                 </Animated.View>
               );
             })}
@@ -208,7 +208,7 @@ export default function Search() {
         {/* ------------------------------------------------ OFFLINE / LOCAL -- */}
         {offline && query.trim().length >= 2 && (
           <View style={styles.block}>
-            <Txt variant="tiny" c={color.inkMuted} style={{ marginBottom: space.md }}>
+            <Txt variant="tiny" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               Live search unreachable — searching the on-device catalog instead.
             </Txt>
             {localHits.map((p) => (
@@ -236,9 +236,9 @@ export default function Search() {
         )}
 
         {live && live.terms.length === 0 && live.products.length === 0 && (
-          <View style={[styles.block, { alignItems: 'center', paddingTop: space.xxl }]}>
+          <View style={[styles.block, { alignItems: 'center', paddingTop: spacing.xxl }]}>
             <Txt variant="h3">No matches for “{query.trim()}”</Txt>
-            <Txt variant="body" c={color.inkMuted} style={{ marginTop: space.sm, textAlign: 'center' }}>
+            <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm, textAlign: 'center' }}>
               Try a franchise name — Ghost, Glycerin, Adrenaline…
             </Txt>
           </View>
@@ -249,38 +249,38 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface },
+  root: { flex: 1, backgroundColor: colors.surface },
   barRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.gutter,
-    marginBottom: space.md,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.gutter,
+    marginBottom: spacing.md,
   },
   inputWrap: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
+    gap: spacing.sm,
     height: 48,
-    paddingHorizontal: space.md,
-    backgroundColor: color.surfaceAlt,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surfaceAlt,
   },
   input: {
     flex: 1,
     fontFamily: font.regular,
     fontSize: 16,
-    color: color.ink,
+    color: colors.ink,
     height: '100%',
   },
-  block: { paddingHorizontal: space.gutter, marginTop: space.lg },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  block: { paddingHorizontal: spacing.gutter, marginTop: spacing.lg },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   hit: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.lg,
-    paddingHorizontal: space.gutter,
-    paddingVertical: space.md,
+    gap: spacing.lg,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.md,
   },
-  hitImage: { backgroundColor: color.surfaceAlt },
+  hitImage: { backgroundColor: colors.surfaceAlt },
 });

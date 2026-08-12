@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { color, space } from '../theme/tokens';
+import { colors, spacing } from '../theme';
 import { Txt } from './primitives';
 
 /**
@@ -29,13 +29,13 @@ export function Countdown({ target, onDark }: { target: number; onDark?: boolean
   const mins = Math.floor((s % 3600) / 60);
   const secs = s % 60;
 
-  const fg = onDark ? color.ink : color.surface;
-  const bg = onDark ? color.lime : color.ink;
+  const fg = onDark ? colors.ink : colors.surface;
+  const bg = onDark ? colors.lime : colors.ink;
 
   if (done) {
     return (
-      <View style={[styles.pill, { backgroundColor: color.lime }]}>
-        <Txt variant="eyebrow" c={color.blue} style={{ fontSize: 11 }}>
+      <View style={[styles.pill, { backgroundColor: colors.lime }]}>
+        <Txt variant="eyebrow" c={colors.blue} style={{ fontSize: 11 }}>
           Race day
         </Txt>
       </View>
@@ -44,7 +44,7 @@ export function Countdown({ target, onDark }: { target: number; onDark?: boolean
 
   return (
     <View style={[styles.pill, { backgroundColor: bg }]}>
-      <View style={[styles.dot, { backgroundColor: color.lime }]} />
+      <View style={[styles.dot, { backgroundColor: colors.lime }]} />
       <Txt variant="mono" c={fg} style={styles.figure}>
         {pad(days)}d {pad(hours)}h {pad(mins)}m {pad(secs)}s
       </Txt>
@@ -60,9 +60,9 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     alignSelf: 'flex-start',
   },
   dot: { width: 7, height: 7, borderRadius: 999 },

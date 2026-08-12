@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { color, space } from '../theme/tokens';
+import { colors, spacing } from '../theme';
 import { Txt } from './primitives';
 
 /**
@@ -25,7 +25,7 @@ export function SpecMeter({
 
   return (
     <View style={styles.root}>
-      <Txt variant="eyebrow" c={color.inkMuted} style={{ fontSize: 11 }}>
+      <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 11 }}>
         {label}
       </Txt>
       <View style={styles.track}>
@@ -38,7 +38,7 @@ export function SpecMeter({
           <Txt
             key={s}
             variant="tiny"
-            c={i === idx ? color.ink : color.inkFaint}
+            c={i === idx ? colors.ink : colors.inkFaint}
             style={[
               { flex: 1 },
               i === 0
@@ -57,9 +57,9 @@ export function SpecMeter({
 }
 
 const styles = StyleSheet.create({
-  root: { gap: space.sm },
+  root: { gap: spacing.sm },
   track: { flexDirection: 'row', gap: 4, height: 8 },
-  segment: { flex: 1, backgroundColor: color.surfaceSunken },
-  segmentOn: { backgroundColor: color.lime, borderWidth: 1, borderColor: color.ink },
+  segment: { flex: 1, backgroundColor: colors.surfaceSunken },
+  segmentOn: { backgroundColor: colors.lime, borderWidth: 1, borderColor: colors.ink },
   labels: { flexDirection: 'row' },
 });
