@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.hairline,
-    ...shadows.bar,
+    boxShadow: shadows.bar,
   },
 
   toast: {
