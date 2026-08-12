@@ -24,6 +24,8 @@ export default function TabLayout() {
           // A translucent bar lets product photography scroll under it, which is
           // most of why the app reads as native rather than as a page.
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.surface,
+          // Audit exemption: not a shadow — suppresses react-navigation's
+          // default Android tab-bar elevation.
           elevation: 0,
         },
         tabBarBackground:

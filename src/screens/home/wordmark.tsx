@@ -1,5 +1,7 @@
 import Svg, { Path } from 'react-native-svg';
 
+import { colors } from '@/theme';
+
 /**
  * The Brooks wordmark.
  *
@@ -11,7 +13,7 @@ import Svg, { Path } from 'react-native-svg';
  */
 export function BrooksWordmark({
   width = 110,
-  color = '#0E131F',
+  color = colors.ink,
 }: {
   width?: number;
   color?: string;
