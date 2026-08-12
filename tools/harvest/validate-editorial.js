@@ -1,7 +1,7 @@
 /**
  * Fail the harvest when an app-authored Brooks editorial URL does not return
  * image bytes. CMS paths can return a slow HTML Akamai denial with HTTP 200;
- * checking only status would let the bad source reach both apps.
+ * checking only status would let the bad source reach the app.
  *
  * @ref LLP 0002#the-image-cdn — Product photography uses the public image CDN;
  * CMS editorial candidates must prove the same app-client reachability before
@@ -11,10 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const SOURCES = [
-  path.join(ROOT, 'apps', 'expo', 'src', 'data', 'editorial.ts'),
-  path.join(ROOT, 'apps', 'exact', 'src', 'app', 'routes', 'index.contract'),
-];
+const SOURCES = [path.join(ROOT, 'src', 'data', 'editorial.ts')];
 const URL_PATTERN = /https:\/\/www\.brooksrunning\.com\/[^"'`\s)]+/g;
 const MAX_PREFIX_BYTES = 64;
 const REQUEST_TIMEOUT_MS = 15_000;

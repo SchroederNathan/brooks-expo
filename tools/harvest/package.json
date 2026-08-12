@@ -7,7 +7,6 @@
     "harvest": "node harvest.js && node validate-editorial.js",
     "sync": "node sync.js",
     "validate:editorial": "node validate-editorial.js",
-    "benchmark:exact-images": "bun benchmark-exact-images.ts",
     "sniff": "node sniff-network.js",
     "probe:cart": "node probe-cart.js"
   },
