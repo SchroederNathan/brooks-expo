@@ -3,6 +3,7 @@ import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrooksIcon } from '@/components/icons';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
@@ -51,8 +52,9 @@ export function Shop() {
       <View style={styles.head}>
         <Txt variant="h1">Shop</Txt>
         <Press onPress={() => router.push('/search')} scaleTo={0.97} style={styles.searchBar}>
+          <BrooksIcon name="search" size={15} color={colors.inkMuted} />
           <Txt variant="body" c={colors.inkMuted}>
-            ⌕　Search shoes, apparel…
+            Search shoes, apparel…
           </Txt>
         </Press>
       </View>
@@ -119,9 +121,7 @@ export function Shop() {
                     <Txt variant="tiny" c={colors.inkMuted}>
                       {n}
                     </Txt>
-                    <Txt variant="h3" c={colors.inkFaint}>
-                      ›
-                    </Txt>
+                    <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
                   </View>
                 </Press>
               );
@@ -138,7 +138,9 @@ const styles = StyleSheet.create({
   searchBar: {
     height: 48,
     backgroundColor: colors.surfaceAlt,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
   railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },

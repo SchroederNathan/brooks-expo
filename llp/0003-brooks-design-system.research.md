@@ -42,10 +42,21 @@ progress fills, and focus states. Used as a surface it stops reading as Brooks.
 (`line-height: calc(1em + 4px)`). Headlines are **sentence case**; ALL CAPS is
 reserved for eyebrows, labels, and CTAs, always with ~1.2px positive tracking.
 
-[inferred] Filson Pro cannot ship in an app bundle. **Figtree**
-(`@expo-google-fonts/figtree`) is the closest geometric-humanist substitute and,
-critically, has a true 900 Black to carry Brooks's display weight. `Caveat` stands
-in for the site's handwritten Biro Script accent — at most one use per screen.
+[superseded 2026-08-17] Filson Pro was assumed unavailable, and **Figtree**
+(`@expo-google-fonts/figtree`) served as the geometric-humanist substitute.
+Licensed Filson Pro OTFs are now provided and bundled in `assets/fonts/`
+(Regular 400, Medium 500, Bold 700, Heavy 800, Black 900 — weights read from
+each file's OS/2 `usWeightClass`). Filson has no 600; the ramp's 800 slot maps
+to Filson **Heavy**. `Caveat` still stands in for the site's handwritten Biro
+Script accent — at most one use per screen.
+
+[observed 2026-08-17] The **Paper file still renders Figtree.** Paper reads fonts
+from the OS font library, not the repo, and it caches that list at app launch;
+the OTFs were copied into `~/Library/Fonts` (family `Filson Pro`, styles
+Regular / Medium / Bold / Heavy / Black) but the running app cannot see them.
+After a Paper restart, flipping the file's `--font-display` and `--font-body`
+tokens to `Filson Pro` converts every artboard at once — that is the only reason
+the design system routes both families through tokens.
 
 | Role | Size | Weight | Tracking |
 |---|---:|---:|---:|
@@ -70,6 +81,47 @@ element (`.o-hero-home--pre-animation-state`). Sitewide transitions run 0.3–0.
 
 [observed] The brand's most ownable graphic gesture is a hand-drawn **squiggle**
 underline used on hover CTAs and annotations.
+
+### Icons and the logo
+
+[observed — real-browser capture, 2026-08-17] The site ships its entire icon set
+as one **inline SVG sprite of 81 `<symbol>`s** in the page header (plus a second,
+40-symbol `tt-icon-*` sprite that belongs to the TurnTo review widget, not to
+Brooks). There is no icon font and no standalone icon-file URLs; page HTML is
+behind the Akamai bot wall (LLP 0002), so the sprite was captured from a warmed
+Playwright Chrome session — the same technique `tools/harvest` uses.
+
+Ported verbatim into [`src/components/icons.tsx`](../src/components/icons.tsx)
+(single-color glyphs behind `BrooksIcon`, plus two-color `InfoIcon` and
+`CushionMeter`). What the inventory shows:
+
+- [observed] The utility glyphs (`icon-search` 18×18, `icon-cart` 20×18,
+  `icon-account` 16×18) are **fills that encode thin line-work**, drawn in
+  `#090708`/`#0E131F`. They are the header's search / minicart / login icons.
+- [observed] The encoded line weights are **not uniform across the sprite**:
+  the search ring is ~1.9 viewBox units, the cart ~1.3, the account ~1.4, so
+  equal render sizes read as unequal stroke widths. The site masks this by
+  rendering each glyph near its native size. `BrooksIcon` keeps the paths
+  verbatim and offers a `thicken` prop (a same-color stroke over the fill) so
+  call sites can normalize weight; a fill cannot be thinned.
+- [observed] Ratings use a three-state **border-star** (`--full`, `--half`,
+  `--empty`, 15×15), displayed at ~11px in PLP/PDP teasers. `Stars` in the apps
+  now renders these.
+- [observed] Carets are wide, thick chevrons (38×22 and 22×38), distinct from the
+  thin 32×32 `icon-close-thin`. Several close variants coexist (`icon-close`,
+  `-thin`, `-updated`, `-banner`, `-white`).
+- [observed] The squiggle exists as real geometry: `icon-squiggle-1` (133×15,
+  footer newsletter), `cta-hover-squiggle` (112×7, link hover), and a stroked
+  `icon-long-squiggle` themed per accent via a CSS variable.
+- [observed] The PDP **cushion meter** is three sprite symbols
+  (`icon-cushion-level-{standard,more,most}-s`, 140×16) in a blue (`#5E88BA`)
+  that appears nowhere in the color tokens above.
+- [observed] `#icon-logo` (120×20) is the licensed BROOKS wordmark, letters drawn
+  as six paths in the order R, O, K, S, O, B. `BrooksWordmark` now uses it
+  verbatim, replacing the earlier hand-traced approximation.
+- [observed] There is **no home and no storefront glyph** — a website needs
+  neither — so the app's home and shop tab icons remain hand-drawn to match the
+  real set's line weight.
 
 ## Voice
 
@@ -101,6 +153,76 @@ single strongest demo beat available and it costs almost nothing.
 Other home sections [observed]: *Build your training rotation*, *Join Brooks Run
 Club*, *Stories to transform your run*, Women's/Men's New Arrivals.
 
+[observed 2026-08-17 — full-page captures on the Paper file's
+`Website — brooksrunning.com` page] **The live hero has moved on from Project
+222.** It now runs *The Ghost Amp*: eyebrow `JUST DROPPED`, display headline
+*The Ghost Amp*, blurb *"Amplify your run in the all-new Ghost Amp, featuring
+technology that injects energy into every stride."*, and **two underlined text
+CTAs** — `SHOP NOW` and `SHOP ALL ROAD RUNNING` — not a solid button. Project
+222's attempt date (July 18) has passed, so its countdown now expires as
+designed. Swapping the app's hero campaign is a content decision, not a design
+one, and is still open.
+
+## Home section language
+
+[observed 2026-08-17] The homepage is a stack of six sections. Every one of them
+uses the **same card grammar**: a *centred*, sentence-case heading standing alone
+with no eyebrow, over a row of four bare photographs with ALL-CAPS captions.
+There is no bordered card, no subtitle, and no product-on-white tile anywhere
+above the fold. This is the single biggest divergence the app had to close.
+
+| Section | Ground | Cards | Caption |
+|---|---|---|---|
+| *Summer's hottest new gear* | pale **sky gradient** | 4 × square lifestyle photos | centred caps |
+| *Wherever the day takes you* | white | 4 × tall lifestyle photos | centred caps |
+| *Brooks Run Club* | full-bleed photo | — | centred white text, `LEARN MORE` underlined |
+| *Stories to transform your run* | white | 4 × 3:2 photos | blue caps category + muted date, then a headline |
+| Run Happy Promise | `#003789` | — | round `RUN HAPPY PROMISE` seal + two lines, `90-day trial run.` underlined |
+
+[observed] The new-gear band is **not a flat tint** — it is a photographic sky,
+sampling `#A3C9E4` at the top through `#C0DAE8` to near-white `#E5EDF7`. The
+promise band samples `rgb(17,55,134)`, which confirms `--color-blue` `#003789`.
+
+[inferred] Because every section shares one grammar, the app's *own* additions
+(the New Arrivals product rail, which the site does not have) must adopt the
+centred heading too, or they read as a different product.
+
+## PLP chrome
+
+[observed 2026-08-17] Above the grid, in this order: breadcrumb
+(`HOME / WOMEN` — first crumb bold ink, rest muted, caps, positive tracking);
+title; a description paragraph; a **pale blue `#DFEDF0` Shoe Finder card**
+centred on *"Find the perfect shoe for you. / Try Shoe Finder"* with
+`Shoe Finder` underlined; a **four-card category rail**
+(`WOMEN'S SHOES`, `WOMEN'S APPAREL`, `NEW ARRIVALS`, `BEST SELLERS` — captions
+**left**-aligned here, unlike the homepage's centred ones); then
+`145 products` / `SORT ⌄`.
+
+[observed] The tile's resting state carries a plain top-left text badge
+(`New Style`, `Best Seller`, `Limited Edition`) on the `#F8F8F8` pad, title,
+price, and a category meta line (`Women's – Road Running, Walking`). Hover adds
+`Widths – Medium, Wide, Extra Wide` and the star rating.
+
+## Mega menu → the Shop tab
+
+[observed 2026-08-17] The `WOMEN` mega menu is four text columns plus a promo
+card. These are the exact labels the Shop tab should carry:
+
+- **Shoes:** New Arrivals, Road, Walking, Treadmill & Gym, Support, Wide Shoes,
+  Trail, Solutions, Track & Spikes, Lifestyle, Sale, Shop All
+- **Apparel:** New Arrivals, Sports Bras, Shorts, Tops, Pants & Tights,
+  Outerwear, Accessories, Socks, Sale, Shop All
+- **Featured:** Best Sellers, Limited Edition, Trail Gear Shop, Hot Weather Gear,
+  Marathon Gear, Brooks x runDisney®, Shoe Finder, Bra Finder, Used Gear,
+  Size Guide
+- **Best Sellers:** Ghost, Glycerin, Adrenaline GTS, Hyperion, Cascadia
+- **Promo card:** lifestyle photo, *Find your perfect fit*,
+  `TAKE OUR SHOE FINDER QUIZ` underlined
+
+[inferred] A hover menu cannot exist on touch, so the Shop tab *is* this menu.
+Rendered as `h3`-scale rows the four groups run past 1800px, so the ported rows
+are 46px at 16px medium — the menu's own density, not a settings-list density.
+
 ## Product taxonomy
 
 [observed] The attributes that must appear as filters and PDP specs:
@@ -126,6 +248,18 @@ Results.
 the most charming, most Brooks moment in the whole product and should be played as
 a full-screen beat. Results should name *why* ("Balanced cushion — you wanted soft
 and smooth"), which is what turns a quiz into advice.
+
+[confirmed — live walkthrough of the site quiz, 2026-08-16] The step order above
+was read from the embedded config in July; walking the live quiz end to end
+reproduces it, including the branch, the multi-select injuries step, the
+`Take 'em off` checkpoint, the two extra barefoot exercises (knee bend and
+toe-touch), and the skippable email gate before results. Confirmed verbatim
+strings: the intro headline "Your perfect shoe is out there" with its blurb and
+`Let's go` CTA; "Take 'em off" / "Your shoes, that is."; and the cushion option
+"soft and smooth". Two site behaviors the app deliberately drops are now
+first-hand rather than assumed: the email gate, and the per-question
+"What does this mean?" explainer modal — the app spends that explanation on the
+results instead, where it changes a decision.
 
 ## Screen patterns
 

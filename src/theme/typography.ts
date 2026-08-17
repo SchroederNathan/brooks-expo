@@ -1,10 +1,9 @@
 /**
  * Brooks type ramp.
  *
- * @ref LLP 0003#brand — Brooks sets everything in Filson Pro, which is licensed
- * and cannot ship in an app bundle. Figtree is the closest geometric-humanist
- * match on Google Fonts and, crucially, has a true 900 Black to carry Brooks's
- * display weight.
+ * @ref LLP 0003#brand — Brooks sets everything in Filson Pro (Monotype). The
+ * licensed OTFs are bundled in assets/fonts; Filson has no 600, so the ramp's
+ * 800 slot is Filson "Heavy" (usWeightClass 800), not "ExtraBold".
  *
  * Weight is set via fontFamily names (static font files loaded with expo-font),
  * never fontWeight. Color stays out of the ramp: `Txt` applies it via its `c`
@@ -12,12 +11,11 @@
  */
 
 export const font = {
-  black: 'Figtree_900Black',
-  extraBold: 'Figtree_800ExtraBold',
-  bold: 'Figtree_700Bold',
-  semibold: 'Figtree_600SemiBold',
-  medium: 'Figtree_500Medium',
-  regular: 'Figtree_400Regular',
+  black: 'FilsonPro-Black',
+  extraBold: 'FilsonPro-Heavy',
+  bold: 'FilsonPro-Bold',
+  medium: 'FilsonPro-Medium',
+  regular: 'FilsonPro-Regular',
   /** The site's handwritten accent face. At most one use per screen. */
   script: 'Caveat_600SemiBold',
 } as const;

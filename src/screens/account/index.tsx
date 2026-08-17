@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -141,11 +142,7 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
           </Txt>
         ) : null}
       </View>
-      {onPress ? (
-        <Txt variant="h3" c={colors.inkFaint}>
-          ›
-        </Txt>
-      ) : null}
+      {onPress ? <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} /> : null}
     </Press>
   );
 }

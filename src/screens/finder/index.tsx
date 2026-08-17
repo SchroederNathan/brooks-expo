@@ -6,6 +6,7 @@ import Animated, { FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProductTile } from '@/components/product-tile';
+import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Squiggle } from '@/components/squiggle';
@@ -440,9 +441,7 @@ export function Finder() {
           hitSlop={10}
           onPress={() => (stepIndex === 0 ? reset() : setStepIndex(stepIndex - 1))}
         >
-          <Txt variant="h3" c={colors.inkMuted}>
-            ‹
-          </Txt>
+          <BrooksIcon name="caretLeft" size={16} color={colors.inkMuted} />
         </Press>
         <Txt variant="tiny" c={colors.inkMuted}>
           {stepIndex + 1} of {flow.length}

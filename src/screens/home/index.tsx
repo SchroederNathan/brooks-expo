@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Countdown } from '@/screens/home/countdown';
 import { ProductTile } from '@/components/product-tile';
 import { Badge } from '@/components/badge';
+import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
@@ -26,7 +27,7 @@ import { BrooksWordmark } from '@/screens/home/wordmark';
 import { catalog } from '@/data/catalog';
 import { HERO, STORIES, USE_CASES, VOICE } from '@/data/editorial';
 import { productsIn } from '@/data/query';
-import { colors, motion, spacing, type } from '@/theme';
+import { colors, motion, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const HERO_H = Math.round(W * 1.25);
@@ -343,18 +344,23 @@ function HeaderIcon({
   onPress,
   scrollY,
 }: {
-  glyph: string;
+  glyph: 'search';
   onPress: () => void;
   scrollY: SharedValue<number>;
 }) {
-  const style = useAnimatedStyle(() => ({
-    color: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [1, 0], 'clamp') > 0.5
-      ? colors.surface
-      : colors.ink,
+  // SVG fills can't take an animated color directly, so the ink icon sits
+  // under a surface-colored twin whose opacity tracks the hero scroll.
+  const overHero = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [1, 0], 'clamp'),
   }));
   return (
     <Press onPress={onPress} scaleTo={0.9} hitSlop={10}>
-      <Animated.Text style={[type.h3, style]}>{glyph === 'search' ? '⌕' : '·'}</Animated.Text>
+      <View>
+        <BrooksIcon name={glyph} size={18} color={colors.ink} />
+        <Animated.View style={[StyleSheet.absoluteFill, overHero]}>
+          <BrooksIcon name={glyph} size={18} color={colors.surface} />
+        </Animated.View>
+      </View>
     </Press>
   );
 }

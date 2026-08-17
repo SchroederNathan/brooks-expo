@@ -11,6 +11,7 @@ import {
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrooksIcon } from '@/components/icons';
 import { Chip } from '@/components/chip';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -102,9 +103,7 @@ export function Search() {
       {/* ------------------------------------------------------- INPUT BAR -- */}
       <View style={styles.barRow}>
         <View style={styles.inputWrap}>
-          <Txt variant="h3" c={colors.inkMuted}>
-            ⌕
-          </Txt>
+          <BrooksIcon name="search" size={16} color={colors.inkMuted} />
           <TextInput
             ref={inputRef}
             value={query}
@@ -119,9 +118,7 @@ export function Search() {
           {loading ? <ActivityIndicator size="small" color={colors.inkMuted} /> : null}
           {!loading && query.length > 0 ? (
             <Press haptic={false} hitSlop={8} onPress={() => setQuery('')}>
-              <Txt variant="caption" c={colors.inkMuted}>
-                ✕
-              </Txt>
+              <BrooksIcon name="close" size={14} color={colors.inkMuted} />
             </Press>
           ) : null}
         </View>
@@ -199,9 +196,7 @@ export function Search() {
                         </Txt>
                       )}
                     </View>
-                    <Txt variant="h3" c={colors.inkFaint}>
-                      ›
-                    </Txt>
+                    <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
                   </Press>
                   <Divider style={{ marginLeft: spacing.gutter + 64 + spacing.lg }} />
                 </Animated.View>

@@ -1,17 +1,33 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { BrooksIcon } from '@/components/icons';
 import { Txt } from '@/components/themed-text';
 import { colors, radius } from '@/theme';
 
 /**
- * Tab icons are drawn rather than pulled from an icon font: five glyphs is a
- * small price for having the bag icon carry a live count badge and for the
- * whole set sharing one stroke weight.
+ * The finder, bag, and account tabs use the site's real header glyphs
+ * (#icon-search, #icon-cart, #icon-account — see icons.tsx). Home and shop
+ * have no equivalent on brooksrunning.com (a website needs neither), so those
+ * two stay hand-drawn to match the real set's line weight.
+ *
+ * The three real glyphs encode different native line weights (search ≈2.2px at
+ * this size, cart ≈1.4, account ≈1.6), so cart and account are thickened up to
+ * search's weight and the drawn pair strokes at the same ~2.2. Active state is
+ * color-only, matching the real icons, which cannot change weight.
  */
 function Icon({ name, active }: { name: string; active: boolean }) {
   const c = active ? colors.ink : colors.inkFaint;
-  const w = active ? 2.2 : 1.8;
+  const w = 2.2;
+  if (name === 'finder' || name === 'bag' || name === 'account') {
+    const real = { finder: 'search', bag: 'cart', account: 'account' } as const;
+    const thicken = { finder: 0, bag: 0.85, account: 0.6 } as const;
+    return (
+      <View style={styles.slot}>
+        <BrooksIcon name={real[name]} size={21} color={c} thicken={thicken[name]} />
+      </View>
+    );
+  }
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       {name === 'home' && (
@@ -32,29 +48,6 @@ function Icon({ name, active }: { name: string; active: boolean }) {
             strokeLinejoin="round"
           />
           <Path d="M8.5 9V6a3.5 3.5 0 0 1 7 0v3" stroke={c} strokeWidth={w} strokeLinecap="round" />
-        </>
-      )}
-      {name === 'finder' && (
-        <>
-          <Circle cx={11} cy={11} r={7} stroke={c} strokeWidth={w} />
-          <Path d="m16.5 16.5 4 4" stroke={c} strokeWidth={w} strokeLinecap="round" />
-        </>
-      )}
-      {name === 'bag' && (
-        <>
-          <Path d="M5 8h14l-1 12H6L5 8Z" stroke={c} strokeWidth={w} strokeLinejoin="round" />
-          <Path d="M9 10V6.5a3 3 0 0 1 6 0V10" stroke={c} strokeWidth={w} strokeLinecap="round" />
-        </>
-      )}
-      {name === 'account' && (
-        <>
-          <Circle cx={12} cy={8.5} r={3.8} stroke={c} strokeWidth={w} />
-          <Path
-            d="M4.5 20.5c1.2-3.8 4-5.8 7.5-5.8s6.3 2 7.5 5.8"
-            stroke={c}
-            strokeWidth={w}
-            strokeLinecap="round"
-          />
         </>
       )}
     </Svg>
@@ -78,6 +71,7 @@ export function TabIcon({ name, focused, badge }: { name: string; focused: boole
 }
 
 const styles = StyleSheet.create({
+  slot: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   badge: {
     position: 'absolute',
     top: -5,

@@ -12,6 +12,7 @@ import {
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
@@ -62,9 +63,7 @@ export function Login() {
       >
         <View style={styles.head}>
           <Press haptic={false} hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
-            <Txt variant="h3" c={colors.inkMuted}>
-              ✕
-            </Txt>
+            <BrooksIcon name="close" size={14} color={colors.inkMuted} />
           </Press>
         </View>
 
@@ -84,9 +83,7 @@ export function Login() {
                 style={styles.perk}
               >
                 <View style={styles.perkTick}>
-                  <Txt variant="tiny" c={colors.blue}>
-                    ✓
-                  </Txt>
+                  <BrooksIcon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
                 </View>
                 <Txt variant="body" c="rgba(255,255,255,0.9)" style={{ flex: 1 }}>
                   {perk}

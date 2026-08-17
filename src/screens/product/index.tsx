@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpecMeter } from '@/screens/product/spec-meter';
 import { Badge } from '@/components/badge';
+import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { Divider } from '@/components/divider';
@@ -369,7 +370,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
       {/* ------------------------------------------------------ TOP BUTTONS -- */}
       <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
         <Press onPress={() => router.back()} scaleTo={0.9} style={styles.circleBtn}>
-          <Txt variant="h3">‹</Txt>
+          <BrooksIcon name="caretLeft" size={16} />
         </Press>
         <Press
           onPress={() => router.push('/cart')}

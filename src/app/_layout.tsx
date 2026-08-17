@@ -1,13 +1,5 @@
 import { Caveat_600SemiBold } from '@expo-google-fonts/caveat';
-import {
-  Figtree_400Regular,
-  Figtree_500Medium,
-  Figtree_600SemiBold,
-  Figtree_700Bold,
-  Figtree_800ExtraBold,
-  Figtree_900Black,
-  useFonts,
-} from '@expo-google-fonts/figtree';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -24,19 +16,18 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Figtree_400Regular,
-    Figtree_500Medium,
-    Figtree_600SemiBold,
-    Figtree_700Bold,
-    Figtree_800ExtraBold,
-    Figtree_900Black,
+    'FilsonPro-Regular': require('../../assets/fonts/FilsonProRegular.otf'),
+    'FilsonPro-Medium': require('../../assets/fonts/FilsonProMedium.otf'),
+    'FilsonPro-Bold': require('../../assets/fonts/FilsonProBold.otf'),
+    'FilsonPro-Heavy': require('../../assets/fonts/FilsonProHeavy.otf'),
+    'FilsonPro-Black': require('../../assets/fonts/FilsonProBlack.otf'),
     Caveat_600SemiBold,
   });
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
 
-  // Hold the splash until Figtree is ready: letting the system font paint first
+  // Hold the splash until Filson Pro is ready: letting the system font paint first
   // causes a visible reflow, which is exactly the kind of tell that makes an app
   // feel like a web page in a shell.
   if (!fontsLoaded) return null;
