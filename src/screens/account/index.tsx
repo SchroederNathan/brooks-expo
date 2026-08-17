@@ -32,7 +32,7 @@ export function Account() {
       style={{ backgroundColor: colors.surface }}
       contentContainerStyle={{
         paddingTop: insets.top + spacing.xl,
-        paddingBottom: insets.bottom + 110,
+        paddingBottom: spacing.xl,
       }}
       showsVerticalScrollIndicator={false}
     >

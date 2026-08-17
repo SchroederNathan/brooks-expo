@@ -1,15 +1,16 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
+import type { SearchBarCommands } from 'react-native-screens';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrooksIcon } from '@/components/icons';
 import { Chip } from '@/components/chip';
@@ -31,17 +32,20 @@ import { colors, font, spacing } from '@/theme';
  * live from the device: type-ahead against the same Constructor.io index the
  * website's search box uses. Constructor carries no prices, so every hit is
  * joined back to the catalog snapshot by style id before it renders a price.
+ *
+ * The input is the system search bar (`Stack.SearchBar`), which pairs with the
+ * tab bar's `role="search"` trigger. Web has no native header search bar, so it
+ * keeps the old in-body input.
  */
 
 const TRENDING = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Trail', 'Sports bra'];
 
 export function Search() {
-  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [live, setLive] = useState<Suggestions | null>(null);
   const [loading, setLoading] = useState(false);
   const [offline, setOffline] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const searchBarRef = useRef<SearchBarCommands>(null);
 
   /** Debounced live autocomplete; aborts the in-flight request on every keystroke. */
   useEffect(() => {
@@ -84,6 +88,12 @@ export function Search() {
       .slice(0, 8);
   }, [offline, query]);
 
+  /** Trending chips write into the native bar too, so bar and results agree. */
+  const applyTerm = (t: string) => {
+    setQuery(t);
+    searchBarRef.current?.setText(t);
+  };
+
   const openHit = (hit: SearchHit) => {
     Keyboard.dismiss();
     const local = byId(catalog, hit.id);
@@ -99,41 +109,40 @@ export function Search() {
   };
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top + spacing.md }]}>
-      {/* ------------------------------------------------------- INPUT BAR -- */}
-      <View style={styles.barRow}>
-        <View style={styles.inputWrap}>
-          <BrooksIcon name="search" size={16} color={colors.inkMuted} />
-          <TextInput
-            ref={inputRef}
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Shoes, apparel, franchises…"
-            placeholderTextColor={colors.inkFaint}
-            autoFocus
-            autoCorrect={false}
-            returnKeyType="search"
-            style={styles.input}
-          />
-          {loading ? <ActivityIndicator size="small" color={colors.inkMuted} /> : null}
-          {!loading && query.length > 0 ? (
-            <Press haptic={false} hitSlop={8} onPress={() => setQuery('')}>
-              <BrooksIcon name="close" size={14} color={colors.inkMuted} />
-            </Press>
-          ) : null}
-        </View>
-        <Press haptic={false} hitSlop={8} onPress={() => router.back()} style={{ padding: spacing.sm }}>
-          <Txt variant="caption" c={colors.ink}>
-            Cancel
-          </Txt>
-        </Press>
-      </View>
+    <View style={styles.root}>
+      {Platform.OS !== 'web' && (
+        <Stack.SearchBar
+          ref={searchBarRef}
+          placeholder="Shoes, apparel, franchises…"
+          autoCapitalize="none"
+          tintColor={colors.ink}
+          onChangeText={(e) => setQuery(e.nativeEvent.text)}
+          onCancelButtonPress={() => setQuery('')}
+        />
+      )}
 
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
         showsVerticalScrollIndicator={false}
       >
+        {Platform.OS === 'web' && (
+          <View style={styles.inputWrap}>
+            <BrooksIcon name="search" size={16} color={colors.inkMuted} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Shoes, apparel, franchises…"
+              placeholderTextColor={colors.inkFaint}
+              autoFocus
+              autoCorrect={false}
+              returnKeyType="search"
+              style={styles.input}
+            />
+          </View>
+        )}
+
         {/* --------------------------------------------------------- EMPTY -- */}
         {query.trim().length < 2 && (
           <Animated.View entering={FadeIn.duration(200)} style={styles.block}>
@@ -142,7 +151,7 @@ export function Search() {
             </Txt>
             <View style={styles.chips}>
               {TRENDING.map((t) => (
-                <Chip key={t} label={t} size="sm" onPress={() => setQuery(t)} />
+                <Chip key={t} label={t} size="sm" onPress={() => applyTerm(t)} />
               ))}
             </View>
             <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.xl }}>
@@ -151,12 +160,18 @@ export function Search() {
           </Animated.View>
         )}
 
+        {loading && !live && (
+          <View style={[styles.block, { alignItems: 'center' }]}>
+            <ActivityIndicator size="small" color={colors.inkMuted} />
+          </View>
+        )}
+
         {/* --------------------------------------------------- SUGGESTIONS -- */}
         {live && live.terms.length > 0 && (
           <View style={styles.block}>
             <View style={styles.chips}>
               {live.terms.map((t) => (
-                <Chip key={t} label={t} size="sm" onPress={() => setQuery(t)} />
+                <Chip key={t} label={t} size="sm" onPress={() => applyTerm(t)} />
               ))}
             </View>
           </View>
@@ -250,20 +265,14 @@ export function Search() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  barRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.gutter,
-    marginBottom: spacing.md,
-  },
   inputWrap: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     height: 48,
     paddingHorizontal: spacing.md,
+    marginHorizontal: spacing.gutter,
+    marginTop: spacing.md,
     backgroundColor: colors.surfaceAlt,
   },
   input: {

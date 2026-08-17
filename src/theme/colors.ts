@@ -31,8 +31,10 @@ export const colors = {
   navy: '#14295F',
 
   /**
-   * "Brooks lime." Used on the cart badge (with blue text), progress fills, and
-   * focus outlines. A spark, never a surface.
+   * "Brooks lime." Used on eyebrows-on-navy, progress fills, and focus
+   * outlines. A spark, never a surface. (The cart badge wore it until the
+   * native tab bar's system badge fixed the text color to white — see
+   * LLP 0003#icons-and-the-logo.)
    */
   lime: '#ECF000',
 

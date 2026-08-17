@@ -299,7 +299,17 @@ export function Finder() {
   /* ---------------------------------------------------------------- intro -- */
   if (phase === 'intro') {
     return (
-      <View style={[styles.intro, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + 110 }]}>
+      <View style={[styles.intro, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.lg }]}>
+        {/* Pushed screen since the search tab took Finder's tab-bar slot, so it
+            needs its own way back. */}
+        <Press
+          haptic={false}
+          hitSlop={10}
+          onPress={() => router.back()}
+          style={{ alignSelf: 'flex-start', marginBottom: spacing.xl }}
+        >
+          <BrooksIcon name="caretLeft" size={16} color={colors.surface} />
+        </Press>
         <Animated.View entering={FadeInDown.duration(400)}>
           <Txt variant="eyebrow" c={colors.lime}>
             Shoe Finder
@@ -328,7 +338,7 @@ export function Finder() {
     return (
       <ScrollView
         style={{ backgroundColor: colors.surface }}
-        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + 110 }}
+        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ paddingHorizontal: spacing.gutter }}>
@@ -400,7 +410,7 @@ export function Finder() {
   /* ------------------------------------------------------------ checkpoint -- */
   if (stepId === 'takeEmOff') {
     return (
-      <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + 110 }]}>
+      <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + spacing.lg }]}>
         <Animated.View entering={FadeInDown.duration(400)} exiting={FadeOut}>
           <Txt variant="eyebrow" c={colors.blue}>
             Quick checkpoint
@@ -434,7 +444,7 @@ export function Finder() {
   const selected = (answers as Record<string, unknown>)[step.id];
 
   return (
-    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + 110 }]}>
+    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.lg }]}>
       <View style={styles.quizHead}>
         <Press
           haptic={false}

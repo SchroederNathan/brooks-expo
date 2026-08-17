@@ -1,59 +1,89 @@
 /**
  * Homepage editorial content.
  *
- * @ref LLP 0003#editorial — Copy and imagery are the real thing, lifted from the
- * live Brooks homepage on 2026-07-13, not invented. The Project 222 hero is the
- * feature Brooks is actually running right now, and Kerr's record attempt is on
- * 2026-07-18 — which is why the home screen carries a live countdown rather than
- * a static banner. It expires on its own, correctly, the way the real campaign does.
+ * @ref LLP 0003#the-home-feature — Copy, order, and campaign imagery mirror the
+ * current Brooks home experience represented by the Paper source of truth. The
+ * Paper lifestyle crops and the site's mobile Ghost Amp video are bundled so
+ * the executive demo does not depend on Akamai-protected page HTML at runtime.
  */
 
 export const HERO = {
-  eyebrow: 'Josh Kerr attempts mile world record',
-  title: 'Project 222',
-  body: 'On July 18th, 2026, Brooks Beast Josh Kerr will attempt to break the mile world record on British soil in 222 seconds. This is Project 222.',
-  cta: "Shop Kerr's training gear",
-  ctaCategory: 'featured-best-sellers',
-  /** Portrait still pulled from the hero's ambient video loop. */
-  image:
-    'https://www.brooksrunning.com/on/demandware.static/-/Sites/default/dw06ee0bb5/cms-content/Project/Brooks-Running/Homepage/2026/July/Josh-Kerr-Hero/S26_Video_Project222_JoshKerr_Hero_15s_Ambient_750x1200_v2mp400_00_02_06Still001.jpg',
-  /** The moment the attempt goes off, London. Drives the countdown. */
-  attemptAt: Date.UTC(2026, 6, 18, 19, 0, 0),
+  eyebrow: 'Just dropped',
+  title: 'The Ghost Amp',
+  body:
+    'Amplify your run in the all-new Ghost Amp, featuring technology that injects energy into every stride.',
+  cta: 'Shop now',
+  ctaCategory: 'mens-shoes-road-running-shoes',
+  ctaTitle: 'Road running shoes',
+  /** Mobile source used by brooksrunning.com for Brightcove video 6400666963112. */
+  video: require('../../assets/home/ghost-amp-mobile.mp4'),
 } as const;
+
+export const HOME_GEAR = [
+  {
+    id: 'womens-shoes',
+    label: 'New women’s shoes',
+    image: require('../../assets/home/new-womens-shoes.webp'),
+  },
+  {
+    id: 'mens-shoes',
+    label: 'New men’s shoes',
+    image: require('../../assets/home/new-mens-shoes.webp'),
+  },
+  {
+    id: 'womens-apparel',
+    label: 'New women’s apparel',
+    image: require('../../assets/home/new-womens-apparel.webp'),
+  },
+  {
+    id: 'mens-apparel',
+    label: 'New men’s apparel',
+    image: require('../../assets/home/new-mens-apparel.webp'),
+  },
+] as const;
+
+/** The four ways Brooks segments the activity rail on the current homepage. */
+export const USE_CASES = [
+  {
+    id: 'featured-best-sellers',
+    label: 'Run',
+    image: require('../../assets/home/run.webp'),
+  },
+  {
+    id: 'featured-trail-running-collection',
+    label: 'Trail',
+    image: require('../../assets/home/trail.webp'),
+  },
+  {
+    id: 'featured-shoes-in-widths',
+    label: 'Walk',
+    image: require('../../assets/home/walk.webp'),
+  },
+  {
+    id: 'featured-new-arrivals',
+    label: 'Lifestyle',
+    image: require('../../assets/home/lifestyle.webp'),
+  },
+] as const;
 
 export const STORIES = [
   {
-    id: 'ghost-evolution',
-    eyebrow: 'Gear',
-    title: 'The evolution of the Ghost',
-    readTime: '4 min. read',
-    // The CMS article hero returns an Akamai HTML denial to app clients. Use
-    // the open Brooks image CDN's Ghost catalog photography instead.
-    image:
-      'https://www.brooksrunning.com/dw/image/v2/BGPF_PRD/on/demandware.static/-/Sites-brooks-master-catalog/default/dwe6b5d0cf/original/110442/110442-112-l-ghost-17-mens-neutral-cushion-running-shoe.jpg',
-    /** Editorial that lands on merchandise — the whole point of the home feed. */
-    shopFranchise: 'Ghost',
-    shopLabel: 'Shop the Ghost',
+    id: 'dna-tuned',
+    eyebrow: 'Gear and technology',
+    date: 'April 14, 2026',
+    title: 'What DNA Tuned cushioning actually does to your stride',
+    image: require('../../assets/home/story-dna-tuned.webp'),
+    shopCategory: 'featured-new-arrivals',
+    shopLabel: 'New arrivals',
   },
   {
-    id: 'best-ghost',
-    eyebrow: 'Shoe advice',
-    title: 'Which Ghost is right for you?',
-    readTime: '6 min. read',
-    image:
-      'https://www.brooksrunning.com/dw/image/v2/BGPF_PRD/on/demandware.static/-/Sites-brooks-master-catalog/default/dw6186ec04/original/120431/120431-458-l-ghost-17-womens-neutral-cushion-running-shoe.jpg',
-    shopFranchise: 'Ghost',
-    shopLabel: 'Compare the Ghosts',
-  },
-  {
-    id: 'trail-tips',
-    eyebrow: 'Trail',
-    title: 'Trail running tips for beginners',
-    readTime: '5 min. read',
-    image:
-      'https://www.brooksrunning.com/dw/image/v2/BGPF_PRD/on/demandware.static/-/Sites-brooks-master-catalog/default/dwaacb7c84/original/120446/120446-812-l-cascadia-19-womens-mountain-trail-trail-running-shoe.jpg',
+    id: 'first-trail-run',
+    eyebrow: 'Running tips',
+    date: 'April 21, 2026',
+    title: 'Your first trail run: what changes and what doesn’t',
+    image: require('../../assets/home/story-trail.webp'),
     shopCategory: 'featured-trail-running-collection',
-    shopLabel: 'Shop trail',
+    shopLabel: 'Trail running',
   },
 ] as const;
 
@@ -69,11 +99,3 @@ export const VOICE = {
   finderCta: "Let's go",
   tagline: "Let's Run There",
 } as const;
-
-/** The four ways Brooks segments its catalog on the home screen. */
-export const USE_CASES = [
-  { id: 'featured-best-sellers', label: 'Run', caption: 'Road & daily miles' },
-  { id: 'featured-trail-running-collection', label: 'Trail', caption: 'Off-road grip' },
-  { id: 'featured-shoes-in-widths', label: 'Walk', caption: 'All-day comfort' },
-  { id: 'featured-new-arrivals', label: 'New', caption: 'Just landed' },
-] as const;

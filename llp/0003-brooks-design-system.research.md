@@ -120,8 +120,14 @@ Ported verbatim into [`src/components/icons.tsx`](../src/components/icons.tsx)
   as six paths in the order R, O, K, S, O, B. `BrooksWordmark` now uses it
   verbatim, replacing the earlier hand-traced approximation.
 - [observed] There is **no home and no storefront glyph** — a website needs
-  neither — so the app's home and shop tab icons remain hand-drawn to match the
-  real set's line weight.
+  neither — so the app's home and shop tab icons were hand-drawn to match the
+  real set's line weight. [superseded 2026-08-17] The tab bar is now the
+  system-rendered native tab bar (`NativeTabs`), which accepts only SF Symbols /
+  Material Symbols or raster images — so no tab renders a sprite glyph or a
+  hand-drawn stand-in anymore. `BrooksIcon` remains the icon set for all
+  in-body chrome (headers, rows, carets). The lime-with-blue-text cart badge
+  also lived on that JS tab bar; the system badge's text is fixed white on
+  iOS, so the badge now wears `blue` instead.
 
 ## Voice
 
@@ -133,7 +139,13 @@ rather than inventing copy:
 - Shoe Finder: *"Your perfect shoe is out there"* / *"Let's go"* / *"Take 'em off. Your shoes, that is."*
 - Brand platform: **"Let's Run There"** (heritage mantra: **"Run Happy"**)
 
-## The current home feature: Project 222
+## The home feature
+
+### Superseded: Project 222
+
+[superseded 2026-08-17] Project 222 ran until the attempt date. The app's hero
+now runs **The Ghost Amp** (below). Kept for the record because the countdown
+pattern is reusable for the next date-pegged campaign.
 
 [observed — brooksrunning.com, 2026-07-13]
 
@@ -153,15 +165,52 @@ single strongest demo beat available and it costs almost nothing.
 Other home sections [observed]: *Build your training rotation*, *Join Brooks Run
 Club*, *Stories to transform your run*, Women's/Men's New Arrivals.
 
-[observed 2026-08-17 — full-page captures on the Paper file's
-`Website — brooksrunning.com` page] **The live hero has moved on from Project
-222.** It now runs *The Ghost Amp*: eyebrow `JUST DROPPED`, display headline
-*The Ghost Amp*, blurb *"Amplify your run in the all-new Ghost Amp, featuring
-technology that injects energy into every stride."*, and **two underlined text
-CTAs** — `SHOP NOW` and `SHOP ALL ROAD RUNNING` — not a solid button. Project
-222's attempt date (July 18) has passed, so its countdown now expires as
-designed. Swapping the app's hero campaign is a content decision, not a design
-one, and is still open.
+### Current: The Ghost Amp
+
+[observed 2026-08-17 — two independent captures: the full-page grab on the Paper
+file's `Website — brooksrunning.com` page, and a fresh human screenshot]
+
+- Eyebrow: `JUST DROPPED`
+- Title: **The Ghost Amp**
+- Body: *"Amplify your run in the all-new Ghost Amp, featuring technology that
+  injects energy into every stride."*
+- CTA: `SHOP NOW`, as an **underlined text link — not a solid button**
+- Hero asset: an ambient video loop, shot low and wide in a city
+
+[observed] **The hero is top-anchored.** Copy sits in roughly the top 15–40% of
+the band, left-aligned, with the lower half left to the footage. Every earlier
+app hero was bottom-anchored, which is the more common native habit and the wrong
+one here.
+
+[observed] **The CTA count is not stable between captures.** The earlier grab
+shows two links, `SHOP NOW` and `SHOP ALL ROAD RUNNING`; the later screenshot
+shows only `SHOP NOW`. Treat one primary link as the design and a second as
+optional — do not treat either count as fixed.
+
+[inferred] There is **no badge and no chip** on this hero, and there never was
+one on Project 222's either — the app invented that. One eyebrow is the whole
+label layer. Four elements is the budget: eyebrow, headline, blurb, action.
+
+### Expo implementation: Paper home port
+
+[observed 2026-08-17] The Expo home screen now follows the Paper file's mobile
+`Home` artboard as its implementation source: hero proportions and typography,
+the two lifestyle rails, the centred New Arrivals rail, Run Club, stories, and
+the Run Happy Promise band. The existing system-rendered `NativeTabs` remain the
+app shell, so Paper's drawn tab-bar mockup is intentionally not ported.
+
+[observed] The hero uses the Brooks site's portrait Brightcove source, video id
+`6400666963112`, as a muted autoplaying loop. The MP4 is bundled at
+[`assets/home/ghost-amp-mobile.mp4`](../assets/home/ghost-amp-mobile.mp4) rather
+than relying at runtime on the site's signed `bcov_auth` URL, whose token is not
+a stable application asset contract.
+
+[observed] Paper's homepage imagery is embedded in the design as image fills,
+not as separately named source files. The app therefore exports each relevant
+fill or crop into [`assets/home/`](../assets/home/) and owns those deterministic
+demo assets locally. Product facts continue to come from `packages/catalog`, in
+line with LLP 0002; the home port does not introduce direct SFCC requests or a
+second catalog source of truth.
 
 ## Home section language
 
@@ -283,6 +332,15 @@ results instead, where it changes a decision.
   progress bar, and Brooks's own empty-state copy.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
   gate. Guest path always visible.
+- **Tab bar & search** (Nike, 2026-08-17): the system native tab bar (liquid
+  glass on iOS 26) with a `role="search"` tab that iOS detaches into the
+  standalone trailing button — Home · Shop · Bag · Account + search, Nike's
+  exact layout. Tapping it morphs the bar into the system search field, which
+  drives the live Constructor.io type-ahead (LLP 0002) in place of the old
+  modal search screen. [observed] Four regular tabs is the ceiling: a fifth
+  plus the search trigger overflows UITabBarController into a "More" tab that
+  swallows the search role. Shoe Finder paid for the search slot — it is a
+  pushed full-screen route now, entered from a Shop card and the Account row.
 
 ## Wow list
 

@@ -1,444 +1,486 @@
-import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
-import { Dimensions, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, {
-  FadeInDown,
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-  type SharedValue,
-} from 'react-native-reanimated';
+import { StatusBar } from 'expo-status-bar';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  FlatList,
+  type ListRenderItemInfo,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Countdown } from '@/screens/home/countdown';
 import { ProductTile } from '@/components/product-tile';
-import { Badge } from '@/components/badge';
-import { BrooksIcon } from '@/components/icons';
-import { Button } from '@/components/button';
-import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
-import { SectionHeader } from '@/components/section-header';
-import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
-import { BrooksWordmark } from '@/screens/home/wordmark';
 import { catalog } from '@/data/catalog';
-import { HERO, STORIES, USE_CASES, VOICE } from '@/data/editorial';
+import { HERO, HOME_GEAR, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
-import { colors, motion, spacing } from '@/theme';
+import type { Product } from '@/data/types';
+import { BrooksWordmark } from '@/screens/home/wordmark';
+import { colors, font, spacing } from '@/theme';
 
-const { width: W } = Dimensions.get('window');
-const HERO_H = Math.round(W * 1.25);
-const TILE_W = Math.round(W * 0.62);
+// @ref LLP 0003#expo-implementation-paper-home-port — The Paper Home artboard
+// supplies this screen's geometry; the app's system NativeTabs remain the shell.
+const PAPER_WIDTH = 393;
+const PAPER_HERO_HEIGHT = 491;
+const GEAR_CARD_WIDTH = 172;
+const USE_CASE_WIDTH = 152;
+const PRODUCT_WIDTH = 244;
+const STORY_WIDTH = 240;
+const keyById = (item: { id: string }) => item.id;
+
+type GearItem = (typeof HOME_GEAR)[number];
+type UseCaseItem = (typeof USE_CASES)[number];
+type StoryItem = (typeof STORIES)[number];
+
+function renderGearItem({ item }: ListRenderItemInfo<GearItem>) {
+  return <GearCard item={item} />;
+}
+
+function renderUseCaseItem({ item }: ListRenderItemInfo<UseCaseItem>) {
+  return <UseCaseCard item={item} />;
+}
+
+function renderProductItem({ item, index }: ListRenderItemInfo<Product>) {
+  // Reanimated 4 can leave a zero-delay entering animation transparent under
+  // NativeTabs; start at the first real stagger so the leading tile always paints.
+  return <ProductTile product={item} width={PRODUCT_WIDTH} index={index + 1} />;
+}
+
+function renderStoryItem({ item }: ListRenderItemInfo<StoryItem>) {
+  return <StoryCard story={item} />;
+}
 
 export function Home() {
   const insets = useSafeAreaInsets();
-  const scrollY = useSharedValue(0);
+  const { width } = useWindowDimensions();
+  const heroHeight = Math.round((width / PAPER_WIDTH) * PAPER_HERO_HEIGHT);
+  const [statusOverHero, setStatusOverHero] = useState(true);
 
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollY.value = e.contentOffset.y;
+  const player = useVideoPlayer(HERO.video, (videoPlayer) => {
+    videoPlayer.loop = true;
+    videoPlayer.muted = true;
+    videoPlayer.play();
   });
 
-  const newArrivals = useMemo(
-    () => productsIn(catalog, 'featured-new-arrivals').slice(0, 10),
-    []
-  );
-  const bestSellers = useMemo(() => productsIn(catalog, 'featured-best-sellers').slice(0, 10), []);
+  const newArrivals = useMemo(() => {
+    const leadIds = ['120482', '120443']; // Ghost 18, then Adrenaline GTS 25 — Paper order.
+    const leads = leadIds
+      .map((id) => catalog.products.find((product) => product.id === id))
+      .filter((product) => product != null);
+    const remainder = productsIn(catalog, 'featured-new-arrivals').filter(
+      (product) => !leadIds.includes(product.id)
+    );
+    return [...leads, ...remainder].slice(0, 10);
+  }, []);
 
-  /**
-   * The header starts transparent over the hero video still and cross-fades into
-   * a blurred white bar once the hero is most of the way gone. This one behavior
-   * does more than any other to make the screen read as native.
-   */
-  const barStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [0, 1], 'clamp'),
-  }));
-  const logoStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [1, 0], 'clamp'),
-  }));
-  const logoDarkStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [0, 1], 'clamp'),
-  }));
-  /** Parallax: the hero drifts at half scroll speed and scales up when overscrolled. */
-  const heroStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: interpolate(scrollY.value, [-200, 0, HERO_H], [-100, 0, HERO_H * 0.45]) },
-      { scale: interpolate(scrollY.value, [-200, 0], [1.25, 1], 'clamp') },
-    ],
-  }));
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const shouldBeLight = event.nativeEvent.contentOffset.y < heroHeight - insets.top - 24;
+      setStatusOverHero((current) => (current === shouldBeLight ? current : shouldBeLight));
+    },
+    [heroHeight, insets.top]
+  );
 
   return (
     <View style={styles.root}>
-      {/* Sticky header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Animated.View style={[StyleSheet.absoluteFill, barStyle]}>
-          {Platform.OS === 'ios' ? (
-            <BlurView tint="light" intensity={70} style={StyleSheet.absoluteFill} />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
-          )}
-          <View style={styles.headerHairline} />
-        </Animated.View>
-
-        <View style={styles.headerRow}>
-          <View>
-            <Animated.View style={logoStyle}>
-              <BrooksWordmark width={104} color={colors.surface} />
-            </Animated.View>
-            <Animated.View style={[StyleSheet.absoluteFill, logoDarkStyle]}>
-              <BrooksWordmark width={104} color={colors.ink} />
-            </Animated.View>
-          </View>
-          <View style={styles.headerActions}>
-            <HeaderIcon onPress={() => router.push('/search')} scrollY={scrollY} glyph="search" />
-          </View>
-        </View>
-      </View>
-
-      <Animated.ScrollView
-        onScroll={onScroll}
-        scrollEventThrottle={16}
+      <StatusBar style={statusOverHero ? 'light' : 'dark'} animated />
+      {!statusOverHero ? (
+        <View pointerEvents="none" style={[styles.statusBackdrop, { height: insets.top }]} />
+      ) : null}
+      <ScrollView
+        onScroll={handleScroll}
+        scrollEventThrottle={32}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        {/* ---------------------------------------------------------- HERO -- */}
-        <View style={[styles.hero, { height: HERO_H }]}>
-          <Animated.View style={[StyleSheet.absoluteFill, heroStyle]}>
-            <Photo url={HERO.image} width={W} height={HERO_H} priority="high" />
-          </Animated.View>
-          <LinearGradient
-            colors={['rgba(14,19,31,0.45)', 'rgba(14,19,31,0.05)', 'rgba(14,19,31,0.85)']}
-            locations={[0, 0.42, 1]}
+        <View style={[styles.hero, { height: heroHeight }]}>
+          <VideoView
             style={StyleSheet.absoluteFill}
+            player={player}
+            nativeControls={false}
+            contentFit="cover"
+            surfaceType="textureView"
+            allowsVideoFrameAnalysis={false}
+            playsInline
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(14,19,31,0.60)', 'rgba(14,19,31,0.24)', 'rgba(14,19,31,0.08)']}
+            locations={[0, 0.48, 1]}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
           />
 
+          <View style={[styles.heroHeader, { paddingTop: insets.top }]}>
+            <BrooksWordmark width={77} color={colors.surface} />
+          </View>
+
           <View style={styles.heroContent}>
-            {/* The site's own entrance: fade + 40px rise, staggered ~80ms. */}
-            <Animated.View entering={FadeInDown.duration(motion.slow).delay(0)}>
-              <Countdown target={HERO.attemptAt} />
-            </Animated.View>
-            <Animated.View entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger)}>
-              <Txt variant="eyebrow" c={colors.lime} style={{ marginTop: spacing.lg }}>
+            <View>
+              <Txt variant="eyebrow" c={colors.surface}>
                 {HERO.eyebrow}
               </Txt>
-            </Animated.View>
-            <Animated.View
-              entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 2)}
-            >
-              <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.sm }}>
+            </View>
+            <View>
+              <Txt variant="hero" c={colors.surface} style={styles.heroTitle}>
                 {HERO.title}
               </Txt>
-            </Animated.View>
-            <Animated.View
-              entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 3)}
-            >
-              <Txt variant="body" c="rgba(255,255,255,0.88)" style={{ marginTop: spacing.md }}>
+            </View>
+            <View>
+              <Txt variant="body" c="rgba(255,255,255,0.90)" style={styles.heroBody}>
                 {HERO.body}
               </Txt>
-            </Animated.View>
-            <Animated.View
-              entering={FadeInDown.duration(motion.slow).delay(motion.heroStagger * 4)}
-              style={{ marginTop: spacing.xl, alignSelf: 'flex-start' }}
-            >
-              <Button
-                title={HERO.cta}
-                variant="onDark"
+            </View>
+            <View style={styles.heroAction}>
+              <UnderlinedAction
+                label={HERO.cta}
                 onPress={() =>
                   router.push({
                     pathname: '/category/[id]',
-                    params: { id: HERO.ctaCategory, title: "Kerr's training gear" },
+                    params: { id: HERO.ctaCategory, title: HERO.ctaTitle },
                   })
                 }
+                onDark
               />
-            </Animated.View>
+            </View>
           </View>
         </View>
 
-        {/* ------------------------------------------------------ USE CASES -- */}
-        <View style={styles.block}>
-          <SectionHeader eyebrow="Shop by" title="Wherever the day takes you" />
-          <ScrollView
+        <View style={styles.gearSection}>
+          <Image
+            source={require('../../../assets/home/summer-sky.webp')}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+          />
+          <SectionTitle>Summer’s hottest new gear</SectionTitle>
+          <FlatList
             horizontal
+            data={HOME_GEAR}
+            keyExtractor={keyById}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.rail}
-            snapToInterval={148 + spacing.md}
-            decelerationRate="fast"
-          >
-            {USE_CASES.map((u) => (
-              <Press
-                key={u.id}
-                scaleTo={0.96}
-                style={styles.useCase}
-                onPress={() =>
-                  router.push({
-                    pathname: '/category/[id]',
-                    params: { id: u.id, title: u.label },
-                  })
-                }
-              >
-                <UseCaseArt id={u.id} />
-                <View style={{ padding: spacing.md }}>
-                  <Txt variant="h3">{u.label}</Txt>
-                  <Txt variant="tiny" c={colors.inkMuted}>
-                    {u.caption}
-                  </Txt>
-                </View>
-              </Press>
-            ))}
-          </ScrollView>
+            contentContainerStyle={styles.gearRail}
+            renderItem={renderGearItem}
+          />
         </View>
 
-        {/* --------------------------------------------------- NEW ARRIVALS -- */}
-        <View style={styles.block}>
-          <SectionHeader
-            eyebrow="Just landed"
-            title="New arrivals"
-            action="See all"
-            onAction={() =>
+        <View style={styles.useCaseSection}>
+          <SectionTitle>Wherever the day takes you</SectionTitle>
+          <FlatList
+            horizontal
+            data={USE_CASES}
+            keyExtractor={keyById}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.useCaseRail}
+            renderItem={renderUseCaseItem}
+          />
+        </View>
+
+        <View style={styles.productSection}>
+          <SectionTitle>New arrivals</SectionTitle>
+          <FlatList
+            horizontal
+            data={newArrivals}
+            keyExtractor={keyById}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={PRODUCT_WIDTH + spacing.lg}
+            contentContainerStyle={styles.productRail}
+            renderItem={renderProductItem}
+          />
+          <UnderlinedAction
+            label="Shop all new arrivals"
+            style={styles.centeredAction}
+            onPress={() =>
               router.push({
                 pathname: '/category/[id]',
                 params: { id: 'featured-new-arrivals', title: 'New Arrivals' },
               })
             }
           />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.rail}
-            snapToInterval={TILE_W + spacing.lg}
-            decelerationRate="fast"
-          >
-            {newArrivals.map((p, i) => (
-              <ProductTile key={p.id} product={p} width={TILE_W} index={i} />
-            ))}
-          </ScrollView>
         </View>
 
-        {/* ------------------------------------------------------- RUN CLUB -- */}
-        <Press
-          style={styles.runClub}
-          scaleTo={0.98}
-          onPress={() => router.push('/login')}
-        >
-          <View style={{ flex: 1 }}>
-            <Txt variant="eyebrow" c={colors.lime}>
+        <View style={styles.runClub}>
+          <Image
+            source={require('../../../assets/home/run-club.jpg')}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+          />
+          <View style={styles.runClubScrim}>
+            <Txt variant="h1" c={colors.surface} style={styles.centeredText}>
               Brooks Run Club
             </Txt>
-            <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
-              {VOICE.runClub}
+            <Txt variant="body" c="rgba(255,255,255,0.88)" style={styles.runClubBody}>
+              FREE shipping and early access to new gear.
             </Txt>
-            <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
-              Free shipping, early access, and a birthday gift.
-            </Txt>
-            <View style={styles.joinRow}>
-              <Txt variant="eyebrow" c={colors.surface} style={{ fontSize: 11 }}>
-                Join now
-              </Txt>
-              <View style={styles.joinUnderline} />
-            </View>
+            <UnderlinedAction label="Join now" onPress={() => router.push('/login')} onDark />
           </View>
-        </Press>
+        </View>
 
-        {/* ---------------------------------------------------- BEST SELLERS - */}
-        <View style={styles.block}>
-          <SectionHeader
-            eyebrow="Loved by runners"
-            title="Build your training rotation"
-            action="See all"
-            onAction={() =>
-              router.push({
-                pathname: '/category/[id]',
-                params: { id: 'featured-best-sellers', title: 'Best Sellers' },
-              })
-            }
+        <View style={styles.storySection}>
+          <SectionTitle>Stories to transform your run</SectionTitle>
+          <FlatList
+            horizontal
+            data={STORIES}
+            keyExtractor={keyById}
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={STORY_WIDTH + spacing.lg}
+            decelerationRate="fast"
+            contentContainerStyle={styles.storyRail}
+            renderItem={renderStoryItem}
           />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.rail}
-            snapToInterval={TILE_W + spacing.lg}
-            decelerationRate="fast"
-          >
-            {bestSellers.map((p, i) => (
-              <ProductTile key={p.id} product={p} width={TILE_W} index={i} />
-            ))}
-          </ScrollView>
         </View>
 
-        {/* -------------------------------------------------------- STORIES -- */}
-        <View style={styles.block}>
-          <SectionHeader eyebrow="Read" title="Stories to transform your run" />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.rail}
-            snapToInterval={W * 0.76 + spacing.md}
-            decelerationRate="fast"
-          >
-            {STORIES.map((s) => (
-              <Press
-                key={s.id}
-                scaleTo={0.97}
-                style={[styles.story, { width: W * 0.76 }]}
-                onPress={() =>
-                  router.push({
-                    pathname: '/category/[id]',
-                    params: {
-                      id: 'shopCategory' in s ? s.shopCategory : 'featured-best-sellers',
-                      title: s.shopLabel,
-                      franchise: 'shopFranchise' in s ? s.shopFranchise : undefined,
-                    },
-                  })
-                }
-              >
-                <View style={styles.storyImage}>
-                  <Photo url={s.image} width={W * 0.76} height={200} />
-                  <LinearGradient
-                    colors={['transparent', 'rgba(14,19,31,0.75)']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View style={styles.storyBadge}>
-                    <Badge label={s.eyebrow} variant="light" />
-                  </View>
-                </View>
-                <View style={{ paddingVertical: spacing.md }}>
-                  <Txt variant="h3">{s.title}</Txt>
-                  <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: 4 }}>
-                    {s.readTime}
-                  </Txt>
-                  <View style={styles.joinRow}>
-                    <Txt variant="eyebrow" c={colors.ink} style={{ fontSize: 11 }}>
-                      {s.shopLabel}
-                    </Txt>
-                    <View style={[styles.joinUnderline, { backgroundColor: colors.ink }]} />
-                  </View>
-                </View>
-              </Press>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* -------------------------------------------------------- PROMISE -- */}
         <View style={styles.promise}>
-          <Txt variant="eyebrow" c={colors.inkMuted}>
-            {VOICE.promiseTitle}
+          <Image
+            source={require('../../../assets/home/run-happy-promise.png')}
+            style={styles.promiseSeal}
+            contentFit="contain"
+          />
+          <Txt c={colors.surface} style={[styles.promiseText, styles.promiseLead]}>
+            Take it for a 90-day trial run.
           </Txt>
-          <Squiggle />
-          <Txt variant="h2" style={{ textAlign: 'center' }}>
-            {VOICE.promise}
-          </Txt>
-          <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.md }}>
-            {VOICE.tagline}
+          <Txt c={colors.surface} style={styles.promiseText}>
+            If you’re not happy, we’re not happy.
           </Txt>
         </View>
-      </Animated.ScrollView>
+        <View
+          pointerEvents="none"
+          style={[styles.promiseTabClearance, { height: insets.bottom + 48 }]}
+        />
+      </ScrollView>
     </View>
   );
 }
 
-/** Header icon that inverts as the bar turns white. */
-function HeaderIcon({
-  glyph,
-  onPress,
-  scrollY,
-}: {
-  glyph: 'search';
-  onPress: () => void;
-  scrollY: SharedValue<number>;
-}) {
-  // SVG fills can't take an animated color directly, so the ink icon sits
-  // under a surface-colored twin whose opacity tracks the hero scroll.
-  const overHero = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [HERO_H * 0.55, HERO_H * 0.85], [1, 0], 'clamp'),
-  }));
+function GearCard({ item }: { item: GearItem }) {
   return (
-    <Press onPress={onPress} scaleTo={0.9} hitSlop={10}>
-      <View>
-        <BrooksIcon name={glyph} size={18} color={colors.ink} />
-        <Animated.View style={[StyleSheet.absoluteFill, overHero]}>
-          <BrooksIcon name={glyph} size={18} color={colors.surface} />
-        </Animated.View>
-      </View>
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={item.label}
+      scaleTo={0.97}
+      style={styles.gearCard}
+      onPress={() =>
+        router.push({
+          pathname: '/category/[id]',
+          params: { id: item.id, title: item.label },
+        })
+      }
+    >
+      <Image source={item.image} style={styles.gearImage} contentFit="cover" />
+      <Txt variant="tiny" style={styles.gearLabel}>
+        {item.label}
+      </Txt>
     </Press>
   );
 }
 
-/** Lightweight art for the use-case rail: a real product shot on a tinted field. */
-function UseCaseArt({ id }: { id: string }) {
-  const p = productsIn(catalog, id)[0];
-  const img = p?.colors[0]?.images[0]?.url;
+function UseCaseCard({ item }: { item: UseCaseItem }) {
   return (
-    <View style={styles.useCaseArt}>
-      {img ? (
-        <Photo url={img} width={148} height={110} />
-      ) : (
-        <View style={{ flex: 1, backgroundColor: colors.surfaceSunken }} />
-      )}
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={item.label}
+      scaleTo={0.97}
+      style={styles.useCaseCard}
+      onPress={() =>
+        router.push({
+          pathname: '/category/[id]',
+          params: { id: item.id, title: item.label },
+        })
+      }
+    >
+      <Image source={item.image} style={styles.useCaseImage} contentFit="cover" />
+      <Txt variant="eyebrow" style={styles.useCaseLabel}>
+        {item.label}
+      </Txt>
+    </Press>
+  );
+}
+
+function StoryCard({ story }: { story: StoryItem }) {
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={story.title}
+      scaleTo={0.98}
+      style={styles.storyCard}
+      onPress={() =>
+        router.push({
+          pathname: '/category/[id]',
+          params: { id: story.shopCategory, title: story.shopLabel },
+        })
+      }
+    >
+      <Image source={story.image} style={styles.storyImage} contentFit="cover" />
+      <View style={styles.storyMeta}>
+        <Txt variant="tiny" c={colors.blue} style={styles.storyEyebrow}>
+          {story.eyebrow}
+        </Txt>
+        <Txt variant="tiny" c={colors.inkMuted}>
+          {story.date}
+        </Txt>
+      </View>
+      <Txt style={styles.storyTitle}>{story.title}</Txt>
+    </Press>
+  );
+}
+
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <View style={styles.sectionTitleWrap}>
+      <Txt variant="h2" style={styles.sectionTitle}>
+        {children}
+      </Txt>
     </View>
+  );
+}
+
+function UnderlinedAction({
+  label,
+  onPress,
+  onDark = false,
+  style,
+}: {
+  label: string;
+  onPress: () => void;
+  onDark?: boolean;
+  style?: object;
+}) {
+  const color = onDark ? colors.surface : colors.ink;
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      scaleTo={0.96}
+      style={[styles.underlinedAction, style]}
+      onPress={onPress}
+    >
+      <Txt variant="button" c={color}>
+        {label}
+      </Txt>
+      <View style={[styles.actionUnderline, { backgroundColor: color }]} />
+    </Press>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  header: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
-  headerHairline: {
+  statusBackdrop: {
     position: 'absolute',
-    bottom: 0,
+    top: 0,
+    right: 0,
+    left: 0,
+    zIndex: 20,
+    backgroundColor: colors.surface,
+  },
+  hero: { width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
+  heroHeader: {
+    position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
-    height: 1,
-    backgroundColor: colors.hairline,
-  },
-  headerRow: {
-    height: 52,
+    height: 114,
     paddingHorizontal: spacing.gutter,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    paddingBottom: 19,
   },
-  headerActions: { flexDirection: 'row', gap: spacing.lg, alignItems: 'center' },
-
-  hero: { width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
   heroContent: {
     position: 'absolute',
     left: spacing.gutter,
     right: spacing.gutter,
-    bottom: spacing.xl,
+    bottom: 32,
+  },
+  heroTitle: { marginTop: 10 },
+  heroBody: { marginTop: 12, lineHeight: 22 },
+  heroAction: { marginTop: 22, alignSelf: 'flex-start' },
+
+  sectionTitleWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.gutter,
+    paddingBottom: spacing.gutter,
+  },
+  sectionTitle: {
+    maxWidth: 353,
+    fontFamily: font.bold,
+    textAlign: 'center',
   },
 
-  block: { marginTop: spacing.xxxl },
-  rail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
-
-  useCase: {
-    width: 148,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    backgroundColor: colors.surface,
+  gearSection: { paddingTop: 36, paddingBottom: 40, overflow: 'hidden' },
+  gearRail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
+  gearCard: { width: GEAR_CARD_WIDTH, gap: spacing.md, alignItems: 'center' },
+  gearImage: { width: GEAR_CARD_WIDTH, height: GEAR_CARD_WIDTH },
+  gearLabel: {
+    fontFamily: font.bold,
+    letterSpacing: 0.88,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  useCaseArt: { height: 110, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
 
-  runClub: {
-    backgroundColor: colors.navy,
-    marginTop: spacing.xxxl,
-    marginHorizontal: spacing.gutter,
-    padding: spacing.xl,
-    flexDirection: 'row',
+  useCaseSection: { paddingVertical: 36 },
+  useCaseRail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
+  useCaseCard: { width: USE_CASE_WIDTH, gap: spacing.md },
+  useCaseImage: { width: USE_CASE_WIDTH, height: 200 },
+  useCaseLabel: { textAlign: 'center' },
+
+  productSection: { paddingVertical: 40 },
+  productRail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
+  centeredAction: { alignSelf: 'center', marginTop: 28 },
+
+  runClub: { height: 240, overflow: 'hidden' },
+  runClubScrim: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    backgroundColor: 'rgba(14,19,31,0.38)',
   },
-  joinRow: { marginTop: spacing.lg, alignSelf: 'flex-start', gap: 3 },
-  joinUnderline: { height: 3, backgroundColor: colors.lime, width: '100%' },
+  centeredText: { textAlign: 'center' },
+  runClubBody: { marginTop: spacing.md, marginBottom: spacing.xl, lineHeight: 22, textAlign: 'center' },
 
-  story: { marginRight: 0 },
-  storyImage: { height: 200, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
-  storyBadge: { position: 'absolute', top: spacing.md, left: spacing.md },
+  storySection: { paddingVertical: 40 },
+  storyRail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
+  storyCard: { width: STORY_WIDTH },
+  storyImage: { width: STORY_WIDTH, height: 150 },
+  storyMeta: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, paddingTop: 14 },
+  storyEyebrow: { fontFamily: font.bold, letterSpacing: 1.1, textTransform: 'uppercase' },
+  storyTitle: {
+    paddingTop: 6,
+    fontFamily: font.bold,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.17,
+  },
 
   promise: {
-    marginTop: spacing.xxxl,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.xxxl,
-    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.blue,
   },
+  promiseSeal: { width: 79, height: 79 },
+  promiseLead: { marginTop: spacing.gutter },
+  promiseText: {
+    color: colors.surface,
+    fontFamily: font.bold,
+    fontSize: 19,
+    lineHeight: 26,
+    letterSpacing: -0.19,
+    textAlign: 'center',
+  },
+  promiseTabClearance: { backgroundColor: colors.blue },
+
+  underlinedAction: { alignItems: 'stretch', gap: 4, alignSelf: 'flex-start' },
+  actionUnderline: { height: 2, alignSelf: 'stretch' },
 });

@@ -55,8 +55,8 @@ export default function RootLayout() {
               options={{ title: 'Shop', animation: 'slide_from_right' }}
             />
             <Stack.Screen
-              name="search"
-              options={{ title: 'Search', presentation: 'modal', animation: 'slide_from_bottom' }}
+              name="finder"
+              options={{ title: 'Shoe Finder', animation: 'slide_from_right' }}
             />
             <Stack.Screen
               name="login"

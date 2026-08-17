@@ -49,6 +49,24 @@ addition.** A faithful port counts the source's elements, not just names them.
 The site's hero carries four; ours had accumulated six across two sessions, and
 adding a fifth to match one site detail made the whole worse.
 
+**Hero, third pass.** The human then supplied a sharp screenshot of the live hero
+and said to use it. Two things had been wrong beyond clutter: the campaign
+(Project 222, whose date had passed) and the anchoring — the site anchors hero
+copy to the **top** of the band and leaves the lower half to the footage, while
+every app hero was bottom-anchored. Retypeset to the site's exact copy, one
+underlined `SHOP NOW` link instead of a solid button, and `top: 122px` with a
+top-weighted scrim so white type reads over a bright frame.
+
+**Paper cannot ingest an image from the agent.** There is no upload tool, and an
+inline `data:image/jpeg;base64,…` background URL produces a node literally named
+`Missing image` — Paper drops it. Verified with an 8×8 test JPEG before spending
+tokens on a real encode, which was the right order. The fallback was to crop the
+Ghost Amp frame out of the site capture already in the file, but that frame is a
+motion-blurred video still with the site's own Feedback tab and chat bubble baked
+into its right edge, so the usable clean window was only `x ∈ [700, 831]` of 1440.
+The result is on-campaign but soft. **A human dragging the file onto the canvas is
+the only path to a good asset**, after which the swap is one `update_styles` call.
+
 ## What worked well
 
 - **The captures were reusable as art.** Paper file-assets have public URLs, so
@@ -113,12 +131,10 @@ Not observed — this task never left the design tool.
   and re-check the three redesigned artboards: Filson is wider than Figtree at
   the same size, so the centred section headings and the `NEW WOMEN'S APPAREL`
   caption (currently 11px with `nowrap` at 172px) are the likely reflow points.
-- The hero still runs the **Project 222** campaign; the live site now runs
-  **The Ghost Amp** ("Just dropped" / "Amplify your run in the all-new Ghost Amp,
-  featuring technology that injects energy into every stride." / `SHOP NOW` +
-  `SHOP ALL ROAD RUNNING`). Project 222's July 18 date has passed, so its
-  countdown — LLP 0003's top wow item — is now expired. Swapping campaigns is a
-  content decision and was left to a human.
+- **The hero photo is a placeholder.** The hero now runs the Ghost Amp campaign
+  (see *Hero, third pass* above), but its image is the soft, motion-blurred video
+  frame from the in-file site capture. Swap in a sharper frame once one is on the
+  canvas; the crop is a single `update_styles` call on the hero's photo rectangle.
 - Story-card headlines are placeholder. The site's category eyebrows and dates
   are verbatim (`GEAR AND TECHNOLOGY · April 14, 2026`,
   `RUNNING TIPS · October 23, 2025`), but the headlines sat below the capture's

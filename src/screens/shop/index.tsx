@@ -8,6 +8,7 @@ import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
+import { VOICE } from '@/data/editorial';
 import { heroImage } from '@/data/images';
 import { productsIn } from '@/data/query';
 import { colors, spacing } from '@/theme';
@@ -46,7 +47,9 @@ export function Shop() {
   return (
     <ScrollView
       style={{ backgroundColor: colors.surface }}
-      contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 96 }}
+      // The native tab bar insets scroll content automatically, so only a
+      // breathing-room pad remains.
+      contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: spacing.xl }}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.head}>
@@ -95,6 +98,20 @@ export function Shop() {
           );
         })}
       </ScrollView>
+
+      {/* Shoe Finder moved off the tab bar when the native search tab took the
+          fifth slot; this card is its primary entry point now. */}
+      <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.push('/finder')}>
+        <View style={{ flex: 1, gap: spacing.xs }}>
+          <Txt variant="eyebrow" c={colors.lime}>
+            Shoe Finder
+          </Txt>
+          <Txt variant="h3" c={colors.surface}>
+            {VOICE.finderWelcome}
+          </Txt>
+        </View>
+        <BrooksIcon name="caretRight" size={16} color={colors.surface} />
+      </Press>
 
       {SECTIONS.map((s) => (
         <View key={s.title} style={styles.section}>
@@ -147,6 +164,15 @@ const styles = StyleSheet.create({
   rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
   franchise: { width: 120, borderWidth: 1, borderColor: colors.hairline },
   franchiseArt: { height: 80, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  finderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.gutter,
+    marginTop: spacing.xxl,
+    padding: spacing.lg,
+    backgroundColor: colors.blue,
+  },
   section: { marginTop: spacing.xxl },
   row: {
     flexDirection: 'row',

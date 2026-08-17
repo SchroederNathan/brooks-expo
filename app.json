@@ -30,7 +30,8 @@
       "expo-image",
       "expo-font",
       "expo-splash-screen",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-video"
     ],
     "scheme": "brooks",
     "newArchEnabled": true,

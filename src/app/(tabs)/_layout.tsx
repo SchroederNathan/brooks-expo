@@ -1,75 +1,57 @@
-import { BlurView } from 'expo-blur';
-import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
-import { TabIcon } from '@/components/tab-icon';
 import { useCart } from '@/store/cart';
 import { colors, font } from '@/theme';
 
-
+/**
+ * System tab bar (liquid glass on iOS 26, Material 3 on Android). The system
+ * renders the items, so icons are SF Symbols / Material Symbols rather than
+ * the Brooks sprite glyphs the old JS tab bar drew — see LLP 0003#iconography.
+ * The search trigger carries `role="search"`, which iOS detaches into the
+ * standalone button at the trailing edge of the bar.
+ *
+ * Four regular tabs is the ceiling here: a fifth (Shoe Finder's old slot) plus
+ * the search trigger tips UITabBarController into a "More" tab, which swallows
+ * the search role. Shoe Finder is a pushed screen now — see `app/finder.tsx`.
+ */
 export default function TabLayout() {
   const { count } = useCart();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.ink,
-        tabBarInactiveTintColor: colors.inkFaint,
-        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10, letterSpacing: 0.2 },
-        tabBarStyle: {
-          position: 'absolute',
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: colors.hairline,
-          // A translucent bar lets product photography scroll under it, which is
-          // most of why the app reads as native rather than as a page.
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.surface,
-          // Audit exemption: not a shadow — suppresses react-navigation's
-          // default Android tab-bar elevation.
-          elevation: 0,
-        },
-        tabBarBackground:
-          Platform.OS === 'ios'
-            ? () => <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
-            : undefined,
-      }}
+    <NativeTabs
+      tintColor={colors.ink}
+      labelStyle={{ fontFamily: font.medium }}
+      // The system badge cannot render the site's lime-with-blue-text pair
+      // legibly (badge text is fixed white on iOS), so the badge wears the
+      // other brand color instead.
+      badgeBackgroundColor={colors.blue}
+      minimizeBehavior="onScrollDown"
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="shop"
-        options={{
-          title: 'Shop',
-          tabBarIcon: ({ focused }) => <TabIcon name="shop" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="finder"
-        options={{
-          title: 'Shoe Finder',
-          tabBarIcon: ({ focused }) => <TabIcon name="finder" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="cart"
-        options={{
-          title: 'Bag',
-          tabBarIcon: ({ focused }) => <TabIcon name="bag" focused={focused} badge={count} />,
-        }}
-      />
-      <Tabs.Screen
-        name="account"
-        options={{
-          title: 'Account',
-          tabBarIcon: ({ focused }) => <TabIcon name="account" focused={focused} />,
-        }}
-      />
-    </Tabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="shop">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'storefront', selected: 'storefront.fill' }}
+          md="storefront"
+        />
+        <NativeTabs.Trigger.Label>Shop</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="cart">
+        <NativeTabs.Trigger.Icon sf={{ default: 'bag', selected: 'bag.fill' }} md="shopping_bag" />
+        <NativeTabs.Trigger.Label>Bag</NativeTabs.Trigger.Label>
+        {count > 0 ? (
+          <NativeTabs.Trigger.Badge>{count > 9 ? '9+' : String(count)}</NativeTabs.Trigger.Badge>
+        ) : null}
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="account">
+        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
+        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(search)" role="search">
+        <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
