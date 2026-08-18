@@ -8,7 +8,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brooks.prototype"
+      "bundleIdentifier": "com.exponathan.brooks",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +21,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.brooks.prototype"
+      "package": "com.exponathan.brooks"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -37,6 +40,13 @@
     "newArchEnabled": true,
     "splash": {
       "backgroundColor": "#FFFFFF"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d67e8b27-333b-4d2c-ac10-e898a6881511"
+      }
+    },
+    "owner": "exponathan"
   }
 }
