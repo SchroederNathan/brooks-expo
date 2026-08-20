@@ -13,6 +13,8 @@ import { colors, font } from '@/theme';
  * Four regular tabs is the ceiling here: a fifth (Shoe Finder's old slot) plus
  * the search trigger tips UITabBarController into a "More" tab, which swallows
  * the search role. Shoe Finder is a pushed screen now — see `app/finder.tsx`.
+ * Each trigger targets one clone of the shared array-group Stack so every tab
+ * gets the same native Brooks toolbar without duplicating its layout.
  */
 export default function TabLayout() {
   const { count } = useCart();
@@ -27,25 +29,25 @@ export default function TabLayout() {
       badgeBackgroundColor={colors.blue}
       minimizeBehavior="onScrollDown"
     >
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="(index)">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="shop">
+      <NativeTabs.Trigger name="(shop)">
         <NativeTabs.Trigger.Icon
           sf={{ default: 'storefront', selected: 'storefront.fill' }}
           md="storefront"
         />
         <NativeTabs.Trigger.Label>Shop</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="cart">
+      <NativeTabs.Trigger name="(cart)">
         <NativeTabs.Trigger.Icon sf={{ default: 'bag', selected: 'bag.fill' }} md="shopping_bag" />
         <NativeTabs.Trigger.Label>Bag</NativeTabs.Trigger.Label>
         {count > 0 ? (
           <NativeTabs.Trigger.Badge>{count > 9 ? '9+' : String(count)}</NativeTabs.Trigger.Badge>
         ) : null}
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="account">
+      <NativeTabs.Trigger name="(account)">
         <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
         <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>

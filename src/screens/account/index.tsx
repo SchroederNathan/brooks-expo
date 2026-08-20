@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
@@ -23,15 +22,15 @@ import { colors, spacing } from '@/theme';
  * card; a guest sees the pitch, with browsing never gated behind either.
  */
 export function Account() {
-  const insets = useSafeAreaInsets();
   const member = useMember();
   const cart = useCart();
 
   return (
     <ScrollView
       style={{ backgroundColor: colors.surface }}
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        paddingTop: insets.top + spacing.xl,
+        paddingTop: spacing.xl,
         paddingBottom: spacing.xl,
       }}
       showsVerticalScrollIndicator={false}

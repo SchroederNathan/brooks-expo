@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrooksIcon } from '@/components/icons';
 import { Photo } from '@/components/photo';
@@ -42,14 +41,13 @@ const SECTIONS = [
 const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', 'Launch'];
 
 export function Shop() {
-  const insets = useSafeAreaInsets();
-
   return (
     <ScrollView
       style={{ backgroundColor: colors.surface }}
+      contentInsetAdjustmentBehavior="automatic"
       // The native tab bar insets scroll content automatically, so only a
       // breathing-room pad remains.
-      contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: spacing.xl }}
+      contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl }}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.head}>

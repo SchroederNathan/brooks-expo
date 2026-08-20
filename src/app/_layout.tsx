@@ -43,8 +43,9 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.surface },
             }}
           >
-            {/* Headers stay hidden (all chrome is in-body brand design); the
-                titles still feed web document titles and accessibility. */}
+            {/* The root header stays hidden because each NativeTabs route owns
+                its branded nested Stack header; this title still feeds web
+                document titles and accessibility. */}
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
             <Stack.Screen
               name="product/[id]"

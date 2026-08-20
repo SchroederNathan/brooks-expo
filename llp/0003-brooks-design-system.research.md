@@ -5,6 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
+**Revised:** 2026-08-18
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -211,6 +212,21 @@ fill or crop into [`assets/home/`](../assets/home/) and owns those deterministic
 demo assets locally. Product facts continue to come from `packages/catalog`, in
 line with LLP 0002; the home port does not introduce direct SFCC requests or a
 second catalog source of truth.
+
+[observed 2026-08-18] The hero now runs inside a reusable Reanimated
+`StretchyParallaxScrollView`. During negative top-edge overscroll, a fixed
+layout frame keeps the next section attached while an absolutely positioned
+hero cancels the scroll bounce, grows by the pull distance, and stays pinned to
+the screen's top edge. Normal downward scrolling remains native.
+
+[observed 2026-08-18] Every native tab now owns a native `Stack` through an
+Expo Router array group. A shared `Stack.Toolbar.View` places the Brooks SVG
+wordmark at the leading edge, and a transparent header uses the progressive
+blur adapted from the sibling speech-companion app. `NativeTabs` remains
+entirely system-rendered with no app-owned blur layer beneath it. The header
+blur carries no color scrim, so it does not wash the hero toward white. The
+search-role tab needs `headerShown: true` explicitly or UIKit suppresses its
+custom toolbar while morphing the tab bar into the search field.
 
 ## Home section language
 

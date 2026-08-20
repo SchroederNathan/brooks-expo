@@ -61,7 +61,7 @@ export function Cart() {
 
   if (cart.items.length === 0) {
     return (
-      <View style={[styles.root, styles.empty, { paddingTop: insets.top + 90 }]}>
+      <View style={[styles.root, styles.empty, { paddingTop: 90 }]}>
         <Txt variant="eyebrow" c={colors.inkMuted}>
           Your bag
         </Txt>
@@ -84,8 +84,9 @@ export function Cart() {
   return (
     <View style={styles.root}>
       <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          paddingTop: insets.top + spacing.lg,
+          paddingTop: spacing.lg,
           paddingBottom: insets.bottom + 120,
         }}
         showsVerticalScrollIndicator={false}

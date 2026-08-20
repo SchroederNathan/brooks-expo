@@ -3,13 +3,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
   FlatList,
   type ListRenderItemInfo,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -18,12 +15,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
+import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
 import { HERO, HOME_GEAR, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
 import type { Product } from '@/data/types';
-import { BrooksWordmark } from '@/screens/home/wordmark';
 import { colors, font, spacing } from '@/theme';
 
 // @ref LLP 0003#expo-implementation-paper-home-port — The Paper Home artboard
@@ -62,7 +59,6 @@ export function Home() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const heroHeight = Math.round((width / PAPER_WIDTH) * PAPER_HERO_HEIGHT);
-  const [statusOverHero, setStatusOverHero] = useState(true);
 
   const player = useVideoPlayer(HERO.video, (videoPlayer) => {
     videoPlayer.loop = true;
@@ -81,79 +77,65 @@ export function Home() {
     return [...leads, ...remainder].slice(0, 10);
   }, []);
 
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const shouldBeLight = event.nativeEvent.contentOffset.y < heroHeight - insets.top - 24;
-      setStatusOverHero((current) => (current === shouldBeLight ? current : shouldBeLight));
-    },
-    [heroHeight, insets.top]
-  );
-
   return (
-    <View style={styles.root}>
-      <StatusBar style={statusOverHero ? 'light' : 'dark'} animated />
-      {!statusOverHero ? (
-        <View pointerEvents="none" style={[styles.statusBackdrop, { height: insets.top }]} />
-      ) : null}
-      <ScrollView
-        onScroll={handleScroll}
-        scrollEventThrottle={32}
+    <View collapsable={false} style={styles.root}>
+      <StatusBar style="dark" animated />
+      <StretchyParallaxScrollView
+        headerHeight={heroHeight}
+        contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
+        header={
+          <View style={styles.hero}>
+            <VideoView
+              style={StyleSheet.absoluteFill}
+              player={player}
+              nativeControls={false}
+              contentFit="cover"
+              surfaceType="textureView"
+              allowsVideoFrameAnalysis={false}
+              playsInline
+              pointerEvents="none"
+            />
+            <LinearGradient
+              colors={['rgba(14,19,31,0.60)', 'rgba(14,19,31,0.24)', 'rgba(14,19,31,0.08)']}
+              locations={[0, 0.48, 1]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+
+            <View style={styles.heroContent}>
+              <View>
+                <Txt variant="eyebrow" c={colors.surface}>
+                  {HERO.eyebrow}
+                </Txt>
+              </View>
+              <View>
+                <Txt variant="hero" c={colors.surface} style={styles.heroTitle}>
+                  {HERO.title}
+                </Txt>
+              </View>
+              <View>
+                <Txt variant="body" c="rgba(255,255,255,0.90)" style={styles.heroBody}>
+                  {HERO.body}
+                </Txt>
+              </View>
+              <View style={styles.heroAction}>
+                <UnderlinedAction
+                  label={HERO.cta}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/category/[id]',
+                      params: { id: HERO.ctaCategory, title: HERO.ctaTitle },
+                    })
+                  }
+                  onDark
+                />
+              </View>
+            </View>
+          </View>
+        }
       >
-        <View style={[styles.hero, { height: heroHeight }]}>
-          <VideoView
-            style={StyleSheet.absoluteFill}
-            player={player}
-            nativeControls={false}
-            contentFit="cover"
-            surfaceType="textureView"
-            allowsVideoFrameAnalysis={false}
-            playsInline
-            pointerEvents="none"
-          />
-          <LinearGradient
-            colors={['rgba(14,19,31,0.60)', 'rgba(14,19,31,0.24)', 'rgba(14,19,31,0.08)']}
-            locations={[0, 0.48, 1]}
-            style={StyleSheet.absoluteFill}
-            pointerEvents="none"
-          />
-
-          <View style={[styles.heroHeader, { paddingTop: insets.top }]}>
-            <BrooksWordmark width={77} color={colors.surface} />
-          </View>
-
-          <View style={styles.heroContent}>
-            <View>
-              <Txt variant="eyebrow" c={colors.surface}>
-                {HERO.eyebrow}
-              </Txt>
-            </View>
-            <View>
-              <Txt variant="hero" c={colors.surface} style={styles.heroTitle}>
-                {HERO.title}
-              </Txt>
-            </View>
-            <View>
-              <Txt variant="body" c="rgba(255,255,255,0.90)" style={styles.heroBody}>
-                {HERO.body}
-              </Txt>
-            </View>
-            <View style={styles.heroAction}>
-              <UnderlinedAction
-                label={HERO.cta}
-                onPress={() =>
-                  router.push({
-                    pathname: '/category/[id]',
-                    params: { id: HERO.ctaCategory, title: HERO.ctaTitle },
-                  })
-                }
-                onDark
-              />
-            </View>
-          </View>
-        </View>
-
         <View style={styles.gearSection}>
           <Image
             source={require('../../../assets/home/summer-sky.webp')}
@@ -255,7 +237,7 @@ export function Home() {
           pointerEvents="none"
           style={[styles.promiseTabClearance, { height: insets.bottom + 48 }]}
         />
-      </ScrollView>
+      </StretchyParallaxScrollView>
     </View>
   );
 }
@@ -372,25 +354,7 @@ function UnderlinedAction({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  statusBackdrop: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    left: 0,
-    zIndex: 20,
-    backgroundColor: colors.surface,
-  },
-  hero: { width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
-  heroHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 114,
-    paddingHorizontal: spacing.gutter,
-    justifyContent: 'flex-end',
-    paddingBottom: 19,
-  },
+  hero: { flex: 1, width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
   heroContent: {
     position: 'absolute',
     left: spacing.gutter,
