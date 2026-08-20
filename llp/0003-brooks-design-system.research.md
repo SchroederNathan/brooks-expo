@@ -221,12 +221,18 @@ the screen's top edge. Normal downward scrolling remains native.
 
 [observed 2026-08-18] Every native tab now owns a native `Stack` through an
 Expo Router array group. A shared `Stack.Toolbar.View` places the Brooks SVG
-wordmark at the leading edge, and a transparent header uses the progressive
-blur adapted from the sibling speech-companion app. `NativeTabs` remains
-entirely system-rendered with no app-owned blur layer beneath it. The header
-blur carries no color scrim, so it does not wash the hero toward white. The
-search-role tab needs `headerShown: true` explicitly or UIKit suppresses its
-custom toolbar while morphing the tab bar into the search field.
+wordmark at the leading edge. `NativeTabs` remains entirely system-rendered
+with no app-owned blur layer beneath it. The search-role tab needs
+`headerShown: true` explicitly or UIKit suppresses its custom toolbar while
+morphing the tab bar into the search field.
+
+[observed 2026-08-20] `Superseded`: the header briefly used a masked
+`ProgressiveBlur` component (a `BlurView` under an eased alpha gradient,
+adapted from the sibling speech-companion app). It is removed. The header is
+now fully transparent with `headerBlurEffect: 'none'` and no
+`headerBackground`, so the hero reads unbroken under the toolbar. The
+`expo-blur` and `@react-native-masked-view/masked-view` dependencies went with
+it.
 
 ## Home section language
 

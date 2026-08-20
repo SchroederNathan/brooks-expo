@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router/stack';
 import { StyleSheet, View } from 'react-native';
 
-import { ProgressiveBlur } from '@/components/progressive-blur';
 import { BrooksWordmark } from '@/screens/home/wordmark';
 import { colors } from '@/theme';
 
@@ -18,8 +17,8 @@ const tabNames = new Set(['index', 'shop', 'cart', 'account', 'search']);
 /**
  * Shared native stack chrome for every tab.
  *
- * @ref LLP 0003#screen-patterns — The home header stays transparent over the
- * hero with a progressive material edge; the tab bar keeps its native material.
+ * @ref LLP 0003#screen-patterns — The home header stays fully transparent over
+ * the hero with no app-owned material; the tab bar keeps its native material.
  */
 export default function TabStackLayout({ segment }: { segment: string }) {
   const matchedName = segment.match(/\(([^)]+)\)/)?.[1] ?? 'index';
@@ -35,9 +34,6 @@ export default function TabStackLayout({ segment }: { segment: string }) {
           headerShadowVisible: false,
           headerTitle: '',
           headerTransparent: true,
-          headerBackground: () => (
-            <ProgressiveBlur direction="top" style={styles.fill} />
-          ),
         }}
       >
         <Stack.Screen
@@ -61,9 +57,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.surface,
-  },
-  fill: {
-    flex: 1,
   },
   wordmark: {
     width: 84,
