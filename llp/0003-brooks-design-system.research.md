@@ -227,13 +227,26 @@ weight:
 - **The badge.** Lime fill with blue text is the site's own minicart treatment
   and is back.
 
-[observed] The focus indicator is an ink rule **above** the icon rather than the
-system's tint-only selected state, and it slides between tabs on the same
-motion as the PDP / catalog-tile color rail: `INDICATOR_MS` and
+[observed] The focus indicator is an ink dash **on the bar's top edge** rather
+than the system's tint-only selected state, and it slides between tabs on the
+same motion as the PDP / catalog-tile color rail: `INDICATOR_MS` and
 `INDICATOR_EASING` are imported from `components/underline-rail.tsx`, not
 restated, so the two cannot drift. It rides a native CSS transition, so
-selection never touches the JS thread. The rule is a short 22px dash, not the
-full slot width — it marks the tab, not the hit area.
+selection never touches the JS thread. The dash is 44pt wide, not the full slot
+width (~80pt on a 402pt frame) — it marks the tab, not the hit area.
+
+[observed 2026-08-21] The top edge *is* the dash's track, which fixes two
+things that a rule floating 6pt above a hairline border did not get right. The
+dash and the edge are drawn at one thickness (2pt), so the moving ink reads as
+the same stroke as the line it travels along instead of a second, thicker mark
+hovering over it; and the dash sits at the edge's own y, so nothing about the
+bar's chrome moves when selection does. The edge therefore stops being a
+`borderTopWidth` hairline and becomes an explicit 2pt track `View` that the dash
+is positioned inside — a hairline dash would be a ghost, so the thickness has to
+come from the dash, not the border. Doubling the thickness would have doubled
+the visual weight too, so the track drops from `hairline` (#E5E5E5, the site's
+border gray) to the paler `surfaceSunken` (#F2F2F2) and lands back near the
+intended lightness.
 
 [observed] Layout needs no per-screen work, which is not the obvious answer.
 `BottomTabView` renders each screen with `StyleSheet.absoluteFill`, which reads
@@ -258,12 +271,15 @@ tab navigator into the root stack and silently does nothing.
 
 [observed] The focus rule constrains which glyphs are usable. `#icon-filters`,
 the site's three-bar funnel, was the first choice for Shoe Finder on semantics
-("narrow this down"), but its top bar is a 21px horizontal rule that merges with
-the 18px focus rule 8px above it into a four-bar stack — the indicator stops
-indicating. Any glyph whose top edge is a long horizontal is disqualified by a
-bar with a top rule. Shoe Finder wears `#icon-search` instead; its ring cannot
-be confused with the rule, and Search itself is a pushed screen, so the tab bar
-is the only place that glyph is a destination.
+("narrow this down"), but its top bar is a 21px horizontal rule that merged with
+the focus rule above it into a four-bar stack — the indicator stops indicating.
+Any glyph whose top edge is a long horizontal is disqualified by a bar with a top
+rule. [inferred] Measured at the original 8pt rule-to-glyph gap; the dash now
+rides the bar's edge, 14pt above the glyph, which weakens the collision without
+removing it, and the ruling was not re-tested at the new spacing. Shoe Finder
+wears `#icon-search` instead; its ring cannot be confused with the rule, and
+Search itself is a pushed screen, so the tab bar is the only place that glyph is
+a destination.
 
 ## Voice
 
@@ -536,10 +552,10 @@ continuous morph.
   Shoe Finder paid for the search slot. [observed 2026-08-21] The bar is
   app-drawn now (see *The tab bar is app-drawn again*): five tabs, Home · Browse ·
   Shoe Finder · Cart · Profile, in Brooks's own sprite glyphs, with a sliding ink
-  rule above the focused icon. Search traded its slot back for Shoe Finder's; it
-  is a pushed screen entered from the Browse header field and the category
-  header, and it still drives the live Constructor.io type-ahead (LLP 0002)
-  through the native `Stack.SearchBar`.
+  dash riding the bar's top edge under the focused icon. Search traded its slot
+  back for Shoe Finder's; it is a pushed screen entered from the Browse header
+  field and the category header, and it still drives the live Constructor.io
+  type-ahead (LLP 0002) through the native `Stack.SearchBar`.
 
 ## Wow list
 

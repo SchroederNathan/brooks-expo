@@ -20,10 +20,10 @@ import { select } from '@/utils/haptics';
  * back, and lifts the tab ceiling from four to five (the system bar spent a
  * slot on the detached search role and folded a fifth tab into "More").
  *
- * The focus indicator is an ink rule **above** the icon that slides between
- * tabs, and it is deliberately the same motion as the PDP / catalog-tile color
- * rail: the duration and easing are imported from `underline-rail.tsx` rather
- * than restated, and it moves on a native CSS transition so selection never
+ * The focus indicator is an ink dash that rides the bar's top edge, sliding
+ * along it from tab to tab. It is deliberately the same motion as the PDP /
+ * catalog-tile color rail: the duration and easing are imported from
+ * `underline-rail.tsx` rather than restated, and it moves on a native CSS transition so selection never
  * touches the JS thread. Item frames are measured once via onLayout instead of
  * assumed to be width/5, so the rule stays correct on rotation and on the wider
  * Max/iPad frames.
@@ -40,13 +40,20 @@ import { select } from '@/utils/haptics';
  */
 
 const ROW_HEIGHT = 48;
-/** A short dash, not a full-width bar — the rule marks the tab, not its slot. */
-const DASH_WIDTH = 18;
-const DASH_HEIGHT = 2;
-/** Air above the rule, so it does not read as a thickening of the hairline. */
-const DASH_TOP = 6;
-/** Air below the rule, before the glyph. */
-const ICON_TOP = DASH_TOP + DASH_HEIGHT + 8;
+/** A dash, not a full-width bar — the rule marks the tab, not its slot. */
+const DASH_WIDTH = 44;
+/**
+ * The bar's top edge *is* the indicator's track: the rule sits on the line
+ * rather than floating above it, so both are drawn at one thickness and the
+ * moving ink reads as the same stroke as the rule it travels along. That costs
+ * the top edge its hairline — a hairline dash would be a ghost — so the edge is
+ * a 2pt light rule, not a hairline border. Doubling the thickness would have
+ * doubled the weight too, so the track drops from the site's border gray to the
+ * paler sunken-surface value and lands back at the intended lightness.
+ */
+const TRACK_HEIGHT = 2;
+/** Air below the track, before the glyph. */
+const ICON_TOP = 14;
 
 /** Route name (the array-group segment) → icon + accessible label. */
 const TABS: { route: string; icon: TabIconName; label: string }[] = [
@@ -92,7 +99,6 @@ export function BrooksTabBar({ state, navigation, insets }: BottomTabBarProps) {
 
   const dashStyle = {
     width: DASH_WIDTH,
-    height: DASH_HEIGHT,
     backgroundColor: colors.ink,
     opacity: frame ? 1 : 0,
     transform: [{ translateX: frame ? frame.x + frame.width / 2 - DASH_WIDTH / 2 : 0 }],
@@ -108,8 +114,10 @@ export function BrooksTabBar({ state, navigation, insets }: BottomTabBarProps) {
       // for screens: React Navigation only estimates it for its own bar.
       onLayout={(e) => reportHeight?.(e.nativeEvent.layout.height)}
     >
-      <View style={styles.row}>
+      <View style={styles.track}>
         <Animated.View pointerEvents="none" style={[styles.dash, dashStyle]} />
+      </View>
+      <View style={styles.row}>
         {TABS.map((tab, index) => {
           const route = state.routes.find((r) => r.name === tab.route);
           const focused = index === focusedIndex;
@@ -170,8 +178,10 @@ export function BrooksTabBar({ state, navigation, insets }: BottomTabBarProps) {
 const styles = StyleSheet.create({
   bar: {
     backgroundColor: colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.hairline,
+  },
+  track: {
+    height: TRACK_HEIGHT,
+    backgroundColor: colors.surfaceSunken,
   },
   row: {
     flexDirection: 'row',
@@ -180,14 +190,17 @@ const styles = StyleSheet.create({
   item: {
     flex: 1,
     alignItems: 'center',
-    // The rule gets its own band at the top of the row rather than crowding the
-    // glyph, so the glyph is pinned below it instead of centered in the row.
+    // The glyph is pinned below the track rather than centered in the row, so
+    // the air between rule and glyph stays fixed as the row height changes.
     justifyContent: 'flex-start',
     paddingTop: ICON_TOP,
   },
   dash: {
     position: 'absolute',
     left: 0,
-    top: DASH_TOP,
+    top: 0,
+    // Fills the track exactly, so the ink replaces the light rule under it
+    // instead of sitting on top of a thicker or thinner line.
+    height: TRACK_HEIGHT,
   },
 });
