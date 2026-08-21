@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { BrooksIcon } from '@/components/icons';
 import { Photo } from '@/components/photo';
@@ -69,31 +68,30 @@ export function Shop() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.rail}
       >
-        {FRANCHISES.map((f, i) => {
+        {FRANCHISES.map((f) => {
           const p = catalog.products.find((x) => x.franchise === f && x.colors.length);
           return (
-            <Animated.View key={f} entering={FadeInDown.delay(i * 50).duration(300)}>
-              <Press
-                scaleTo={0.95}
-                style={styles.franchise}
-                onPress={() =>
-                  router.push({
-                    pathname: '/category/[id]',
-                    params: { id: 'brooks-running-shoes', title: f, franchise: f },
-                  })
-                }
-              >
-                <View style={styles.franchiseArt}>
-                  {p ? (
-                    <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
-                  ) : null}
-                </View>
-                <Txt variant="caption" style={{ padding: spacing.sm }}>
-                  {f}
-                </Txt>
-              </Press>
-            </Animated.View>
-          );
+            <Press
+              key={f}
+              scaleTo={0.95}
+              style={styles.franchise}
+              onPress={() =>
+                router.push({
+                  pathname: '/category/[id]',
+                  params: { id: 'brooks-running-shoes', title: f, franchise: f },
+                })
+              }
+            >
+              <View style={styles.franchiseArt}>
+                {p ? (
+                  <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
+                ) : null}
+              </View>
+              <Txt variant="caption" style={{ padding: spacing.sm }}>
+                {f}
+              </Txt>
+            </Press>
+            );
         })}
       </ScrollView>
 

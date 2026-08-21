@@ -1,41 +1,32 @@
 import React from 'react';
 import { Pressable, PressableProps, ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { tap } from '../utils/haptics';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-/** Pressed feedback for anything tappable: a small spring scale plus a light tap. */
+/**
+ * Tappable wrapper: haptic on press. Scale feedback is currently ignored
+ * pending the motion overhaul; `scaleTo` stays in the API so call sites
+ * keep their intended press values.
+ */
 export function Press({
   children,
   style,
-  scaleTo = 0.97,
+  scaleTo: _scaleTo = 0.97,
   haptic = true,
-  onPressIn,
   onPress,
   ...rest
 }: PressableProps & { scaleTo?: number; haptic?: boolean; children: React.ReactNode }) {
-  const s = useSharedValue(1);
-  const animated = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
-
+  void _scaleTo;
   return (
-    <AnimatedPressable
+    <Pressable
       {...rest}
-      style={[animated, style as ViewStyle]}
-      onPressIn={(e) => {
-        s.value = withSpring(scaleTo, { damping: 20, stiffness: 400 });
-        onPressIn?.(e);
-      }}
-      onPressOut={() => {
-        s.value = withSpring(1, { damping: 18, stiffness: 300 });
-      }}
+      style={style as ViewStyle}
       onPress={(e) => {
         if (haptic) tap();
         onPress?.(e);
       }}
     >
       {children}
-    </AnimatedPressable>
+    </Pressable>
   );
 }

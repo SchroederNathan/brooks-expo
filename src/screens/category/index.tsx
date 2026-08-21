@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import {
+  Dimensions,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FilterSheet, SORT_OPTIONS, countActiveFilters } from '@/screens/category/filter-sheet';
@@ -30,7 +32,7 @@ import { colors, spacing } from '@/theme';
 const { width: W } = Dimensions.get('window');
 const GRID_GAP = spacing.lg;
 const TILE_W = Math.floor((W - spacing.gutter * 2 - GRID_GAP) / 2);
-/** Where the large title sits; past it the bar title fades in. */
+/** Where the large title sits; past it the bar title appears. */
 const TITLE_ZONE = 64;
 
 /**
@@ -50,7 +52,7 @@ export function Category({
   franchise?: string;
 }) {
   const insets = useSafeAreaInsets();
-  const scrollY = useSharedValue(0);
+  const [showBarTitle, setShowBarTitle] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({});
   const [sort, setSort] = useState<SortKey>('featured');
@@ -85,12 +87,10 @@ export function Category({
   const sortLabel = SORT_OPTIONS.find((o) => o.key === sort)?.label ?? 'Featured';
   const screenTitle = title ? String(title) : 'Shop';
 
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollY.value = e.contentOffset.y;
-  });
-  const barTitleStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [TITLE_ZONE - 14, TITLE_ZONE + 18], [0, 1], 'clamp'),
-  }));
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const next = e.nativeEvent.contentOffset.y > TITLE_ZONE;
+    if (next !== showBarTitle) setShowBarTitle(next);
+  };
 
   return (
     <View style={styles.root}>
@@ -100,11 +100,11 @@ export function Category({
           <Press onPress={() => router.back()} scaleTo={0.9} hitSlop={10} style={styles.barBtn}>
             <BrooksIcon name="caretLeft" size={16} />
           </Press>
-          <Animated.View style={[styles.barTitle, barTitleStyle]}>
+          <View style={[styles.barTitle, { opacity: showBarTitle ? 1 : 0 }]}>
             <Txt variant="productTitle" numberOfLines={1}>
               {screenTitle}
             </Txt>
-          </Animated.View>
+          </View>
           <Press
             onPress={() => router.push('/search')}
             scaleTo={0.9}
@@ -126,7 +126,7 @@ export function Category({
           <Chip label={`Sort · ${sortLabel}`} size="sm" onPress={() => setSheetOpen(true)} />
           {franchises.length > 1 && <View style={styles.controlDivider} />}
           {franchises.length > 1 && (
-            <Animated.ScrollView
+            <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.gutter }}
@@ -140,12 +140,12 @@ export function Category({
                   onPress={() => setActiveFranchise(activeFranchise === f ? null : f)}
                 />
               ))}
-            </Animated.ScrollView>
+            </ScrollView>
           )}
         </View>
       </View>
 
-      <Animated.FlatList
+      <FlatList
         data={products}
         keyExtractor={(p: Product) => p.id}
         numColumns={2}

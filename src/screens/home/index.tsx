@@ -46,9 +46,7 @@ function renderUseCaseItem({ item }: ListRenderItemInfo<UseCaseItem>) {
 }
 
 function renderProductItem({ item, index }: ListRenderItemInfo<Product>) {
-  // Reanimated 4 can leave a zero-delay entering animation transparent under
-  // NativeTabs; start at the first real stagger so the leading tile always paints.
-  return <ProductTile product={item} width={PRODUCT_WIDTH} index={index + 1} />;
+  return <ProductTile product={item} width={PRODUCT_WIDTH} index={index} />;
 }
 
 function renderStoryItem({ item }: ListRenderItemInfo<StoryItem>) {

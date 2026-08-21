@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
@@ -40,7 +39,7 @@ export function Account() {
       </View>
 
       {member ? (
-        <Animated.View entering={FadeInDown.duration(300)} style={styles.card}>
+        <View style={styles.card}>
           <View style={styles.cardTopRow}>
             <Txt variant="eyebrow" c={colors.lime}>
               Brooks Run Club
@@ -68,9 +67,9 @@ export function Account() {
               </View>
             ))}
           </View>
-        </Animated.View>
+        </View>
       ) : (
-        <Animated.View entering={FadeInDown.duration(300)} style={styles.card}>
+        <View style={styles.card}>
           <Txt variant="eyebrow" c={colors.lime}>
             Brooks Run Club
           </Txt>
@@ -87,7 +86,7 @@ export function Account() {
             style={{ marginTop: spacing.lg }}
             onPress={() => router.push('/login')}
           />
-        </Animated.View>
+        </View>
       )}
 
       {/* ----------------------------------------------------------- ROWS -- */}

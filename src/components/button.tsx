@@ -1,17 +1,14 @@
 import * as Haptics from 'expo-haptics';
 import { ActivityIndicator, Pressable, StyleSheet, View, ViewProps } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { colors, radius, spacing } from '../theme';
 import { tap } from '../utils/haptics';
 import { Txt } from './themed-text';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 /**
- * Brooks buttons: 50pt tall, square, uppercase label. On press the fill shifts
- * up-left and a hard shadow appears behind it, so the button reads as a physical
- * sticker being pushed. That is the site's signature interaction.
+ * Brooks buttons: 50pt tall, square, uppercase label. The hard offset shadow
+ * is the site's signature rest state; press-shift motion is currently off
+ * pending the motion overhaul.
  *
  * @ref LLP 0003#brand — Square corners and the hard offset press shadow are not
  * stylistic preferences; they are what Brooks's own buttons do. Rounding these
@@ -37,11 +34,6 @@ export function Button({
   /** Right-aligned text inside the button, e.g. a price. */
   accessory?: string;
 }) {
-  const shift = useSharedValue(0);
-  const animated = useAnimatedStyle(() => ({
-    transform: [{ translateX: -shift.value }, { translateY: -shift.value }],
-  }));
-
   const bg =
     disabled ? colors.surfaceSunken
     : variant === 'primary' ? colors.ink
@@ -57,16 +49,10 @@ export function Button({
   return (
     <View style={[styles.buttonWrap, style]}>
       {!inert && <View style={styles.buttonShadow} />}
-      <AnimatedPressable
+      <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled: !!inert, busy: !!loading }}
         disabled={inert}
-        onPressIn={() => {
-          shift.value = withTiming(4, { duration: 80 });
-        }}
-        onPressOut={() => {
-          shift.value = withTiming(0, { duration: 120 });
-        }}
         onPress={() => {
           if (inert) return;
           tap(Haptics.ImpactFeedbackStyle.Medium);
@@ -76,7 +62,6 @@ export function Button({
           styles.button,
           { backgroundColor: bg },
           variant === 'secondary' && { borderWidth: 3, borderColor: colors.ink },
-          animated,
         ]}
       >
         {loading ? (
@@ -93,7 +78,7 @@ export function Button({
             ) : null}
           </>
         )}
-      </AnimatedPressable>
+      </Pressable>
     </View>
   );
 }

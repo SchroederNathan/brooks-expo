@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import type { SearchBarCommands } from 'react-native-screens';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { BrooksIcon } from '@/components/icons';
 import { Chip } from '@/components/chip';
@@ -145,7 +144,7 @@ export function Search() {
 
         {/* --------------------------------------------------------- EMPTY -- */}
         {query.trim().length < 2 && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.block}>
+          <View style={styles.block}>
             <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
               Trending
             </Txt>
@@ -157,7 +156,7 @@ export function Search() {
             <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.xl }}>
               Search is live against the same index brooksrunning.com uses.
             </Txt>
-          </Animated.View>
+          </View>
         )}
 
         {loading && !live && (
@@ -180,11 +179,11 @@ export function Search() {
         {/* -------------------------------------------------- PRODUCT HITS -- */}
         {live && live.products.length > 0 && (
           <View style={{ marginTop: spacing.md }}>
-            {live.products.map((hit, i) => {
+            {live.products.map((hit) => {
               const local = byId(catalog, hit.id);
               const imageUrl = local ? heroImage(local.colors[0]?.images ?? []) : hit.imageUrl;
               return (
-                <Animated.View key={hit.id} entering={FadeInDown.delay(i * 40).duration(240)}>
+                <View key={hit.id}>
                   <Press haptic={false} scaleTo={0.98} onPress={() => openHit(hit)} style={styles.hit}>
                     <View style={styles.hitImage}>
                       {imageUrl ? <ShoeImage url={imageUrl} width={64} height={64} /> : null}
@@ -214,7 +213,7 @@ export function Search() {
                     <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
                   </Press>
                   <Divider style={{ marginLeft: spacing.gutter + 64 + spacing.lg }} />
-                </Animated.View>
+                </View>
               );
             })}
           </View>

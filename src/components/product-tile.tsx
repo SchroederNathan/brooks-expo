@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { heroImage } from '@/data/images';
 import { priceRange } from '@/data/query';
@@ -51,23 +50,23 @@ function ProductTileImpl({
   const hiddenColors = product.colors.length - SWATCHES_SHOWN;
 
   return (
-    <Animated.View entering={FadeIn.delay(Math.min(index, 8) * 40).duration(280)}>
-      <Press
-        style={[styles.card, { width }]}
-        scaleTo={0.975}
-        onPress={() =>
-          router.push({
-            pathname: '/product/[id]',
-            params: { id: product.id, color: colorway.code },
-          })
-        }
-      >
+    <Press
+      style={[styles.card, { width }]}
+      scaleTo={0.975}
+      onPress={() =>
+        router.push({
+          pathname: '/product/[id]',
+          params: { id: product.id, color: colorway.code },
+        })
+      }
+    >
         <View style={[styles.imageWrap, { width, height: width }]}>
           <ShoeImage
             url={heroImage(colorway.images)}
             width={width}
             height={width}
             priority={index < 4 ? 'high' : 'normal'}
+            transition={0}
           />
           <View style={styles.badges}>
             {isNew ? <Badge label="New" variant="lime" /> : null}
@@ -132,7 +131,6 @@ function ProductTileImpl({
           </View>
         ) : null}
       </Press>
-    </Animated.View>
   );
 }
 

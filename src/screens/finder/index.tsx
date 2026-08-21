@@ -2,7 +2,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProductTile } from '@/components/product-tile';
@@ -310,25 +309,17 @@ export function Finder() {
         >
           <BrooksIcon name="caretLeft" size={16} color={colors.surface} />
         </Press>
-        <Animated.View entering={FadeInDown.duration(400)}>
-          <Txt variant="eyebrow" c={colors.lime}>
-            Shoe Finder
-          </Txt>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.duration(400).delay(80)}>
-          <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.md }}>
-            {VOICE.finderWelcome}
-          </Txt>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.duration(400).delay(160)}>
-          <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.lg }}>
-            {VOICE.finderBlurb}
-          </Txt>
-        </Animated.View>
+        <Txt variant="eyebrow" c={colors.lime}>
+          Shoe Finder
+        </Txt>
+        <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.md }}>
+          {VOICE.finderWelcome}
+        </Txt>
+        <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.lg }}>
+          {VOICE.finderBlurb}
+        </Txt>
         <View style={{ flex: 1 }} />
-        <Animated.View entering={FadeInDown.duration(400).delay(240)}>
-          <Button title={VOICE.finderCta} variant="onDark" onPress={() => setPhase('quiz')} />
-        </Animated.View>
+        <Button title={VOICE.finderCta} variant="onDark" onPress={() => setPhase('quiz')} />
       </View>
     );
   }
@@ -358,11 +349,7 @@ export function Finder() {
 
         <View style={{ marginTop: spacing.xl, gap: spacing.xxl }}>
           {results.map((r, i) => (
-            <Animated.View
-              key={r.product.id}
-              entering={FadeInUp.delay(i * 90).duration(320)}
-              style={styles.resultCard}
-            >
+            <View key={r.product.id} style={styles.resultCard}>
               {i === 0 && (
                 <View style={styles.topPick}>
                   <Txt variant="eyebrow" c={colors.blue} style={{ fontSize: 10 }}>
@@ -383,7 +370,7 @@ export function Finder() {
                   ))}
                 </View>
               </View>
-            </Animated.View>
+            </View>
           ))}
         </View>
 
@@ -411,30 +398,24 @@ export function Finder() {
   if (stepId === 'takeEmOff') {
     return (
       <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + spacing.lg }]}>
-        <Animated.View entering={FadeInDown.duration(400)} exiting={FadeOut}>
-          <Txt variant="eyebrow" c={colors.blue}>
-            Quick checkpoint
-          </Txt>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.duration(420).delay(90)}>
-          <Txt variant="hero" style={{ marginTop: spacing.md }}>
-            Take 'em off.
-          </Txt>
-          <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-            Your shoes, that is.
-          </Txt>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.duration(420).delay(180)}>
-          <Txt variant="body" c={colors.inkSoft} style={{ marginTop: spacing.xl }}>
-            The next question works best barefoot. Stand up, find your balance on one
-            foot, and hold it for ten seconds. We'll wait.
-          </Txt>
-        </Animated.View>
+        <Txt variant="eyebrow" c={colors.blue}>
+          Quick checkpoint
+        </Txt>
+        <Txt variant="hero" style={{ marginTop: spacing.md }}>
+          Take 'em off.
+        </Txt>
+        <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
+          Your shoes, that is.
+        </Txt>
+        <Txt variant="body" c={colors.inkSoft} style={{ marginTop: spacing.xl }}>
+          The next question works best barefoot. Stand up, find your balance on one
+          foot, and hold it for ten seconds. We'll wait.
+        </Txt>
         <View style={{ flex: 1 }} />
         <Progress flow={flow} index={stepIndex} />
-        <Animated.View entering={FadeInDown.duration(400).delay(260)} style={{ marginTop: spacing.lg }}>
+        <View style={{ marginTop: spacing.lg }}>
           <Button title="Done — one foot survived" onPress={() => advance(answers)} />
-        </Animated.View>
+        </View>
       </View>
     );
   }
@@ -458,7 +439,7 @@ export function Finder() {
         </Txt>
       </View>
 
-      <Animated.View key={step.id} entering={FadeInDown.duration(300)} style={{ flex: 1 }}>
+      <View key={step.id} style={{ flex: 1 }}>
         <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginTop: spacing.xl }}>
           {step.eyebrow}
         </Txt>
@@ -472,37 +453,36 @@ export function Finder() {
         ) : null}
 
         <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-          {step.options.map((o, i) => {
+          {step.options.map((o) => {
             const isOn = selected === o.value;
             return (
-              <Animated.View key={o.value} entering={FadeInDown.delay(60 + i * 60).duration(280)}>
-                <Press
-                  haptic={false}
-                  scaleTo={0.98}
-                  onPress={() => pick(step, o.value)}
-                  style={[styles.option, isOn && styles.optionOn]}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Txt variant="h3" c={isOn ? colors.surface : colors.ink}>
-                      {o.label}
+              <Press
+                key={o.value}
+                haptic={false}
+                scaleTo={0.98}
+                onPress={() => pick(step, o.value)}
+                style={[styles.option, isOn && styles.optionOn]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Txt variant="h3" c={isOn ? colors.surface : colors.ink}>
+                    {o.label}
+                  </Txt>
+                  {o.caption ? (
+                    <Txt
+                      variant="bodySmall"
+                      c={isOn ? 'rgba(255,255,255,0.7)' : colors.inkMuted}
+                      style={{ marginTop: 2 }}
+                    >
+                      {o.caption}
                     </Txt>
-                    {o.caption ? (
-                      <Txt
-                        variant="bodySmall"
-                        c={isOn ? 'rgba(255,255,255,0.7)' : colors.inkMuted}
-                        style={{ marginTop: 2 }}
-                      >
-                        {o.caption}
-                      </Txt>
-                    ) : null}
-                  </View>
-                  <View style={[styles.optionTick, isOn && styles.optionTickOn]} />
-                </Press>
-              </Animated.View>
+                  ) : null}
+                </View>
+                <View style={[styles.optionTick, isOn && styles.optionTickOn]} />
+              </Press>
             );
           })}
         </View>
-      </Animated.View>
+      </View>
 
       <Progress flow={flow} index={stepIndex} />
     </View>

@@ -3,14 +3,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Animated, {
-  FadeInDown,
-  FadeOut,
-  LinearTransition,
-  useAnimatedStyle,
-  withTiming,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -116,21 +109,14 @@ export function Cart() {
             )}
           </Txt>
           <View style={styles.track}>
-            <Animated.View
-              layout={LinearTransition.duration(300)}
-              style={[styles.fill, { width: `${Math.max(4, progress * 100)}%` }]}
-            />
+            <View style={[styles.fill, { width: `${Math.max(4, progress * 100)}%` }]} />
           </View>
         </View>
 
         {/* ----------------------------------------------------- LINE ITEMS -- */}
         <View style={{ marginTop: spacing.lg }}>
           {cart.items.map((item) => (
-            <Animated.View
-              key={item.variantId}
-              layout={LinearTransition.duration(260)}
-              exiting={FadeOut.duration(200)}
-            >
+            <View key={item.variantId}>
               <ReanimatedSwipeable
                 friction={2}
                 rightThreshold={64}
@@ -185,7 +171,7 @@ export function Cart() {
                 </View>
               </ReanimatedSwipeable>
               <Divider style={{ marginHorizontal: spacing.gutter }} />
-            </Animated.View>
+            </View>
           ))}
         </View>
 
@@ -202,7 +188,7 @@ export function Cart() {
         </View>
 
         {scopeNote && (
-          <Animated.View entering={FadeInDown.duration(240)} style={styles.scopeNote}>
+          <View style={styles.scopeNote}>
             <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 10 }}>
               Prototype note
             </Txt>
@@ -211,7 +197,7 @@ export function Cart() {
               above already carries the exact variant id Brooks's own Cart-AddProduct
               endpoint accepts, so the last mile is documented, not guessed.
             </Txt>
-          </Animated.View>
+          </View>
         )}
 
         <View style={styles.promise}>
@@ -332,11 +318,7 @@ function UndoBar({
   insets: number;
 }) {
   return (
-    <Animated.View
-      entering={FadeInDown.duration(220)}
-      exiting={FadeOut.duration(160)}
-      style={[styles.undo, { bottom: insets + 130 }]}
-    >
+    <View style={[styles.undo, { bottom: insets + 130 }]}>
       <Txt variant="caption" c={colors.surface} numberOfLines={1} style={{ flex: 1 }}>
         Removed {item.product.name}
       </Txt>
@@ -345,7 +327,7 @@ function UndoBar({
           Undo
         </Txt>
       </Press>
-    </Animated.View>
+    </View>
   );
 }
 

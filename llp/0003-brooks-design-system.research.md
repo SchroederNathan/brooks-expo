@@ -5,7 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
-**Revised:** 2026-08-18
+**Revised:** 2026-08-21
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -333,6 +333,13 @@ first-hand rather than assumed: the email gate, and the per-question
 results instead, where it changes a decision.
 
 ## Screen patterns
+
+[observed — 2026-08-21] Interaction motion in the Expo app (press-scale springs,
+staggered enter/exit, layout transitions, stack slides, the button press-shift,
+PDP size-grid shake, filter-sheet fade) is stripped pending a motion overhaul.
+Home's stretchy parallax hero is the exception and stays. Brand observations
+below still describe the site and the intended native patterns; they are not
+currently implemented as motion.
 
 [inferred] Pattern ownership follows LLP 0001.
 

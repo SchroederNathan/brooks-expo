@@ -2,15 +2,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, FlatList, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpecMeter } from '@/screens/product/spec-meter';
@@ -64,7 +55,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const galleryRef = useRef<FlatList>(null);
   const scrollRef = useRef<ScrollView>(null);
   const sizesY = useRef(0);
-  const shake = useSharedValue(0);
 
   const colorway = product ? colorwayOf(product, colorCode) : undefined;
 
@@ -96,8 +86,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
     ];
   }, [colorway]);
 
-  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
-
   if (!product || !colorway) {
     return (
       <View style={[styles.root, styles.missing, { paddingTop: insets.top + 80 }]}>
@@ -117,15 +105,8 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
 
   const onAdd = () => {
     if (!size) {
-      // Brooks-flavored error: shake the size grid, error haptic, scroll to it.
       setNeedsSize(true);
       notify(Haptics.NotificationFeedbackType.Error);
-      shake.value = withSequence(
-        withTiming(-7, { duration: 50 }),
-        withTiming(7, { duration: 50 }),
-        withTiming(-4, { duration: 50 }),
-        withTiming(0, { duration: 50 })
-      );
       scrollRef.current?.scrollTo({ y: Math.max(0, sizesY.current - 140), animated: true });
       return;
     }
@@ -180,7 +161,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         </View>
 
         {/* --------------------------------------------------------- TITLE -- */}
-        <Animated.View entering={FadeInDown.duration(300)} style={styles.block}>
+        <View style={styles.block}>
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               {product.franchise ? (
@@ -200,7 +181,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               <Stars value={product.rating} count={product.reviewCount} />
             </View>
           ) : null}
-        </Animated.View>
+        </View>
 
         {/* -------------------------------------------------------- COLORS -- */}
         <View style={styles.block}>
@@ -260,8 +241,8 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         )}
 
         {/* --------------------------------------------------------- SIZES -- */}
-        <Animated.View
-          style={[styles.block, shakeStyle]}
+        <View
+          style={styles.block}
           onLayout={(e) => {
             sizesY.current = e.nativeEvent.layout.y;
           }}
@@ -295,7 +276,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               Struck-through sizes are out of stock in this colors.
             </Txt>
           ) : null}
-        </Animated.View>
+        </View>
 
         {/* ---------------------------------------------------------- FIT --- */}
         {(product.cushion || product.support) && (
@@ -407,8 +388,8 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
 }
 
 /**
- * Add-to-bag confirmation: the shoe springs in over the sticky bar, then the
- * toast offers the bag. Auto-dismisses; tapping "View bag" goes straight there.
+ * Add-to-bag confirmation over the sticky bar. Auto-dismisses; tapping
+ * "View bag" goes straight there.
  */
 function AddedToast({
   image,
@@ -427,11 +408,7 @@ function AddedToast({
   }, [onDone]);
 
   return (
-    <Animated.View
-      entering={FadeInDown.duration(260)}
-      exiting={FadeOut.duration(180)}
-      style={[styles.toast, { bottom: bottomInset + 92 }]}
-    >
+    <View style={[styles.toast, { bottom: bottomInset + 92 }]}>
       <View style={styles.toastImage}>
         <ShoeImage url={image} width={54} height={54} />
       </View>
@@ -455,7 +432,7 @@ function AddedToast({
           View bag
         </Txt>
       </Press>
-    </Animated.View>
+    </View>
   );
 }
 

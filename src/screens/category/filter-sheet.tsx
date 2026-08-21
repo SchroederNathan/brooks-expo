@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { applyFilters, facetsFor, type Filters, type SortKey } from '@/data/query';
@@ -90,18 +89,15 @@ export function FilterSheet({
   shoeSizes.sort((a, b) => Number(a.value) - Number(b.value));
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal visible={visible} animationType="none" transparent onRequestClose={onClose}>
       <View style={styles.backdropWrap}>
-        <Animated.View entering={FadeIn.duration(200)} style={styles.backdrop}>
+        <View style={styles.backdrop}>
           <Press onPress={onClose} haptic={false} style={{ flex: 1 }}>
             <View />
           </Press>
-        </Animated.View>
+        </View>
 
-        <Animated.View
-          entering={FadeInDown.duration(240)}
-          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}
-        >
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}>
           <View style={styles.grabberRow}>
             <View style={styles.grabber} />
           </View>
@@ -278,7 +274,7 @@ export function FilterSheet({
               }}
             />
           </View>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );

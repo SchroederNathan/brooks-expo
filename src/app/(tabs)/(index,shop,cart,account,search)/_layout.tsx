@@ -28,6 +28,7 @@ export default function TabStackLayout({ segment }: { segment: string }) {
     <View collapsable={false} style={styles.root}>
       <Stack
         screenOptions={{
+          animation: 'none',
           contentStyle: { backgroundColor: colors.surface },
           headerBackButtonDisplayMode: 'minimal',
           headerBlurEffect: 'none',

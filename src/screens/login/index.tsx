@@ -9,7 +9,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrooksIcon } from '@/components/icons';
@@ -68,7 +67,7 @@ export function Login() {
         </View>
 
         {/* --------------------------------------------------- THE PITCH --- */}
-        <Animated.View entering={FadeInDown.duration(320)} style={styles.card}>
+        <View style={styles.card}>
           <Txt variant="eyebrow" c={colors.lime}>
             Brooks Run Club
           </Txt>
@@ -76,22 +75,18 @@ export function Login() {
             Join the club.{'\n'}Run happier.
           </Txt>
           <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-            {RUN_CLUB_PERKS.map((perk, i) => (
-              <Animated.View
-                key={perk}
-                entering={FadeInDown.delay(120 + i * 70).duration(280)}
-                style={styles.perk}
-              >
+            {RUN_CLUB_PERKS.map((perk) => (
+              <View key={perk} style={styles.perk}>
                 <View style={styles.perkTick}>
                   <BrooksIcon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
                 </View>
                 <Txt variant="body" c="rgba(255,255,255,0.9)" style={{ flex: 1 }}>
                   {perk}
                 </Txt>
-              </Animated.View>
+              </View>
             ))}
           </View>
-        </Animated.View>
+        </View>
 
         {/* ------------------------------------------------------- FORM ---- */}
         <View style={styles.form}>

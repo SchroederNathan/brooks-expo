@@ -40,6 +40,7 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
+              animation: 'none',
               contentStyle: { backgroundColor: colors.surface },
             }}
           >
@@ -49,22 +50,22 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
             <Stack.Screen
               name="product/[id]"
-              options={{ title: 'Product', animation: 'slide_from_right' }}
+              options={{ title: 'Product', animation: 'none' }}
             />
             <Stack.Screen
               name="category/[id]"
-              options={{ title: 'Shop', animation: 'slide_from_right' }}
+              options={{ title: 'Shop', animation: 'none' }}
             />
             <Stack.Screen
               name="finder"
-              options={{ title: 'Shoe Finder', animation: 'slide_from_right' }}
+              options={{ title: 'Shoe Finder', animation: 'none' }}
             />
             <Stack.Screen
               name="login"
               options={{
                 title: 'Brooks Run Club',
                 presentation: 'modal',
-                animation: 'slide_from_bottom',
+                animation: 'none',
               }}
             />
           </Stack>
