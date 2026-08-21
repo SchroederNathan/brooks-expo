@@ -289,11 +289,17 @@ demo assets locally. Product facts continue to come from `packages/catalog`, in
 line with LLP 0002; the home port does not introduce direct SFCC requests or a
 second catalog source of truth.
 
-[observed 2026-08-18] The hero now runs inside a reusable Reanimated
-`StretchyParallaxScrollView`. During negative top-edge overscroll, a fixed
-layout frame keeps the next section attached while an absolutely positioned
-hero cancels the scroll bounce, grows by the pull distance, and stays pinned to
-the screen's top edge. Normal downward scrolling remains native.
+[observed 2026-08-21] The hero runs inside a reusable Reanimated
+`StretchyParallaxScrollView`. During positive scroll, the leading visual
+continuously compensates for half of the content offset without an end clamp,
+so it travels at half speed. The reusable primitive owns a separate foreground
+layer that scrolls at normal content speed, keeping the hero copy and actions at
+a constant inset from the following section while that section paints over the
+media. During negative top-edge overscroll, a fixed layout frame keeps the next
+section attached while the absolutely positioned layers cancel the scroll
+bounce, grow by the pull distance, and stay pinned to the screen's top edge.
+The positive parallax is disabled when the system requests reduced motion; the
+direct pull-to-stretch response remains.
 
 [observed 2026-08-18] Every native tab now owns a native `Stack` through an
 Expo Router array group. A shared `Stack.Toolbar.View` places the Brooks SVG

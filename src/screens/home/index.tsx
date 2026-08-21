@@ -101,35 +101,36 @@ export function Home() {
               style={StyleSheet.absoluteFill}
               pointerEvents="none"
             />
-
-            <View style={styles.heroContent}>
-              <View>
-                <Txt variant="eyebrow" c={colors.surface}>
-                  {HERO.eyebrow}
-                </Txt>
-              </View>
-              <View>
-                <Txt variant="hero" c={colors.surface} style={styles.heroTitle}>
-                  {HERO.title}
-                </Txt>
-              </View>
-              <View>
-                <Txt variant="body" c="rgba(255,255,255,0.90)" style={styles.heroBody}>
-                  {HERO.body}
-                </Txt>
-              </View>
-              <View style={styles.heroAction}>
-                <UnderlinedAction
-                  label={HERO.cta}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/category/[id]',
-                      params: { id: HERO.ctaCategory, title: HERO.ctaTitle },
-                    })
-                  }
-                  onDark
-                />
-              </View>
+          </View>
+        }
+        foreground={
+          <View style={styles.heroContent}>
+            <View>
+              <Txt variant="eyebrow" c={colors.surface}>
+                {HERO.eyebrow}
+              </Txt>
+            </View>
+            <View>
+              <Txt variant="hero" c={colors.surface} style={styles.heroTitle}>
+                {HERO.title}
+              </Txt>
+            </View>
+            <View>
+              <Txt variant="body" c="rgba(255,255,255,0.90)" style={styles.heroBody}>
+                {HERO.body}
+              </Txt>
+            </View>
+            <View style={styles.heroAction}>
+              <UnderlinedAction
+                label={HERO.cta}
+                onPress={() =>
+                  router.push({
+                    pathname: '/category/[id]',
+                    params: { id: HERO.ctaCategory, title: HERO.ctaTitle },
+                  })
+                }
+                onDark
+              />
             </View>
           </View>
         }
