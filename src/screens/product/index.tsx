@@ -1,10 +1,15 @@
 import * as Haptics from 'expo-haptics';
 import { Link, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpecMeter } from '@/screens/product/spec-meter';
+import { AnimatedPaginationDots } from '@/components/animated-pagination-dots';
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
@@ -24,7 +29,7 @@ import { useCart } from '@/store/cart';
 import { colors, shadows, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
-const GALLERY_H = Math.round(W * 0.92);
+const GALLERY_H = W;
 
 const CUSHION_STOPS = ['Responsive', 'Balanced', 'Plush'];
 const SUPPORT_STOPS = ['neutral', 'flexible_support', 'balanced_support', 'structured_support', 'max_support'];
@@ -49,13 +54,12 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   );
   const [size, setSize] = useState<string | null>(null);
   const [width, setWidth] = useState<string | null>(null);
-  const [galleryIndex, setGalleryIndex] = useState(0);
   const [needsSize, setNeedsSize] = useState(false);
   const [added, setAdded] = useState<{ image: string; name: string } | null>(null);
 
-  const galleryRef = useRef<FlatList>(null);
   const scrollRef = useRef<ScrollView>(null);
   const sizesY = useRef(0);
+  const galleryProgress = useSharedValue(0);
 
   const colorway = product ? colorwayOf(product, colorCode) : undefined;
 
@@ -86,6 +90,14 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
       ...colorway.images.filter((i) => i.url !== hero),
     ];
   }, [colorway]);
+
+  useEffect(() => {
+    galleryProgress.set(0);
+  }, [colorway?.code, galleryProgress]);
+
+  const handleGalleryScroll = useAnimatedScrollHandler((event) => {
+    galleryProgress.set(event.contentOffset.x / W);
+  });
 
   if (!product || !colorway) {
     return (
@@ -133,34 +145,31 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             collapsable={false}
             style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}
           >
-            <FlatList
-              ref={galleryRef}
+            <Animated.FlatList
               data={images}
               key={colorway.code}
               keyExtractor={(i) => i.url}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(e) =>
-                setGalleryIndex(Math.round(e.nativeEvent.contentOffset.x / W))
-              }
+              onScroll={handleGalleryScroll}
+              scrollEventThrottle={16}
               renderItem={({ item, index }) => (
                 <ShoeImage
                   url={item.url}
                   width={W}
                   height={GALLERY_H}
+                  contentFit="cover"
                   priority={index === 0 ? 'high' : 'normal'}
                 />
               )}
             />
             {/* Page dots — squares, of course. */}
-            {images.length > 1 && (
-              <View style={styles.dots}>
-                {images.map((img, i) => (
-                  <View key={img.url} style={[styles.dot, i === galleryIndex && styles.dotOn]} />
-                ))}
-              </View>
-            )}
+            <AnimatedPaginationDots
+              count={images.length}
+              progress={galleryProgress}
+              style={styles.dots}
+            />
           </View>
         </Link.AppleZoomTarget>
 
@@ -204,7 +213,8 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             )}
             gap={spacing.sm}
             scrollable
-            style={{ marginTop: spacing.md }}
+            style={styles.colorRail}
+            contentContainerStyle={styles.colorRailContent}
           >
             {product.colors.map((c) => (
               <Press
@@ -216,7 +226,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
                 onPress={() => {
                   select();
                   setColorCode(c.code);
-                  setGalleryIndex(0);
                 }}
                 style={styles.swatch}
               >
@@ -454,11 +463,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: spacing.md,
     alignSelf: 'center',
-    flexDirection: 'row',
-    gap: 6,
   },
-  dot: { width: 6, height: 6, backgroundColor: colors.inkFaint },
-  dotOn: { backgroundColor: colors.ink, width: 18 },
 
   block: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
   titleRow: { flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' },
@@ -468,6 +473,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+
+  // @ref LLP 0003#screen-patterns — Keep swatches aligned to the PDP gutter,
+  // while the horizontal rail itself bleeds to the screen edges.
+  colorRail: { marginTop: spacing.md, marginHorizontal: -spacing.gutter },
+  colorRailContent: { paddingHorizontal: spacing.gutter },
 
   swatch: {
     width: 64,

@@ -7,8 +7,11 @@
 - Bun 1.2.22 is the package manager (`bun.lock`). Use `bun run start`,
   `bun run ios`, `bun run android`, `bun run web`, and `bun run typecheck`.
 - Metro uses port 8081. `metro.config.js` excludes `tools/` from crawling.
-- iOS and Android native projects are checked in; web uses Metro single output.
-- Configured app identifiers in `app.json` are `com.exponathan.brooks`, while
-  checked-in native projects currently use `com.brooks.prototype`.
+- Generated iOS and Android native projects are present locally but ignored by
+  git; web uses Metro single output. iOS uses `com.exponathan.brooks` in both
+  `app.json` and the generated native project.
+  Android is mismatched: `app.json` uses `com.exponathan.brooks`, while the
+  generated native project uses `com.brooks.prototype`.
 - No app unit-test or E2E runner is configured. The available static check is
-  TypeScript; app UI is validated interactively with Argent.
+  TypeScript; app UI is validated interactively with Argent. Existing visual
+  baselines live under `.baselines/ios` and `.baselines/android`.

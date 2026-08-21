@@ -343,7 +343,12 @@ Home's stretchy parallax hero stays. Colorway selection is a second exception:
 the focused thumbnail uses a sliding ink underline (`UnderlineRail`) rather than
 a boxed blue/ink border, on both the catalog tile and the PDP color rail. Brand
 observations below still describe the site and the intended native patterns;
-they are not currently implemented as press or enter motion.
+they are not currently implemented as press or enter motion. [observed —
+2026-08-21] The PDP gallery pagination is another state-feedback exception:
+`AnimatedPaginationDots` derives fractional page progress from the horizontal
+scroll offset on the UI thread, shrinking the outgoing bar while expanding the
+incoming one. Reduced-motion users get the same state indication without the
+continuous morph.
 
 [inferred] Pattern ownership follows LLP 0001.
 
@@ -361,7 +366,14 @@ they are not currently implemented as press or enter motion.
   (`UnderlineRail`), not a boxed blue border.
 - **PDP** (GOAT presentation, Zappos fit confidence): edge-to-edge gallery; color
   swatches as real shoe thumbnails (Brooks colorways are multi-color, so dots
-  lie), sharing the same sliding underline as the tile; size grid with
+  lie), sharing the same sliding underline as the tile. [observed — 2026-08-21]
+  Every gallery page is a screen-width square and uses cover fitting, so portrait
+  and landscape source photography both occupy the same 1:1 viewport without
+  client-side letterboxing.
+  The color rail keeps its
+  first thumbnail aligned to the page gutter but its scroll viewport bleeds to
+  both screen edges, so additional colorways are not clipped by the content
+  container; size grid with
   out-of-stock struck through (`selectable: false` from LLP 0002); width at
   equal rank with size; sticky "Add to Cart · $150.00".
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
