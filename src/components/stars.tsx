@@ -8,7 +8,17 @@ import { Txt } from './themed-text';
  * Rating stars drawn with the site's own border-star glyphs (full/half/empty),
  * replacing an earlier text-glyph (★) stand-in.
  */
-export function Stars({ value, count }: { value: number | null; count?: number }) {
+export function Stars({
+  value,
+  count,
+  size = 11,
+  showSummary = true,
+}: {
+  value: number | null;
+  count?: number;
+  size?: number;
+  showSummary?: boolean;
+}) {
   if (value == null) return null;
   const half = Math.round(value * 2) / 2;
   return (
@@ -18,15 +28,17 @@ export function Stars({ value, count }: { value: number | null; count?: number }
           <BrooksIcon
             key={i}
             name={i <= half ? 'borderStarFull' : i - 0.5 === half ? 'borderStarHalf' : 'borderStarEmpty'}
-            size={11}
+            size={size}
             color={colors.ink}
           />
         ))}
       </View>
-      <Txt variant="tiny" c={colors.inkMuted}>
-        {value.toFixed(1)}
-        {count ? ` (${count})` : ''}
-      </Txt>
+      {showSummary ? (
+        <Txt variant="tiny" c={colors.inkMuted}>
+          {value.toFixed(1)}
+          {count ? ` (${count})` : ''}
+        </Txt>
+      ) : null}
     </View>
   );
 }

@@ -67,6 +67,7 @@ the design system routes both families through tokens.
 | Product title (tile) | 15 | 700 | 0 |
 | Price | 16 | 700 | 0 (tabular) |
 | Body | 15 | 400 | 0 |
+| Choice control | 13 | 400 | 0 |
 | Eyebrow / button | 12–14 | 700 UPPERCASE | +1.2 |
 
 ### Shape and motion
@@ -75,13 +76,65 @@ the design system routes both families through tokens.
 trait; only dots and badges are circles. Buttons are 50pt tall, square, uppercase,
 and on press they shift up-left against a **hard offset shadow (`6px 6px 0`)** — a
 "pressed sticker," not a soft Material elevation. Reproducing that instead of a
-blur is most of what makes the buttons feel like Brooks's buttons.
+blur is most of what makes the buttons feel like Brooks's buttons. The PDP
+purchase action is the storefront-derived exception documented below.
 
 [observed] The site's hero entrance is fade + 40px rise, staggered ~80ms per
 element (`.o-hero-home--pre-animation-state`). Sitewide transitions run 0.3–0.6s.
 
 [observed] The brand's most ownable graphic gesture is a hand-drawn **squiggle**
 underline used on hover CTAs and annotations.
+
+### PDP purchase controls
+
+[observed — Brooks mobile PDP reference `IMG_4196.png`, 2026-08-21] Size and
+width choices use a distinct commerce-control treatment rather than the filled
+filter-chip state. Choices are 48pt-tall white rectangles with a 1pt neutral
+rule; selection strengthens that to a 2pt ink outline without changing the
+fill. Unavailable variants keep their footprint and use a pale diagonal from
+bottom-left to top-right across both text and surface. Size fills a five-column
+grid; width fills a four-column grid and may wrap a long label to two lines.
+Both grids use tight 4pt gutters, matching the mobile storefront's dense fit
+controls rather than the app's roomier filter-chip spacing.
+
+[observed — same reference] The purchase CTA is a deliberate exception to the
+hard-shadow primary button: a flat Brooks-blue rectangle with sentence-case
+action copy aligned left and the price aligned right. The shared `Chip`
+`productOption` appearance and `Button` `purchase` variant own these treatments;
+the PDP owns only the five/four-column composition.
+
+[observed — live Ghost 18 PDP, 2026-08-21] Until size and width form a ready
+variant, the purchase action keeps the same split `Add to cart` / price layout
+but changes its fill to the site's secondary gray `#707070`; both labels remain
+white. The app mirrors this readiness state instead of changing the button copy
+to an instruction, so the action does not jump as fit choices are made.
+
+### PDP detail sections
+
+[observed — live Ghost 18 PDP and mobile references `IMG_4197.png` through
+`IMG_4199.png`, 2026-08-21] The post-purchase hierarchy begins with a full-width
+`#F8F8F8` returns band: the circular Run Happy Promise seal, an uppercase
+`90-day free returns` label with the sprite's `icon-info`, and one sentence of
+90-day trial copy. The seal is the same Brooks CDN asset already bundled for the
+home screen, not an app recreation.
+
+[observed — same sources] Product details are an expanded ruled accordion. The
+description spans the content width, then facts form a stable two-column
+description list: bold labels at left and regular values at right. `Best for`,
+`Cushion`, `Support`, and `Features` are present in the normalized catalog and
+render in that structure. Midsole drop, weight, and sustainability appear on
+the storefront but are not part of the current normalized snapshot, so the app
+omits them rather than embedding Ghost-specific literals or implying that the
+fields exist for every product.
+
+[observed — warmed browser capture, 2026-08-21] Cushion and support do not come
+from the 81-symbol header sprite. The live PDP serves two standalone 100×100 SVG
+assets, `PDP-Icon-BalancedCushion.svg` and
+`PDP-Icon-BalancedSupport.svg`. Their path data is preserved verbatim in
+`BalancedCushionIcon` and `BalancedSupportIcon`; `InfoIcon`, carets, and rating
+stars continue to use the already-captured sprite geometry. The reviews summary
+reuses those shared star and caret primitives rather than text stars or generic
+system chevrons.
 
 ### Icons and the logo
 
@@ -373,9 +426,10 @@ continuous morph.
   The color rail keeps its
   first thumbnail aligned to the page gutter but its scroll viewport bleeds to
   both screen edges, so additional colorways are not clipped by the content
-  container; size grid with
-  out-of-stock struck through (`selectable: false` from LLP 0002); width at
-  equal rank with size; sticky "Add to Cart · $150.00".
+  container; a five-column size grid followed by a four-column width grid;
+  unavailable choices crossed diagonally (`selectable: false` from LLP 0002);
+  selected choices outlined rather than filled; sticky flat-blue
+  "Add to cart" action with the price split to the trailing edge.
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
   progress bar, and Brooks's own empty-state copy.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a

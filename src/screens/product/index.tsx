@@ -1,5 +1,7 @@
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -8,12 +10,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { SpecMeter } from '@/screens/product/spec-meter';
 import { AnimatedPaginationDots } from '@/components/animated-pagination-dots';
-import { BrooksIcon } from '@/components/icons';
+import {
+  BalancedCushionIcon,
+  BalancedSupportIcon,
+  BrooksIcon,
+  InfoIcon,
+} from '@/components/icons';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
-import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
 import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
@@ -30,9 +35,20 @@ import { colors, shadows, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const GALLERY_H = W;
+const OPTION_CONTENT_W = W - spacing.gutter * 2;
+const OPTION_GAP = spacing.xs;
+const SIZE_OPTION_W = (OPTION_CONTENT_W - OPTION_GAP * 4) / 5;
+const WIDTH_OPTION_W = (OPTION_CONTENT_W - OPTION_GAP * 3) / 4;
 
-const CUSHION_STOPS = ['Responsive', 'Balanced', 'Plush'];
-const SUPPORT_STOPS = ['neutral', 'flexible_support', 'balanced_support', 'structured_support', 'max_support'];
+// @ref LLP 0003#pdp-detail-sections — Brooks pairs these catalog taxonomy
+// values with fixed explanatory copy on the live PDP.
+const CUSHION_DESCRIPTION: Record<string, string> = {
+  Balanced: 'A blend of soft and dynamic cushioning that offers a smooth feeling with each step.',
+};
+
+const SUPPORT_DESCRIPTION: Record<string, string> = {
+  balanced_support: 'Secure heel with dynamic forefoot helps provide inherent stability.',
+};
 
 /**
  * The PDP.
@@ -40,9 +56,9 @@ const SUPPORT_STOPS = ['neutral', 'flexible_support', 'balanced_support', 'struc
  * @ref LLP 0003#pdp — GOAT's presentation with Zappos's fit confidence: an
  * edge-to-edge swipeable gallery, colorway swatches that are real shoe
  * thumbnails (Brooks colorways are multi-color, so dots lie) with a sliding
- * ink underline (`UnderlineRail`), a size grid with
- * out-of-stock struck through (`selectable: false`, LLP 0002), width at equal
- * rank with size, and a sticky "Add to Bag · $150" bar.
+ * ink underline (`UnderlineRail`), a size grid with diagonally marked
+ * out-of-stock choices (`selectable: false`, LLP 0002), width at equal rank
+ * with size, and a sticky blue purchase bar.
  */
 export function ProductDetail({ id, colorParam }: { id: string; colorParam?: string }) {
   const insets = useSafeAreaInsets();
@@ -56,6 +72,8 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const [width, setWidth] = useState<string | null>(null);
   const [needsSize, setNeedsSize] = useState(false);
   const [added, setAdded] = useState<{ image: string; name: string } | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
   const sizesY = useRef(0);
@@ -115,6 +133,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const listPrice = colorway.listPrice ?? product.listPrice;
   const sizeUnit = colorway.sizeAttrId === 'size_Apparel' ? 'size' : 'US size';
   const canAdd = !colorway.soldOut && colorway.sizes.some((s) => s.available);
+  const readyToAdd = canAdd && !!size && (colorway.widths.length === 0 || !!width);
 
   const onAdd = () => {
     if (!size) {
@@ -236,29 +255,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
           </UnderlineRail>
         </View>
 
-        {/* --------------------------------------------------------- WIDTH -- */}
-        {colorway.widths.length > 0 && (
-          <View style={styles.block}>
-            <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
-              Width
-            </Txt>
-            <View style={styles.chipWrap}>
-              {colorway.widths.map((w) => (
-                <Chip
-                  key={w.value}
-                  label={w.label}
-                  selected={width === w.value}
-                  disabled={!w.available}
-                  onPress={() => setWidth(w.value)}
-                />
-              ))}
-            </View>
-            <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-              Four widths is the Brooks difference — most running brands stop at one.
-            </Txt>
-          </View>
-        )}
-
         {/* --------------------------------------------------------- SIZES -- */}
         <View
           style={styles.block}
@@ -276,13 +272,15 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               </Txt>
             ) : null}
           </View>
-          <View style={[styles.chipWrap, { marginTop: spacing.md }]}>
+          <View style={[styles.optionWrap, { marginTop: spacing.md }]}>
             {colorway.sizes.map((s) => (
               <Chip
                 key={s.value}
                 label={s.label}
+                appearance="productOption"
                 selected={size === s.value}
                 disabled={!s.available}
+                style={styles.sizeOption}
                 onPress={() => {
                   setSize(s.value);
                   setNeedsSize(false);
@@ -290,80 +288,114 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               />
             ))}
           </View>
-          {colorway.sizes.some((s) => !s.available) ? (
-            <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-              Struck-through sizes are out of stock in this colors.
-            </Txt>
-          ) : null}
         </View>
 
-        {/* ---------------------------------------------------------- FIT --- */}
-        {(product.cushion || product.support) && (
-          <View style={[styles.block, styles.fitCard]}>
-            <Txt variant="h3" style={{ marginBottom: spacing.lg }}>
-              How it runs
+        {/* --------------------------------------------------------- WIDTH -- */}
+        {colorway.widths.length > 0 && (
+          <View style={styles.block}>
+            <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.md }}>
+              Select width
             </Txt>
-            <View style={{ gap: spacing.xl }}>
-              <SpecMeter label="Feel under foot" stops={CUSHION_STOPS} value={product.cushion} />
-              {product.support ? (
-                <SpecMeter
-                  label="Support"
-                  stops={SUPPORT_STOPS.map((s) => supportLabel(s) ?? s)}
-                  value={supportLabel(product.support)}
+            <View style={styles.optionWrap}>
+              {colorway.widths.map((w) => (
+                <Chip
+                  key={w.value}
+                  label={w.label}
+                  appearance="productOption"
+                  selected={width === w.value}
+                  disabled={!w.available}
+                  style={styles.widthOption}
+                  onPress={() => setWidth(w.value)}
                 />
-              ) : null}
+              ))}
             </View>
-            {product.bestFor.length > 0 && (
-              <View style={{ marginTop: spacing.xl }}>
-                <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 11, marginBottom: spacing.sm }}>
-                  Best for
-                </Txt>
-                <View style={styles.chipWrap}>
-                  {product.bestFor.map((b) => (
-                    <View key={b} style={styles.bestFor}>
-                      <Txt variant="caption">{b}</Txt>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* ---------------------------------------------------- DESCRIPTION -- */}
-        {product.description ? (
-          <View style={styles.block}>
-            <Txt variant="h3" style={{ marginBottom: spacing.md }}>
-              About this {product.productType === 'Shoes' ? 'shoe' : 'piece'}
+            <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
+              Four widths is the Brooks difference — most running brands stop at one.
             </Txt>
-            <Txt variant="body" c={colors.inkSoft}>
-              {product.description}
-            </Txt>
-          </View>
-        ) : null}
-
-        {product.features.length > 0 && (
-          <View style={styles.block}>
-            <Divider style={{ marginBottom: spacing.lg }} />
-            {product.features.map((f) => (
-              <View key={f} style={styles.feature}>
-                <View style={styles.featureTick} />
-                <Txt variant="body" c={colors.inkSoft} style={{ flex: 1 }}>
-                  {f}
-                </Txt>
-              </View>
-            ))}
           </View>
         )}
 
         {/* ------------------------------------------------------- PROMISE -- */}
-        <View style={[styles.block, styles.promise]}>
-          <Txt variant="eyebrow" c={colors.inkMuted}>
-            Run Happy Promise
-          </Txt>
-          <Txt variant="body" style={{ marginTop: spacing.sm }}>
-            Take it for a 90-day trial run. If you're not happy, we're not happy.
-          </Txt>
+        <RunHappyPromise />
+
+        {/* ------------------------------------------------------- DETAILS -- */}
+        <View style={styles.detailsSection}>
+          <AccordionHeader
+            label="Product details"
+            open={detailsOpen}
+            onPress={() => setDetailsOpen((open) => !open)}
+          />
+          {detailsOpen ? (
+            <View style={styles.detailsPanel}>
+              {product.description ? (
+                <Txt variant="body" style={styles.detailsDescription}>
+                  {product.description}
+                </Txt>
+              ) : null}
+
+              {product.bestFor.length > 0 ? (
+                <ProductDetailRow label="Best for">
+                  <Txt variant="body">{product.bestFor.join(', ')}</Txt>
+                </ProductDetailRow>
+              ) : null}
+
+              {product.cushion ? (
+                <ProductDetailRow
+                  label="Cushion"
+                  icon={product.cushion === 'Balanced' ? <BalancedCushionIcon /> : undefined}
+                >
+                  <Txt variant="body">{product.cushion}</Txt>
+                  {CUSHION_DESCRIPTION[product.cushion] ? (
+                    <Txt variant="body" style={styles.detailSupportingText}>
+                      {CUSHION_DESCRIPTION[product.cushion]}
+                    </Txt>
+                  ) : null}
+                </ProductDetailRow>
+              ) : null}
+
+              {product.support ? (
+                <ProductDetailRow
+                  label="Support"
+                  icon={
+                    product.support === 'balanced_support' ? <BalancedSupportIcon /> : undefined
+                  }
+                >
+                  <Txt variant="body">{supportLabel(product.support)}</Txt>
+                  {SUPPORT_DESCRIPTION[product.support] ? (
+                    <Txt variant="body" style={styles.detailSupportingText}>
+                      {SUPPORT_DESCRIPTION[product.support]}
+                    </Txt>
+                  ) : null}
+                </ProductDetailRow>
+              ) : null}
+
+              {product.features.length > 0 ? (
+                <ProductDetailRow label="Features">
+                  <Txt variant="body">{product.features.join(', ')}</Txt>
+                </ProductDetailRow>
+              ) : null}
+            </View>
+          ) : null}
+
+          {product.rating != null ? (
+            <>
+              <AccordionHeader
+                label={`Reviews (${product.reviewCount})`}
+                open={reviewsOpen}
+                onPress={() => setReviewsOpen((open) => !open)}
+                accessory={<Stars value={product.rating} size={14} showSummary={false} />}
+              />
+              {reviewsOpen ? (
+                <View style={styles.reviewPanel}>
+                  <Stars value={product.rating} count={product.reviewCount} size={14} />
+                  <Txt variant="body" style={{ marginTop: spacing.sm }}>
+                    Rated {product.rating.toFixed(1)} out of 5 by {product.reviewCount}{' '}
+                    {product.reviewCount === 1 ? 'runner' : 'runners'}.
+                  </Txt>
+                </View>
+              ) : null}
+            </>
+          ) : null}
         </View>
       </ScrollView>
 
@@ -384,11 +416,10 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
       {/* ------------------------------------------------------ STICKY BAR -- */}
       <View style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }]}>
         <Button
-          title={
-            colorway.soldOut ? 'Sold out' : size ? 'Add to bag' : `Select ${sizeUnit}`
-          }
-          accessory={canAdd ? formatPrice(price) : undefined}
-          disabled={!canAdd}
+          variant="purchase"
+          title="Add to cart"
+          accessory={price == null ? undefined : formatPrice(price)}
+          disabled={!readyToAdd}
           onPress={onAdd}
         />
       </View>
@@ -402,6 +433,74 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
           onDone={() => setAdded(null)}
         />
       )}
+    </View>
+  );
+}
+
+function RunHappyPromise() {
+  return (
+    <View style={styles.promiseBand}>
+      <Image
+        source={require('../../../assets/home/run-happy-promise.png')}
+        style={styles.promiseSeal}
+        contentFit="contain"
+      />
+      <View style={{ flex: 1 }}>
+        <View style={styles.promiseTitleRow}>
+          <Txt variant="eyebrow">90-day free returns</Txt>
+          <InfoIcon size={14} />
+        </View>
+        <Txt variant="bodySmall" style={{ marginTop: spacing.xs }}>
+          Take our gear for a 90-day test run. If you don’t love it, return it for free.
+        </Txt>
+      </View>
+    </View>
+  );
+}
+
+function AccordionHeader({
+  label,
+  open,
+  onPress,
+  accessory,
+}: {
+  label: string;
+  open: boolean;
+  onPress: () => void;
+  accessory?: ReactNode;
+}) {
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityState={{ expanded: open }}
+      onPress={onPress}
+      style={styles.accordionHeader}
+    >
+      <Txt variant="eyebrow" style={{ flex: 1 }}>
+        {label}
+      </Txt>
+      {accessory ? <View style={styles.accordionAccessory}>{accessory}</View> : null}
+      <BrooksIcon name={open ? 'caretUp' : 'caretDown'} size={16} color={colors.ink} />
+    </Press>
+  );
+}
+
+function ProductDetailRow({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.detailRow}>
+      <View style={styles.detailLabelColumn}>
+        <Txt variant="productTitle">{label}</Txt>
+        {icon ? <View style={styles.detailIcon}>{icon}</View> : null}
+      </View>
+      <View style={styles.detailValueColumn}>{children}</View>
     </View>
   );
 }
@@ -495,30 +594,62 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
 
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  optionWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: OPTION_GAP },
+  sizeOption: { width: SIZE_OPTION_W },
+  widthOption: { width: WIDTH_OPTION_W, paddingHorizontal: 0 },
 
-  fitCard: {
+  promiseBand: {
+    marginTop: spacing.xxl,
     backgroundColor: colors.surfaceAlt,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  promiseSeal: { width: 68, height: 68 },
+  promiseTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+
+  detailsSection: {
     marginHorizontal: spacing.gutter,
-    paddingHorizontal: spacing.lg,
+    marginTop: spacing.xxl,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkMuted,
+  },
+  accordionHeader: {
+    minHeight: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkMuted,
+  },
+  accordionAccessory: { marginLeft: 'auto' },
+  detailsPanel: {
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkMuted,
+  },
+  detailsDescription: { marginBottom: spacing.xxl },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.lg,
+    marginBottom: spacing.xxl,
+  },
+  detailLabelColumn: { width: 112, flexShrink: 0 },
+  detailValueColumn: { flex: 1 },
+  detailIcon: { marginTop: spacing.sm },
+  detailSupportingText: { marginTop: spacing.sm },
+  reviewPanel: {
     paddingVertical: spacing.xl,
-  },
-  bestFor: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-  },
-
-  feature: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start', marginBottom: spacing.md },
-  featureTick: { width: 8, height: 8, backgroundColor: colors.lime, marginTop: 8 },
-
-  promise: {
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    marginHorizontal: spacing.gutter,
-    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkMuted,
   },
 
   topBar: {

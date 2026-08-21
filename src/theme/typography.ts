@@ -53,6 +53,7 @@ export const type = {
 
   body: { fontFamily: font.regular, fontSize: 15, lineHeight: 24 },
   bodySmall: { fontFamily: font.regular, fontSize: 13, lineHeight: 20 },
+  option: { fontFamily: font.regular, fontSize: 13, lineHeight: 17 },
   caption: { fontFamily: font.medium, fontSize: 13, lineHeight: 18 },
   tiny: { fontFamily: font.medium, fontSize: 11, lineHeight: 14 },
   script: { fontFamily: font.script, fontSize: 22, lineHeight: 26 },

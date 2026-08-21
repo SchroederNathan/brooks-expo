@@ -23,6 +23,8 @@ export const colors = {
   surfaceSunken: '#F2F2F2',
   /** The site's default border color. */
   hairline: '#E5E5E5',
+  /** Stronger rule used by outlined commerce choices and their sold-out slash. */
+  controlBorder: '#C9CBCD',
 
   /** Brooks blue — the default theme accent: links, selected states, focus. */
   blue: '#003789',
