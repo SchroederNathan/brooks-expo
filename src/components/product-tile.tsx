@@ -23,6 +23,11 @@ import { select } from '@/utils/haptics';
  * rule a shoe in or out on color without paying a navigation round-trip, which is
  * exactly where Brooks's 8-colorway products otherwise punish the shopper.
  */
+
+const SWATCHES_SHOWN = 4;
+const SWATCH_GAP = spacing.xs;
+// Apple HIG minimum touch target; the shortfall is made up with hitSlop, not size.
+const MIN_TOUCH = 48;
 function ProductTileImpl({
   product,
   width,
@@ -38,6 +43,12 @@ function ProductTileImpl({
 
   const isNew = product.badge === 'New Style';
   const soldOut = product.colors.every((c) => c.soldOut);
+
+  // Four swatches plus the "+N" counter split the tile width into five slots,
+  // so the swatch size scales with the tile instead of being fixed.
+  const slot = Math.floor((width - SWATCH_GAP * SWATCHES_SHOWN) / (SWATCHES_SHOWN + 1));
+  const slop = Math.max(0, Math.ceil((MIN_TOUCH - slot) / 2));
+  const hiddenColors = product.colors.length - SWATCHES_SHOWN;
 
   return (
     <Animated.View entering={FadeIn.delay(Math.min(index, 8) * 40).duration(280)}>
@@ -67,25 +78,32 @@ function ProductTileImpl({
 
         {product.colors.length > 1 ? (
           <View style={styles.swatches}>
-            {product.colors.slice(0, 5).map((c, i) => (
+            {product.colors.slice(0, SWATCHES_SHOWN).map((c, i) => (
               <Press
                 key={c.code}
                 haptic={false}
                 scaleTo={0.85}
-                hitSlop={6}
+                hitSlop={slop}
                 onPress={() => {
                   select();
                   setCi(i);
                 }}
-                style={[styles.swatch, i === ci && styles.swatchOn]}
+                style={[styles.swatch, { width: slot, height: slot }, i === ci && styles.swatchOn]}
               >
-                <ShoeImage url={heroImage(c.images)} width={20} height={20} transition={0} />
+                <ShoeImage
+                  url={heroImage(c.images)}
+                  width={slot}
+                  height={slot}
+                  transition={0}
+                />
               </Press>
             ))}
-            {product.colors.length > 5 ? (
-              <Txt variant="tiny" c={colors.inkMuted} style={{ marginLeft: 2 }}>
-                +{product.colors.length - 5}
-              </Txt>
+            {hiddenColors > 0 ? (
+              <View style={[styles.swatchMore, { width: slot, height: slot }]}>
+                <Txt variant="tiny" c={colors.inkMuted}>
+                  +{hiddenColors}
+                </Txt>
+              </View>
             ) : null}
           </View>
         ) : (
@@ -128,15 +146,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
-  swatches: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 28 },
+  swatches: { flexDirection: 'row', alignItems: 'center', gap: SWATCH_GAP },
   swatch: {
-    width: 26,
-    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: 'transparent',
     borderRadius: radius.none,
   },
   swatchOn: { borderColor: colors.blue },
+  swatchMore: { alignItems: 'center', justifyContent: 'center' },
 });
