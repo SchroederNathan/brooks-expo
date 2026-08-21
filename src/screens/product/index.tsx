@@ -129,7 +129,10 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             tile photo lands on the hero, not the full screen. Size is known
             on first paint (window width), which the zoom transition needs. */}
         <Link.AppleZoomTarget>
-          <View style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}>
+          <View
+            collapsable={false}
+            style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}
+          >
             <FlatList
               ref={galleryRef}
               data={images}

@@ -63,7 +63,10 @@ function ProductTileImpl({
           {/* Host View, not ShoeImage: AppleZoom slots native zoom props onto
               a single ref-capable child. @ref LLP 0003#tile */}
           <Link.AppleZoom>
-            <View style={StyleSheet.flatten([styles.imageWrap, { width, height: width }])}>
+            <View
+              collapsable={false}
+              style={StyleSheet.flatten([styles.imageWrap, { width, height: width }])}
+            >
               <ShoeImage
                 url={heroImage(colorway.images)}
                 width={width}
