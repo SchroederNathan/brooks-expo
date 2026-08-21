@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -12,6 +12,7 @@ import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
+import { UnderlineRail } from '@/components/underline-rail';
 import { select } from '@/utils/haptics';
 
 /**
@@ -19,8 +20,8 @@ import { select } from '@/utils/haptics';
  *
  * @ref LLP 0003#tile — Colorway swatches live on the tile and swap its image in
  * place. This is the highest-value borrow in the whole survey: it lets someone
- * rule a shoe in or out on color without paying a navigation round-trip, which is
- * exactly where Brooks's 8-colorway products otherwise punish the shopper.
+ * rule a shoe in or out on color without paying a navigation round-trip.
+ * Selected color is an ink underline (`UnderlineRail`), not a boxed border.
  */
 
 const SWATCHES_SHOWN = 4;
@@ -50,25 +51,29 @@ function ProductTileImpl({
   const hiddenColors = product.colors.length - SWATCHES_SHOWN;
 
   return (
-    <Press
-      style={[styles.card, { width }]}
-      scaleTo={0.975}
-      onPress={() =>
-        router.push({
-          pathname: '/product/[id]',
-          params: { id: product.id, color: colorway.code },
-        })
-      }
+    <Link
+      href={{
+        pathname: '/product/[id]',
+        params: { id: product.id, color: colorway.code },
+      }}
+      asChild
     >
-        <View style={[styles.imageWrap, { width, height: width }]}>
-          <ShoeImage
-            url={heroImage(colorway.images)}
-            width={width}
-            height={width}
-            priority={index < 4 ? 'high' : 'normal'}
-            transition={0}
-          />
-          <View style={styles.badges}>
+      <Press style={StyleSheet.flatten([styles.card, { width }])} scaleTo={0.975}>
+        <View style={{ width, height: width, marginBottom: spacing.xs }}>
+          {/* Host View, not ShoeImage: AppleZoom slots native zoom props onto
+              a single ref-capable child. @ref LLP 0003#tile */}
+          <Link.AppleZoom>
+            <View style={StyleSheet.flatten([styles.imageWrap, { width, height: width }])}>
+              <ShoeImage
+                url={heroImage(colorway.images)}
+                width={width}
+                height={width}
+                priority={index < 4 ? 'high' : 'normal'}
+                transition={0}
+              />
+            </View>
+          </Link.AppleZoom>
+          <View style={styles.badges} pointerEvents="none">
             {isNew ? <Badge label="New" variant="lime" /> : null}
             {product.onSale ? <Badge label="Sale" variant="sale" /> : null}
             {soldOut ? <Badge label="Sold out" /> : null}
@@ -76,18 +81,33 @@ function ProductTileImpl({
         </View>
 
         {product.colors.length > 1 ? (
-          <View style={styles.swatches}>
+          <UnderlineRail
+            selectedIndex={ci}
+            gap={SWATCH_GAP}
+            style={styles.swatches}
+            trailing={
+              hiddenColors > 0 ? (
+                <View style={[styles.swatchMore, { width: slot, height: slot }]}>
+                  <Txt variant="tiny" c={colors.inkMuted}>
+                    +{hiddenColors}
+                  </Txt>
+                </View>
+              ) : null
+            }
+          >
             {product.colors.slice(0, SWATCHES_SHOWN).map((c, i) => (
               <Press
                 key={c.code}
                 haptic={false}
                 scaleTo={0.85}
                 hitSlop={slop}
+                accessibilityRole="button"
+                accessibilityState={{ selected: i === ci }}
                 onPress={() => {
                   select();
                   setCi(i);
                 }}
-                style={[styles.swatch, { width: slot, height: slot }, i === ci && styles.swatchOn]}
+                style={[styles.swatch, { width: slot, height: slot }]}
               >
                 <ShoeImage
                   url={heroImage(c.images)}
@@ -97,14 +117,7 @@ function ProductTileImpl({
                 />
               </Press>
             ))}
-            {hiddenColors > 0 ? (
-              <View style={[styles.swatchMore, { width: slot, height: slot }]}>
-                <Txt variant="tiny" c={colors.inkMuted}>
-                  +{hiddenColors}
-                </Txt>
-              </View>
-            ) : null}
-          </View>
+          </UnderlineRail>
         ) : (
           <View style={{ height: spacing.lg }} />
         )}
@@ -131,6 +144,7 @@ function ProductTileImpl({
           </View>
         ) : null}
       </Press>
+    </Link>
   );
 }
 
@@ -141,23 +155,14 @@ const styles = StyleSheet.create({
   imageWrap: {
     backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
-    marginBottom: spacing.xs,
   },
   badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
-  swatches: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SWATCH_GAP,
-    marginBottom: spacing.lg,
-  },
+  swatches: { marginBottom: spacing.lg },
   swatch: {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
     borderRadius: radius.none,
   },
-  swatchOn: { borderColor: colors.blue },
   swatchMore: { alignItems: 'center', justifyContent: 'center' },
 });

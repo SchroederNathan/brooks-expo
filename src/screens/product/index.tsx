@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
+import { UnderlineRail } from '@/components/underline-rail';
 import { notify, select } from '@/utils/haptics';
 import { catalog } from '@/data/catalog';
 import { heroImage } from '@/data/images';
@@ -33,7 +34,8 @@ const SUPPORT_STOPS = ['neutral', 'flexible_support', 'balanced_support', 'struc
  *
  * @ref LLP 0003#pdp — GOAT's presentation with Zappos's fit confidence: an
  * edge-to-edge swipeable gallery, colorway swatches that are real shoe
- * thumbnails (Brooks colorways are multi-color, so dots lie), a size grid with
+ * thumbnails (Brooks colorways are multi-color, so dots lie) with a sliding
+ * ink underline (`UnderlineRail`), a size grid with
  * out-of-stock struck through (`selectable: false`, LLP 0002), width at equal
  * rank with size, and a sticky "Add to Bag · $150" bar.
  */
@@ -123,36 +125,41 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
       >
         {/* ------------------------------------------------------- GALLERY -- */}
-        <View style={{ height: GALLERY_H, backgroundColor: colors.surfaceAlt }}>
-          <FlatList
-            ref={galleryRef}
-            data={images}
-            key={colorway.code}
-            keyExtractor={(i) => i.url}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) =>
-              setGalleryIndex(Math.round(e.nativeEvent.contentOffset.x / W))
-            }
-            renderItem={({ item, index }) => (
-              <ShoeImage
-                url={item.url}
-                width={W}
-                height={GALLERY_H}
-                priority={index === 0 ? 'high' : 'normal'}
-              />
+        {/* @ref LLP 0003#pdp — AppleZoomTarget is the gallery bounds so the
+            tile photo lands on the hero, not the full screen. Size is known
+            on first paint (window width), which the zoom transition needs. */}
+        <Link.AppleZoomTarget>
+          <View style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}>
+            <FlatList
+              ref={galleryRef}
+              data={images}
+              key={colorway.code}
+              keyExtractor={(i) => i.url}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) =>
+                setGalleryIndex(Math.round(e.nativeEvent.contentOffset.x / W))
+              }
+              renderItem={({ item, index }) => (
+                <ShoeImage
+                  url={item.url}
+                  width={W}
+                  height={GALLERY_H}
+                  priority={index === 0 ? 'high' : 'normal'}
+                />
+              )}
+            />
+            {/* Page dots — squares, of course. */}
+            {images.length > 1 && (
+              <View style={styles.dots}>
+                {images.map((img, i) => (
+                  <View key={img.url} style={[styles.dot, i === galleryIndex && styles.dotOn]} />
+                ))}
+              </View>
             )}
-          />
-          {/* Page dots — squares, of course. */}
-          {images.length > 1 && (
-            <View style={styles.dots}>
-              {images.map((img, i) => (
-                <View key={img.url} style={[styles.dot, i === galleryIndex && styles.dotOn]} />
-              ))}
-            </View>
-          )}
-        </View>
+          </View>
+        </Link.AppleZoomTarget>
 
         {/* --------------------------------------------------------- TITLE -- */}
         <View style={styles.block}>
@@ -187,28 +194,34 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               {colorway.name}
             </Txt>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.swatchRail}
+          <UnderlineRail
+            selectedIndex={Math.max(
+              0,
+              product.colors.findIndex((c) => c.code === colorway.code)
+            )}
+            gap={spacing.sm}
+            scrollable
+            style={{ marginTop: spacing.md }}
           >
             {product.colors.map((c) => (
               <Press
                 key={c.code}
                 haptic={false}
                 scaleTo={0.92}
+                accessibilityRole="button"
+                accessibilityState={{ selected: c.code === colorway.code }}
                 onPress={() => {
                   select();
                   setColorCode(c.code);
                   setGalleryIndex(0);
                 }}
-                style={[styles.swatch, c.code === colorway.code && styles.swatchOn]}
+                style={styles.swatch}
               >
                 <ShoeImage url={heroImage(c.images)} width={64} height={64} transition={0} />
                 {c.soldOut ? <View style={styles.swatchSoldOut} /> : null}
               </Press>
             ))}
-          </ScrollView>
+          </UnderlineRail>
         </View>
 
         {/* --------------------------------------------------------- WIDTH -- */}
@@ -453,17 +466,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 
-  swatchRail: { gap: spacing.sm, marginTop: spacing.md },
   swatch: {
-    width: 72,
-    height: 72,
+    width: 64,
+    height: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.hairline,
     backgroundColor: colors.surfaceAlt,
   },
-  swatchOn: { borderColor: colors.ink },
   swatchSoldOut: {
     position: 'absolute',
     top: 0,

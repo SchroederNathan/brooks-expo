@@ -40,7 +40,6 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
-              animation: 'none',
               contentStyle: { backgroundColor: colors.surface },
             }}
           >
@@ -48,24 +47,17 @@ export default function RootLayout() {
                 its branded nested Stack header; this title still feeds web
                 document titles and accessibility. */}
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
-            <Stack.Screen
-              name="product/[id]"
-              options={{ title: 'Product', animation: 'none' }}
-            />
-            <Stack.Screen
-              name="category/[id]"
-              options={{ title: 'Shop', animation: 'none' }}
-            />
-            <Stack.Screen
-              name="finder"
-              options={{ title: 'Shoe Finder', animation: 'none' }}
-            />
+            {/* iOS 18+ zoom is opted in per Link.AppleZoom on the tile; this
+                screen keeps the stack default so Android / older iOS still
+                push. @ref LLP 0003#screen-patterns */}
+            <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
+            <Stack.Screen name="category/[id]" options={{ title: 'Shop' }} />
+            <Stack.Screen name="finder" options={{ title: 'Shoe Finder' }} />
             <Stack.Screen
               name="login"
               options={{
                 title: 'Brooks Run Club',
                 presentation: 'modal',
-                animation: 'none',
               }}
             />
           </Stack>

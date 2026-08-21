@@ -334,12 +334,16 @@ results instead, where it changes a decision.
 
 ## Screen patterns
 
-[observed — 2026-08-21] Interaction motion in the Expo app (press-scale springs,
-staggered enter/exit, layout transitions, stack slides, the button press-shift,
-PDP size-grid shake, filter-sheet fade) is stripped pending a motion overhaul.
-Home's stretchy parallax hero is the exception and stays. Brand observations
-below still describe the site and the intended native patterns; they are not
-currently implemented as motion.
+[observed — 2026-08-21] Press-scale, enter/exit, layout transitions, the button
+press-shift, PDP size-grid shake, and the filter-sheet fade stay stripped
+pending the motion overhaul. Stack pushes use the platform default again. On
+iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
+gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
+Home's stretchy parallax hero stays. Colorway selection is a second exception:
+the focused thumbnail uses a sliding ink underline (`UnderlineRail`) rather than
+a boxed blue/ink border, on both the catalog tile and the PDP color rail. Brand
+observations below still describe the site and the intended native patterns;
+they are not currently implemented as press or enter motion.
 
 [inferred] Pattern ownership follows LLP 0001.
 
@@ -353,10 +357,13 @@ currently implemented as motion.
 - **Tile** (Zappos/GOAT): colorway swatches **on the tile**, swapping its image in
   place. The highest-value borrow in the survey — Brooks products carry up to 11
   colorways, and making someone navigate to see them is the core failure to avoid.
+  Selected color is an ink underline that slides under the focused thumbnail
+  (`UnderlineRail`), not a boxed blue border.
 - **PDP** (GOAT presentation, Zappos fit confidence): edge-to-edge gallery; color
   swatches as real shoe thumbnails (Brooks colorways are multi-color, so dots
-  lie); size grid with out-of-stock struck through (`selectable: false` from LLP
-  0002); width at equal rank with size; sticky "Add to Cart · $150.00".
+  lie), sharing the same sliding underline as the tile; size grid with
+  out-of-stock struck through (`selectable: false` from LLP 0002); width at
+  equal rank with size; sticky "Add to Cart · $150.00".
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
   progress bar, and Brooks's own empty-state copy.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
