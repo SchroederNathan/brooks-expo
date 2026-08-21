@@ -106,7 +106,7 @@ function ProductTileImpl({
             ) : null}
           </View>
         ) : (
-          <View style={{ height: 10 }} />
+          <View style={{ height: spacing.lg }} />
         )}
 
         <Txt variant="productTitle" numberOfLines={1}>
@@ -141,10 +141,15 @@ const styles = StyleSheet.create({
   imageWrap: {
     backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
-  swatches: { flexDirection: 'row', alignItems: 'center', gap: SWATCH_GAP },
+  swatches: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SWATCH_GAP,
+    marginBottom: spacing.lg,
+  },
   swatch: {
     alignItems: 'center',
     justifyContent: 'center',

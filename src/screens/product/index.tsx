@@ -5,7 +5,6 @@ import { Dimensions, FlatList, ScrollView, StyleSheet, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpecMeter } from '@/screens/product/spec-meter';
-import { Badge } from '@/components/badge';
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
@@ -145,11 +144,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               />
             )}
           />
-          <View style={styles.galleryBadges}>
-            {product.badge ? (
-              <Badge label={product.badge} variant={product.badge === 'Sale' ? 'sale' : 'lime'} />
-            ) : null}
-          </View>
           {/* Page dots — squares, of course. */}
           {images.length > 1 && (
             <View style={styles.dots}>
@@ -440,7 +434,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
   missing: { alignItems: 'center', paddingHorizontal: spacing.xxl },
 
-  galleryBadges: { position: 'absolute', top: 108, left: spacing.gutter },
   dots: {
     position: 'absolute',
     bottom: spacing.md,
