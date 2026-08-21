@@ -39,6 +39,37 @@ export interface ProductImage {
   alt: string;
 }
 
+/** One customer review from Brooks's TurnTo-backed PDP endpoint. */
+export interface ProductReview {
+  id: number;
+  publishedDate: string;
+  title: string;
+  text: string;
+  rating: number;
+  author: string;
+  badge: string | null;
+}
+
+export interface ReviewDimension {
+  label: string;
+  /** Zero-based average across the ordered values below. */
+  average: number;
+  values: string[];
+}
+
+export interface ProductReviews {
+  averageRating: number | null;
+  reviewCount: number;
+  dimensions: ReviewDimension[];
+  recent: ProductReview[];
+}
+
+export interface ReviewsSnapshot {
+  harvestedAt: string;
+  source: string;
+  products: Record<string, ProductReviews>;
+}
+
 export interface Colorway {
   /** Brooks color code, e.g. "197". Combines with the style id to form a variant. */
   code: string;

@@ -27,9 +27,15 @@ if (!fs.existsSync(catalog)) {
   process.exit(1);
 }
 
+const reviews = path.join(SRC, 'reviews.json');
+
 fs.mkdirSync(TARGET.data, { recursive: true });
 fs.copyFileSync(catalog, path.join(TARGET.data, 'catalog.json'));
 console.log(`✓ ${TARGET.name}: catalog.json -> ${path.relative(ROOT, TARGET.data)}`);
+if (fs.existsSync(reviews)) {
+  fs.copyFileSync(reviews, path.join(TARGET.data, 'reviews.json'));
+  console.log(`✓ ${TARGET.name}: reviews.json -> ${path.relative(ROOT, TARGET.data)}`);
+}
 
 fs.mkdirSync(TARGET.lib, { recursive: true });
 for (const f of TARGET.libFiles) {

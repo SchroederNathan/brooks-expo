@@ -136,6 +136,29 @@ stars continue to use the already-captured sprite geometry. The reviews summary
 reuses those shared star and caret primitives rather than text stars or generic
 system chevrons.
 
+### PDP reviews
+
+[observed — Brooks mobile PDP reference and warmed browser responses,
+2026-08-21] The expanded review accordion follows a fixed information order:
+large centered decimal score, five stars, dark `Write a review` action, then
+fit rails. Each rail has a centered bold label, a thin neutral track with a
+short ink segment positioned from TurnTo's zero-based average, and only the two
+endpoint labels below it. The page then shows `3 most recent reviews` opposite
+an underlined `See all reviews` link.
+
+[observed — same sources] A recent-review row begins with stars and date at left
+and the author at right, followed by a bold sentence-case title and unmodified
+review body. Reviews are stacked without card chrome; whitespace provides the
+separation. The section ends with a centered outlined `See all reviews` action
+and the accordion's bottom rule.
+
+[confirmed — user direction, 2026-08-21] The app keeps that storefront hierarchy,
+but `Write a review` is intentionally inert in the prototype. Both all-review
+actions remain external links to the real Brooks PDP. This is an honest boundary:
+the three public reviews can be bundled, while the full TurnTo experience is
+live, mutable, and unavailable to a direct React Native request because of
+Akamai (LLP 0002).
+
 ### Icons and the logo
 
 [observed — real-browser capture, 2026-08-17] The site ships its entire icon set

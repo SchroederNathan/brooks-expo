@@ -30,8 +30,11 @@ import { catalog } from '@/data/catalog';
 import { heroImage } from '@/data/images';
 import { supportLabel } from '@/data/labels';
 import { byId, colorwayOf, formatPrice } from '@/data/query';
+import { reviewsFor } from '@/data/reviews';
 import { useCart } from '@/store/cart';
 import { colors, shadows, spacing } from '@/theme';
+
+import { ReviewsPanel } from './reviews-panel';
 
 const { width: W } = Dimensions.get('window');
 const GALLERY_H = W;
@@ -80,6 +83,9 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const galleryProgress = useSharedValue(0);
 
   const colorway = product ? colorwayOf(product, colorCode) : undefined;
+  const reviewData = product ? reviewsFor(product.id) : undefined;
+  const reviewRating = reviewData ? reviewData.averageRating : product?.rating ?? null;
+  const reviewCount = reviewData ? reviewData.reviewCount : product?.reviewCount ?? 0;
 
   /** Default the width to Medium when available — it is what most people wear. */
   useEffect(() => {
@@ -208,9 +214,9 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             </View>
             <Price value={price} listValue={listPrice} large />
           </View>
-          {product.rating ? (
+          {reviewRating ? (
             <View style={{ marginTop: spacing.sm }}>
-              <Stars value={product.rating} count={product.reviewCount} />
+              <Stars value={reviewRating} count={reviewCount} />
             </View>
           ) : null}
         </View>
@@ -377,22 +383,21 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             </View>
           ) : null}
 
-          {product.rating != null ? (
+          {reviewRating != null ? (
             <>
               <AccordionHeader
-                label={`Reviews (${product.reviewCount})`}
+                label={`Reviews (${reviewCount})`}
                 open={reviewsOpen}
                 onPress={() => setReviewsOpen((open) => !open)}
-                accessory={<Stars value={product.rating} size={14} showSummary={false} />}
+                accessory={<Stars value={reviewRating} size={14} showSummary={false} />}
               />
               {reviewsOpen ? (
-                <View style={styles.reviewPanel}>
-                  <Stars value={product.rating} count={product.reviewCount} size={14} />
-                  <Txt variant="body" style={{ marginTop: spacing.sm }}>
-                    Rated {product.rating.toFixed(1)} out of 5 by {product.reviewCount}{' '}
-                    {product.reviewCount === 1 ? 'runner' : 'runners'}.
-                  </Txt>
-                </View>
+                <ReviewsPanel
+                  rating={reviewRating}
+                  count={reviewCount}
+                  data={reviewData}
+                  productUrl={product.url}
+                />
               ) : null}
             </>
           ) : null}
@@ -646,11 +651,6 @@ const styles = StyleSheet.create({
   detailValueColumn: { flex: 1 },
   detailIcon: { marginTop: spacing.sm },
   detailSupportingText: { marginTop: spacing.sm },
-  reviewPanel: {
-    paddingVertical: spacing.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.inkMuted,
-  },
 
   topBar: {
     position: 'absolute',

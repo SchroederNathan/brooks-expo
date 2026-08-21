@@ -205,6 +205,35 @@ as unreliable, **the apps keep the cart on-device** while building the exact
 variant id Brooks expects. The endpoint is documented here so the last mile is a
 known quantity, not a guess.
 
+## TurnTo reviews
+
+[observed — warmed browser capture, 2026-08-21] The two SFCC review controllers
+return useful structured models in addition to server-rendered HTML:
+
+- `TurnTo-GetReviews?pid=<style>` returns `topReviewsModel.reviews`, the three
+  newest reviews with id, date, title, body, integer rating, author, and optional
+  badge, plus `totalReviews`.
+- `TurnTo-GetReviewsSummaryAccordion?pid=<style>` returns
+  `reviewsSummaryModel` with the current average/count and ordered review
+  dimensions. Shoe dimensions include `Length` and `Width`; each has a
+  zero-based numeric average and five labeled stops from the negative to the
+  positive extreme.
+
+[observed — same capture] Review values are live and can move independently of
+the older product snapshot. Women's Glycerin Max 2 (`120468`) returned a 4.3
+average and 295 reviews on August 21, 2026, while an earlier storefront capture
+showed 4.2 and 263. The review harvest therefore owns the rating displayed on
+the PDP whenever it has data, rather than mixing its current review bodies with
+the catalog's older aggregate.
+
+[inferred] These controllers inherit the same Akamai boundary as
+`Product-Variation`, so the mobile app cannot fetch them directly. A dedicated,
+checkpointed pass in `tools/harvest/harvest-reviews.js` warms a real browser,
+makes two low-volume requests per catalog style, and writes
+`packages/catalog/reviews.json`. The bundled snapshot contains only the summary,
+fit dimensions, and three reviews already rendered on each public PDP; all-review
+and write-review actions hand off to the Brooks product page.
+
 ## The image CDN
 
 [observed] Open to any client, and it resizes on demand:
