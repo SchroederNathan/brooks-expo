@@ -1,5 +1,4 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -298,17 +297,7 @@ export function Finder() {
   /* ---------------------------------------------------------------- intro -- */
   if (phase === 'intro') {
     return (
-      <View style={[styles.intro, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.lg }]}>
-        {/* Pushed screen since the search tab took Finder's tab-bar slot, so it
-            needs its own way back. */}
-        <Press
-          haptic={false}
-          hitSlop={10}
-          onPress={() => router.back()}
-          style={{ alignSelf: 'flex-start', marginBottom: spacing.xl }}
-        >
-          <BrooksIcon name="caretLeft" size={16} color={colors.surface} />
-        </Press>
+      <View style={[styles.intro, { paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }]}>
         <Txt variant="eyebrow" c={colors.lime}>
           Shoe Finder
         </Txt>
@@ -329,7 +318,7 @@ export function Finder() {
     return (
       <ScrollView
         style={{ backgroundColor: colors.surface }}
-        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }}
+        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ paddingHorizontal: spacing.gutter }}>
@@ -397,7 +386,7 @@ export function Finder() {
   /* ------------------------------------------------------------ checkpoint -- */
   if (stepId === 'takeEmOff') {
     return (
-      <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: insets.bottom + spacing.lg }]}>
+      <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: spacing.xl }]}>
         <Txt variant="eyebrow" c={colors.blue}>
           Quick checkpoint
         </Txt>
@@ -425,7 +414,7 @@ export function Finder() {
   const selected = (answers as Record<string, unknown>)[step.id];
 
   return (
-    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.lg }]}>
+    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }]}>
       <View style={styles.quizHead}>
         <Press
           haptic={false}

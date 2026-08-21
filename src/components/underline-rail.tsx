@@ -20,9 +20,15 @@ import { colors } from '@/theme';
  * component on the catalog tile and the PDP color rail.
  */
 
-const INDICATOR_MS = 200;
+/**
+ * The indicator's motion, exported so anything else that slides an ink rule to
+ * a focused item moves identically — currently the bottom tab bar's top rule
+ * (`components/tab-bar.tsx`). Keep the two in lockstep by importing, not by
+ * copying the numbers.
+ */
+export const INDICATOR_MS = 200;
 /** On-screen movement. Native CSS transitions reject cubic-bezier strings. */
-const EASE_IN_OUT = cubicBezier(0.77, 0, 0.175, 1);
+export const INDICATOR_EASING = cubicBezier(0.77, 0, 0.175, 1);
 const LINE_GAP = 3;
 
 export function UnderlineRail({
@@ -89,7 +95,7 @@ export function UnderlineRail({
     transform: [{ translateX: selected?.x ?? 0 }],
     transitionProperty: ['transform', 'width'] as const,
     transitionDuration: armed && !reduced ? INDICATOR_MS : 0,
-    transitionTimingFunction: EASE_IN_OUT,
+    transitionTimingFunction: INDICATOR_EASING,
   };
 
   const row = (

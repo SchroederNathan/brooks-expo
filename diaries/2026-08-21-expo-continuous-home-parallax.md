@@ -62,6 +62,14 @@ should ask before persisting optional development-tool dependencies.
 the native export times out, and its analyzer could resolve both the simulator
 UDID and Metro logical device ID to the same stored session automatically.
 
+## Android boundary hardening
+
+[confirmed] Android requires the transformed media to live inside a separate
+animated clipping container. `overflow: hidden` on the transformed media itself
+clips its children but does not prevent that view from painting beyond the hero
+frame. The foreground also clips its children to the same moving lower boundary,
+so large text cannot overlap the following section.
+
 ## Follow-ups
 
 None.

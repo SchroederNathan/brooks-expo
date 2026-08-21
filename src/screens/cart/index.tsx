@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
@@ -31,7 +30,6 @@ const FREE_SHIPPING_OVER = 100;
  * language.
  */
 export function Cart() {
-  const insets = useSafeAreaInsets();
   const cart = useCart();
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const [scopeNote, setScopeNote] = useState(false);
@@ -67,7 +65,7 @@ export function Cart() {
           style={{ marginTop: spacing.xl, alignSelf: 'stretch' }}
           onPress={() => router.push('/shop')}
         />
-        {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} insets={insets.bottom} />}
+        {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />}
       </View>
     );
   }
@@ -80,7 +78,7 @@ export function Cart() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingTop: spacing.lg,
-          paddingBottom: insets.bottom + 120,
+          paddingBottom: 100,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -211,7 +209,7 @@ export function Cart() {
       </ScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
-      <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 66 }]}>
+      <View style={styles.stickyBar}>
         <Button
           title="Checkout"
           accessory={fmt(cart.total)}
@@ -223,7 +221,7 @@ export function Cart() {
       </View>
 
       {undo && (
-        <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} insets={insets.bottom} />
+        <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />
       )}
     </View>
   );
@@ -308,17 +306,10 @@ function DeleteAction({ drag, onPress }: { drag: SharedValue<number>; onPress: (
   );
 }
 
-function UndoBar({
-  item,
-  onUndo,
-  insets,
-}: {
-  item: CartItemView;
-  onUndo: () => void;
-  insets: number;
-}) {
+/** 100 clears the sticky checkout bar (≈87pt tall) it floats over. */
+function UndoBar({ item, onUndo }: { item: CartItemView; onUndo: () => void }) {
   return (
-    <View style={[styles.undo, { bottom: insets + 130 }]}>
+    <View style={styles.undo}>
       <Txt variant="caption" c={colors.surface} numberOfLines={1} style={{ flex: 1 }}>
         Removed {item.product.name}
       </Txt>
@@ -401,6 +392,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: spacing.gutter,
     paddingTop: spacing.md,
+    // The screen's bottom edge IS the tab bar's top edge (the bar is a flex
+    // sibling, not an overlay), so this clears nothing but itself.
+    paddingBottom: spacing.md,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.hairline,
@@ -410,6 +404,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.gutter,
     right: spacing.gutter,
+    bottom: 100,
     backgroundColor: colors.ink,
     flexDirection: 'row',
     alignItems: 'center',

@@ -96,7 +96,7 @@ export function Account() {
           detail={cart.count ? `${cart.count} ${cart.count === 1 ? 'item' : 'items'}` : 'Empty'}
           onPress={() => router.push('/cart')}
         />
-        <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.push('/finder')} />
+        <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
         <Row
           label="Order history"
           detail="Prototype — checkout is out of scope"

@@ -97,7 +97,7 @@ export function Shop() {
 
       {/* Shoe Finder moved off the tab bar when the native search tab took the
           fifth slot; this card is its primary entry point now. */}
-      <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.push('/finder')}>
+      <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.navigate('/(tabs)/(finder)/finder')}>
         <View style={{ flex: 1, gap: spacing.xs }}>
           <Txt variant="eyebrow" c={colors.lime}>
             Shoe Finder

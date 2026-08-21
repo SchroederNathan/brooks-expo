@@ -19,8 +19,8 @@ const PARALLAX_RATE = 0.5;
 /**
  * A scroll container whose leading visual moves at half the content's speed
  * while its foreground stays locked to the following content. Both layers
- * stretch into top-edge overscroll. Page content paints above the media and
- * below the foreground.
+ * stretch into top-edge overscroll and clip at the following content's moving
+ * boundary, so neither layer can bleed into later sections.
  *
  * @ref LLP 0003#screen-patterns — Home's planned parallax is implemented as a
  * reusable scroll primitive rather than hero-specific event state.
@@ -38,6 +38,14 @@ export function StretchyParallaxScrollView({
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollOffset.set(event.contentOffset.y);
   });
+  const mediaClipStyle = useAnimatedStyle(() => {
+    const pullDistance = Math.max(-scrollOffset.get(), 0);
+
+    return {
+      height: headerHeight + pullDistance,
+      transform: [{ translateY: -pullDistance }],
+    };
+  }, [headerHeight]);
   const mediaStyle = useAnimatedStyle(() => {
     const offset = scrollOffset.get();
     const pullDistance = Math.max(-offset, 0);
@@ -47,7 +55,7 @@ export function StretchyParallaxScrollView({
 
     return {
       height: headerHeight + pullDistance,
-      transform: [{ translateY: parallaxDistance - pullDistance }],
+      transform: [{ translateY: parallaxDistance }],
     };
   }, [headerHeight, reduceMotion]);
   const foregroundStyle = useAnimatedStyle(() => {
@@ -69,9 +77,17 @@ export function StretchyParallaxScrollView({
     >
       <View style={[styles.headerFrame, { height: headerHeight }]}>
         <Animated.View
-          style={[styles.header, { height: headerHeight }, mediaStyle]}
+          style={[
+            styles.mediaClip,
+            { height: headerHeight },
+            mediaClipStyle,
+          ]}
         >
-          {header}
+          <Animated.View
+            style={[styles.media, { height: headerHeight }, mediaStyle]}
+          >
+            {header}
+          </Animated.View>
         </Animated.View>
       </View>
       <Animated.View
@@ -93,12 +109,18 @@ const styles = StyleSheet.create({
   headerFrame: {
     width: '100%',
   },
-  header: {
+  mediaClip: {
     position: 'absolute',
     top: 0,
     right: 0,
     left: 0,
     overflow: 'hidden',
+  },
+  media: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
   },
   foreground: {
     position: 'absolute',
@@ -106,5 +128,6 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     left: 0,
+    overflow: 'hidden',
   },
 });

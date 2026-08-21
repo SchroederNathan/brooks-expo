@@ -43,8 +43,8 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.surface },
             }}
           >
-            {/* The root header stays hidden because each NativeTabs route owns
-                its branded nested Stack header; this title still feeds web
+            {/* The root header stays hidden because each tab route owns its
+                branded nested Stack header; this title still feeds web
                 document titles and accessibility. */}
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
             {/* iOS 18+ zoom is opted in per Link.AppleZoom on the tile; this
@@ -52,7 +52,6 @@ export default function RootLayout() {
                 push. @ref LLP 0003#screen-patterns */}
             <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
             <Stack.Screen name="category/[id]" options={{ title: 'Shop' }} />
-            <Stack.Screen name="finder" options={{ title: 'Shoe Finder' }} />
             <Stack.Screen
               name="login"
               options={{

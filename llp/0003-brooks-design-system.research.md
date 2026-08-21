@@ -197,14 +197,73 @@ Ported verbatim into [`src/components/icons.tsx`](../src/components/icons.tsx)
   as six paths in the order R, O, K, S, O, B. `BrooksWordmark` now uses it
   verbatim, replacing the earlier hand-traced approximation.
 - [observed] There is **no home and no storefront glyph** — a website needs
-  neither — so the app's home and shop tab icons were hand-drawn to match the
-  real set's line weight. [superseded 2026-08-17] The tab bar is now the
+  neither — so the app's home and browse tab icons are hand-drawn to match the
+  real set's line weight. [superseded 2026-08-17] The tab bar became the
   system-rendered native tab bar (`NativeTabs`), which accepts only SF Symbols /
-  Material Symbols or raster images — so no tab renders a sprite glyph or a
-  hand-drawn stand-in anymore. `BrooksIcon` remains the icon set for all
-  in-body chrome (headers, rows, carets). The lime-with-blue-text cart badge
-  also lived on that JS tab bar; the system badge's text is fixed white on
-  iOS, so the badge now wears `blue` instead.
+  Material Symbols or raster images — so no tab rendered a sprite glyph or a
+  hand-drawn stand-in, and the lime-with-blue-text cart badge went `blue`
+  because the system badge's text is fixed white on iOS.
+
+### The tab bar is app-drawn again
+
+[observed 2026-08-21] `NativeTabs` is gone; the bar is drawn in JS
+(`components/tab-bar.tsx` + `components/tab-icon.tsx`) over React Navigation's
+JS tabs (`expo-router/js-tabs`). Three things drove the reversal, in order of
+weight:
+
+- **The sprite could not reach the tab bar.** The system bar renders its own
+  items, so the one piece of chrome every session touches was the one piece
+  wearing Apple's icons instead of Brooks's. Cart and Profile are now
+  `#icon-cart` and `#icon-account` verbatim; Shoe Finder wears `#icon-search`
+  (see the focus-rule constraint below). Home and Browse stay hand-drawn.
+- **Four tabs was a hard ceiling.** A fifth regular tab plus the detached
+  `role="search"` trigger tipped `UITabBarController` into a "More" tab, which
+  swallowed the search role. That is why Shoe Finder had no slot. The app-drawn
+  bar has no such rule, so Home / Browse / Shoe Finder / Cart / Profile all fit
+  and **Search gives up its tab instead** — it was always reachable from the
+  Browse header's search field and the category header, both of which push
+  `/search` onto the current tab's stack, where the native `Stack.SearchBar`
+  still comes up with it.
+- **The badge.** Lime fill with blue text is the site's own minicart treatment
+  and is back.
+
+[observed] The focus indicator is an ink rule **above** the icon rather than the
+system's tint-only selected state, and it slides between tabs on the same
+motion as the PDP / catalog-tile color rail: `INDICATOR_MS` and
+`INDICATOR_EASING` are imported from `components/underline-rail.tsx`, not
+restated, so the two cannot drift. It rides a native CSS transition, so
+selection never touches the JS thread. The rule is a short 22px dash, not the
+full slot width — it marks the tab, not the hit area.
+
+[observed] Layout needs no per-screen work, which is not the obvious answer.
+`BottomTabView` renders each screen with `StyleSheet.absoluteFill`, which reads
+like "content goes under the bar" — but that fill is relative to a sibling
+container styled `screens: { flex: 1 }`, with the tab bar next to it in the same
+column. A non-absolute bar therefore *shortens* the screen instead of covering
+it. The bar also owns the bottom safe-area inset. So every scroll container and
+the cart's sticky checkout bar keep the padding they had, and anything that added
+the bar's height on top of `insets.bottom` double-counted it by ~85pt. The bar
+still measures itself and publishes the height through
+`BottomTabBarHeightCallbackContext`, purely so `useBottomTabBarHeight()` reports
+the truth rather than React Navigation's UIKit estimate for a bar that is not
+React Navigation's.
+
+[observed] Two behaviors the JS bar has to supply itself, because React
+Navigation's own tab button supplies them and a custom `tabBar` replaces it:
+switching tabs is `CommonActions.navigate(route)` dispatched at `state.key`, and
+a second tap on the focused tab pops that tab's stack back to its anchor. The
+pop must be addressed to the nested stack's own key — actions bubble *up* from
+the navigator they are dispatched on, so an untargeted `popToTop()` escapes the
+tab navigator into the root stack and silently does nothing.
+
+[observed] The focus rule constrains which glyphs are usable. `#icon-filters`,
+the site's three-bar funnel, was the first choice for Shoe Finder on semantics
+("narrow this down"), but its top bar is a 21px horizontal rule that merges with
+the 18px focus rule 8px above it into a four-bar stack — the indicator stops
+indicating. Any glyph whose top edge is a long horizontal is disqualified by a
+bar with a top rule. Shoe Finder wears `#icon-search` instead; its ring cannot
+be confused with the rule, and Search itself is a pushed screen, so the tab bar
+is the only place that glyph is a destination.
 
 ## Voice
 
@@ -295,9 +354,12 @@ continuously compensates for half of the content offset without an end clamp,
 so it travels at half speed. The reusable primitive owns a separate foreground
 layer that scrolls at normal content speed, keeping the hero copy and actions at
 a constant inset from the following section while that section paints over the
-media. During negative top-edge overscroll, a fixed layout frame keeps the next
-section attached while the absolutely positioned layers cancel the scroll
-bounce, grow by the pull distance, and stay pinned to the screen's top edge.
+media. Both animated layers have an explicit clipping container whose lower edge
+tracks the following section, preventing Android's transformed media surface or
+scaled text from painting across that boundary. During negative top-edge
+overscroll, a fixed layout frame keeps the next section attached while the
+absolutely positioned clipping layers cancel the scroll bounce, grow by the pull
+distance, and stay pinned to the screen's top edge.
 The positive parallax is disabled when the system requests reduced motion; the
 direct pull-to-stretch response remains.
 
@@ -357,6 +419,9 @@ price, and a category meta line (`Women's – Road Running, Walking`). Hover add
 `Widths – Medium, Wide, Extra Wide` and the star rating.
 
 ## Mega menu → the Shop tab
+
+[observed 2026-08-21] The tab is labelled **Browse** in the tab bar; the route
+segment and screen are still `shop`.
 
 [observed 2026-08-17] The `WOMEN` mega menu is four text columns plus a promo
 card. These are the exact labels the Shop tab should carry:
@@ -463,15 +528,18 @@ continuous morph.
   progress bar, and Brooks's own empty-state copy.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
   gate. Guest path always visible.
-- **Tab bar & search** (Nike, 2026-08-17): the system native tab bar (liquid
-  glass on iOS 26) with a `role="search"` tab that iOS detaches into the
-  standalone trailing button — Home · Shop · Bag · Account + search, Nike's
-  exact layout. Tapping it morphs the bar into the system search field, which
-  drives the live Constructor.io type-ahead (LLP 0002) in place of the old
-  modal search screen. [observed] Four regular tabs is the ceiling: a fifth
-  plus the search trigger overflows UITabBarController into a "More" tab that
-  swallows the search role. Shoe Finder paid for the search slot — it is a
-  pushed full-screen route now, entered from a Shop card and the Account row.
+- **Tab bar & search** (Nike). [superseded 2026-08-17→2026-08-21] The bar was the
+  system native tab bar (liquid glass on iOS 26) with a `role="search"` tab that
+  iOS detached into the standalone trailing button — Home · Shop · Bag · Account
+  + search, Nike's exact layout — because four regular tabs is UITabBarController's
+  ceiling before it overflows into a "More" tab that swallows the search role.
+  Shoe Finder paid for the search slot. [observed 2026-08-21] The bar is
+  app-drawn now (see *The tab bar is app-drawn again*): five tabs, Home · Browse ·
+  Shoe Finder · Cart · Profile, in Brooks's own sprite glyphs, with a sliding ink
+  rule above the focused icon. Search traded its slot back for Shoe Finder's; it
+  is a pushed screen entered from the Browse header field and the category
+  header, and it still drives the live Constructor.io type-ahead (LLP 0002)
+  through the native `Stack.SearchBar`.
 
 ## Wow list
 

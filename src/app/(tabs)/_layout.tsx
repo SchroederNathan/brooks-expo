@@ -1,59 +1,37 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router/js-tabs';
 
-import { useCart } from '@/store/cart';
-import { colors, font } from '@/theme';
+import { BrooksTabBar } from '@/components/tab-bar';
 
 /**
- * System tab bar (liquid glass on iOS 26, Material 3 on Android). The system
- * renders the items, so icons are SF Symbols / Material Symbols rather than
- * the Brooks sprite glyphs the old JS tab bar drew — see LLP 0003#iconography.
- * The search trigger carries `role="search"`, which iOS detaches into the
- * standalone button at the trailing edge of the bar.
+ * App-owned bottom tab bar. Five tabs: Home, Browse, Shoe Finder, Cart,
+ * Profile.
  *
- * Four regular tabs is the ceiling here: a fifth (Shoe Finder's old slot) plus
- * the search trigger tips UITabBarController into a "More" tab, which swallows
- * the search role. Shoe Finder is a pushed screen now — see `app/finder.tsx`.
+ * @ref LLP 0003#icons-and-the-logo — `NativeTabs` rendered the items itself, so
+ * icons had to be SF Symbols / Material Symbols and the cart badge had to wear
+ * the system's fixed-white text. It also capped the app at four regular tabs
+ * plus the detached search role: a fifth tipped UITabBarController into a
+ * "More" tab. Drawing the bar in JS restores the Brooks sprite glyphs and the
+ * lime-on-blue badge, and lets Shoe Finder have a tab again.
+ *
+ * Search gave up its slot in the trade. It is still reachable everywhere it was
+ * — the Browse header's search field and the category header both push
+ * `/search`, which lands on the current tab's stack, so the native
+ * `Stack.SearchBar` still comes up with it.
+ *
  * Each trigger targets one clone of the shared array-group Stack so every tab
  * gets the same native Brooks toolbar without duplicating its layout.
  */
 export default function TabLayout() {
-  const { count } = useCart();
-
   return (
-    <NativeTabs
-      tintColor={colors.ink}
-      labelStyle={{ fontFamily: font.medium }}
-      // The system badge cannot render the site's lime-with-blue-text pair
-      // legibly (badge text is fixed white on iOS), so the badge wears the
-      // other brand color instead.
-      badgeBackgroundColor={colors.blue}
-      minimizeBehavior="onScrollDown"
+    <Tabs
+      tabBar={(props) => <BrooksTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <NativeTabs.Trigger name="(index)">
-        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="(shop)">
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'storefront', selected: 'storefront.fill' }}
-          md="storefront"
-        />
-        <NativeTabs.Trigger.Label>Shop</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="(cart)">
-        <NativeTabs.Trigger.Icon sf={{ default: 'bag', selected: 'bag.fill' }} md="shopping_bag" />
-        <NativeTabs.Trigger.Label>Bag</NativeTabs.Trigger.Label>
-        {count > 0 ? (
-          <NativeTabs.Trigger.Badge>{count > 9 ? '9+' : String(count)}</NativeTabs.Trigger.Badge>
-        ) : null}
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="(account)">
-        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
-        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="(search)" role="search">
-        <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen name="(index)" options={{ title: 'Home' }} />
+      <Tabs.Screen name="(shop)" options={{ title: 'Browse' }} />
+      <Tabs.Screen name="(finder)" options={{ title: 'Shoe Finder' }} />
+      <Tabs.Screen name="(cart)" options={{ title: 'Cart' }} />
+      <Tabs.Screen name="(account)" options={{ title: 'Profile' }} />
+    </Tabs>
   );
 }
