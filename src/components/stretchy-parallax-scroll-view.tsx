@@ -5,13 +5,28 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  type AnimatedRef,
 } from 'react-native-reanimated';
 
-type Props = Omit<ComponentProps<typeof Animated.ScrollView>, 'children' | 'onScroll'> & {
+import type { ScrollWorklets } from '@/components/brooks-header/scroll-direction';
+
+type Props = Omit<
+  ComponentProps<typeof Animated.ScrollView>,
+  'children' | 'onScroll' | 'ref'
+> & {
   children: ReactNode;
   foreground: ReactNode;
   header: ReactNode;
   headerHeight: number;
+  /**
+   * Extra scroll worklets to run alongside the parallax bookkeeping. Reanimated
+   * allows one scroll handler per scrollable, so a caller that also needs scroll
+   * state (the collapsing header) hands its worklets over rather than attaching
+   * a second handler that would silently replace this one.
+   */
+  scrollHandlers?: Partial<ScrollWorklets>;
+  /** Forwarded so a caller can drive this scroll view (the header's snap). */
+  scrollRef?: AnimatedRef<Animated.ScrollView>;
 };
 
 const PARALLAX_RATE = 0.5;
@@ -31,13 +46,27 @@ export function StretchyParallaxScrollView({
   header,
   headerHeight,
   scrollEventThrottle = 16,
+  scrollHandlers,
+  scrollRef,
   ...scrollProps
 }: Props) {
   const reduceMotion = useReducedMotion();
   const scrollOffset = useSharedValue(0);
-  const handleScroll = useAnimatedScrollHandler((event) => {
-    scrollOffset.set(event.contentOffset.y);
-  });
+  const handleScroll = useAnimatedScrollHandler(
+    {
+      onBeginDrag: (event) => {
+        scrollHandlers?.onBeginDrag?.(event);
+      },
+      onScroll: (event) => {
+        scrollOffset.set(event.contentOffset.y);
+        scrollHandlers?.onScroll?.(event);
+      },
+      onEndDrag: (event) => {
+        scrollHandlers?.onEndDrag?.(event);
+      },
+    },
+    [scrollHandlers]
+  );
   const mediaClipStyle = useAnimatedStyle(() => {
     const pullDistance = Math.max(-scrollOffset.get(), 0);
 
@@ -70,6 +99,7 @@ export function StretchyParallaxScrollView({
   return (
     <Animated.ScrollView
       {...scrollProps}
+      ref={scrollRef}
       alwaysBounceVertical
       bounces
       onScroll={handleScroll}

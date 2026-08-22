@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { useBrooksHeader } from '@/components/brooks-header';
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
@@ -23,109 +25,115 @@ import { colors, spacing } from '@/theme';
 export function Account() {
   const member = useMember();
   const cart = useCart();
+  // The account glyph is dropped: this is the account screen.
+  const { header, headerHeight, scrollProps } = useBrooksHeader({
+    actions: ['search', 'cart', 'menu'],
+  });
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.surface }}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        paddingTop: spacing.xl,
-        paddingBottom: spacing.xl,
-      }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.head}>
-        <Txt variant="h1">{member ? `Hey, ${member.firstName}.` : 'Account'}</Txt>
-      </View>
+    <View style={styles.root}>
+      <Animated.ScrollView
+        {...scrollProps}
+        contentContainerStyle={{
+          paddingTop: headerHeight + spacing.xl,
+          paddingBottom: spacing.xl,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.head}>
+          <Txt variant="h1">{member ? `Hey, ${member.firstName}.` : 'Account'}</Txt>
+        </View>
 
-      {member ? (
-        <View style={styles.card}>
-          <View style={styles.cardTopRow}>
+        {member ? (
+          <View style={styles.card}>
+            <View style={styles.cardTopRow}>
+              <Txt variant="eyebrow" c={colors.lime}>
+                Brooks Run Club
+              </Txt>
+              <View style={styles.memberBadge}>
+                <Txt variant="tiny" c={colors.blue}>
+                  Member
+                </Txt>
+              </View>
+            </View>
+            <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
+              {VOICE.runClub}
+            </Txt>
+            <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
+              {member.email}
+            </Txt>
+            <Divider style={{ marginVertical: spacing.lg, backgroundColor: 'rgba(255,255,255,0.15)' }} />
+            <View style={{ gap: spacing.sm }}>
+              {RUN_CLUB_PERKS.slice(0, 3).map((perk) => (
+                <View key={perk} style={styles.perkRow}>
+                  <View style={styles.perkTick} />
+                  <Txt variant="bodySmall" c="rgba(255,255,255,0.9)">
+                    {perk}
+                  </Txt>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.card}>
             <Txt variant="eyebrow" c={colors.lime}>
               Brooks Run Club
             </Txt>
-            <View style={styles.memberBadge}>
-              <Txt variant="tiny" c={colors.blue}>
-                Member
-              </Txt>
-            </View>
+            <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
+              {VOICE.runClub}
+            </Txt>
+            <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
+              Free shipping, early access to new shoes, and a birthday gift. Browsing
+              never requires it.
+            </Txt>
+            <Button
+              title="Join the club"
+              variant="onDark"
+              style={{ marginTop: spacing.lg }}
+              onPress={() => router.push('/login')}
+            />
           </View>
-          <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
-            {VOICE.runClub}
-          </Txt>
-          <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
-            {member.email}
-          </Txt>
-          <Divider style={{ marginVertical: spacing.lg, backgroundColor: 'rgba(255,255,255,0.15)' }} />
-          <View style={{ gap: spacing.sm }}>
-            {RUN_CLUB_PERKS.slice(0, 3).map((perk) => (
-              <View key={perk} style={styles.perkRow}>
-                <View style={styles.perkTick} />
-                <Txt variant="bodySmall" c="rgba(255,255,255,0.9)">
-                  {perk}
-                </Txt>
-              </View>
-            ))}
-          </View>
-        </View>
-      ) : (
-        <View style={styles.card}>
-          <Txt variant="eyebrow" c={colors.lime}>
-            Brooks Run Club
-          </Txt>
-          <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
-            {VOICE.runClub}
-          </Txt>
-          <Txt variant="bodySmall" c="rgba(255,255,255,0.75)" style={{ marginTop: spacing.sm }}>
-            Free shipping, early access to new shoes, and a birthday gift. Browsing
-            never requires it.
-          </Txt>
-          <Button
-            title="Join the club"
-            variant="onDark"
-            style={{ marginTop: spacing.lg }}
-            onPress={() => router.push('/login')}
+        )}
+
+        {/* ----------------------------------------------------------- ROWS -- */}
+        <View style={{ marginTop: spacing.xxl }}>
+          <Row
+            label="Your bag"
+            detail={cart.count ? `${cart.count} ${cart.count === 1 ? 'item' : 'items'}` : 'Empty'}
+            onPress={() => router.push('/cart')}
+          />
+          <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
+          <Row
+            label="Order history"
+            detail="Prototype — checkout is out of scope"
+          />
+          <Row
+            label="Run Happy Promise"
+            detail="90-day trial run on every order"
           />
         </View>
-      )}
 
-      {/* ----------------------------------------------------------- ROWS -- */}
-      <View style={{ marginTop: spacing.xxl }}>
-        <Row
-          label="Your bag"
-          detail={cart.count ? `${cart.count} ${cart.count === 1 ? 'item' : 'items'}` : 'Empty'}
-          onPress={() => router.push('/cart')}
-        />
-        <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
-        <Row
-          label="Order history"
-          detail="Prototype — checkout is out of scope"
-        />
-        <Row
-          label="Run Happy Promise"
-          detail="90-day trial run on every order"
-        />
-      </View>
+        {member ? (
+          <Press haptic={false} onPress={leave} style={styles.signOut}>
+            <Txt variant="caption" c={colors.inkMuted}>
+              Sign out
+            </Txt>
+          </Press>
+        ) : null}
 
-      {member ? (
-        <Press haptic={false} onPress={leave} style={styles.signOut}>
-          <Txt variant="caption" c={colors.inkMuted}>
-            Sign out
+        <View style={styles.foot}>
+          <Squiggle />
+          <Txt variant="script" c={colors.inkMuted}>
+            {VOICE.tagline}
           </Txt>
-        </Press>
-      ) : null}
-
-      <View style={styles.foot}>
-        <Squiggle />
-        <Txt variant="script" c={colors.inkMuted}>
-          {VOICE.tagline}
-        </Txt>
-        <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
-          Catalog snapshot harvested {new Date(catalog.harvestedAt).toLocaleDateString()} ·
-          photography and search live from Brooks
-        </Txt>
-      </View>
-    </ScrollView>
+          <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
+            Catalog snapshot harvested {new Date(catalog.harvestedAt).toLocaleDateString()} ·
+            photography and search live from Brooks
+          </Txt>
+        </View>
+      </Animated.ScrollView>
+      {header}
+    </View>
   );
 }
 
@@ -146,6 +154,7 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.surface },
   head: { paddingHorizontal: spacing.gutter, marginBottom: spacing.lg },
   card: {
     marginHorizontal: spacing.gutter,

@@ -1,7 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useMemo } from 'react';
 import {
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useBrooksHeader } from '@/components/brooks-header';
 import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
@@ -55,6 +55,14 @@ function renderStoryItem({ item }: ListRenderItemInfo<StoryItem>) {
 
 export function Home() {
   const insets = useSafeAreaInsets();
+  // Search alone: Home is the one screen where the header should not compete
+  // with the hero, and every other control it could carry is a tab away.
+  // The hero runs under the bar rather than below it — the site's own header
+  // floats over its hero — so `headerHeight` is deliberately unused here.
+  const { header, handlers, scrollRef } = useBrooksHeader({
+    actions: ['search'],
+    hiddenStatusBarStyle: 'light',
+  });
   const { width } = useWindowDimensions();
   const heroHeight = Math.round((width / PAPER_WIDTH) * PAPER_HERO_HEIGHT);
 
@@ -77,9 +85,10 @@ export function Home() {
 
   return (
     <View collapsable={false} style={styles.root}>
-      <StatusBar style="dark" animated />
       <StretchyParallaxScrollView
         headerHeight={heroHeight}
+        scrollHandlers={handlers}
+        scrollRef={scrollRef}
         contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
@@ -237,6 +246,7 @@ export function Home() {
           style={[styles.promiseTabClearance, { height: insets.bottom + 48 }]}
         />
       </StretchyParallaxScrollView>
+      {header}
     </View>
   );
 }

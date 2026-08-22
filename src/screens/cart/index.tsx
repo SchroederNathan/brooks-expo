@@ -1,10 +1,11 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
+import { useBrooksHeader } from '@/components/brooks-header';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -31,6 +32,11 @@ const FREE_SHIPPING_OVER = 100;
  */
 export function Cart() {
   const cart = useCart();
+  // No cart glyph on the cart, and no badge to double up on the count already
+  // in the title.
+  const { header, headerHeight, scrollProps } = useBrooksHeader({
+    actions: ['search', 'account', 'menu'],
+  });
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const [scopeNote, setScopeNote] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,7 +58,7 @@ export function Cart() {
 
   if (cart.items.length === 0) {
     return (
-      <View style={[styles.root, styles.empty, { paddingTop: 90 }]}>
+      <View style={[styles.root, styles.empty, { paddingTop: headerHeight + spacing.xxl }]}>
         <Txt variant="eyebrow" c={colors.inkMuted}>
           Your bag
         </Txt>
@@ -66,6 +72,7 @@ export function Cart() {
           onPress={() => router.push('/shop')}
         />
         {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />}
+        {header}
       </View>
     );
   }
@@ -74,10 +81,10 @@ export function Cart() {
 
   return (
     <View style={styles.root}>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+      <Animated.ScrollView
+        {...scrollProps}
         contentContainerStyle={{
-          paddingTop: spacing.lg,
+          paddingTop: headerHeight + spacing.lg,
           paddingBottom: 100,
         }}
         showsVerticalScrollIndicator={false}
@@ -206,7 +213,8 @@ export function Cart() {
             {VOICE.promise}
           </Txt>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+      {header}
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
       <View style={styles.stickyBar}>

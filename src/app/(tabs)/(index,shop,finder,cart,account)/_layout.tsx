@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router/stack';
 import { StyleSheet, View } from 'react-native';
 
-import { BrooksWordmark } from '@/screens/home/wordmark';
 import { colors } from '@/theme';
 
 export const unstable_settings = {
@@ -17,13 +16,18 @@ const tabNames = new Set(['index', 'shop', 'finder', 'cart', 'account']);
 /**
  * Shared native stack chrome for every tab.
  *
- * @ref LLP 0003#screen-patterns — The home header stays fully transparent over
- * the hero with no app-owned material; the tab bar is app-drawn and opaque.
+ * @ref LLP 0003#the-header-collapses-on-scroll — [superseded 2026-08-21] Each
+ * tab used to carry a native transparent header with the wordmark in a
+ * `Stack.Toolbar`. The header is app-drawn now: `useBrooksHeader` gives a screen
+ * the site's blue bar, its own choice of trailing controls, and a bar that
+ * collapses on scroll — none of which a system toolbar can do. So the anchors
+ * hide the native header entirely and draw their own.
  *
- * `finder` opts out of the shared wordmark toolbar and out of the header
- * entirely: its intro is a full-bleed navy panel that either would sit on top
- * of. `search` is not an anchor at all — it is pushed onto whichever tab's stack
- * asked for it, and sets its own header (the native `Stack.SearchBar`).
+ * `finder` still opts out of a header altogether: its intro is a full-bleed navy
+ * panel that either kind would sit on top of. `search` is the one screen that
+ * keeps the native header, because the native `Stack.SearchBar` is mounted in
+ * it; it is not an anchor at all, but a screen pushed onto whichever tab's stack
+ * asked for it.
  */
 export default function TabStackLayout({ segment }: { segment: string }) {
   const matchedName = segment.match(/\(([^)]+)\)/)?.[1] ?? 'index';
@@ -43,15 +47,7 @@ export default function TabStackLayout({ segment }: { segment: string }) {
         }}
       >
         {screenName === 'finder' ? null : (
-          <Stack.Screen name={screenName}>
-            <Stack.Toolbar placement="left">
-              <Stack.Toolbar.View hidesSharedBackground>
-                <View style={styles.wordmark}>
-                  <BrooksWordmark width={84} color={colors.ink} />
-                </View>
-              </Stack.Toolbar.View>
-            </Stack.Toolbar>
-          </Stack.Screen>
+          <Stack.Screen name={screenName} options={{ headerShown: false }} />
         )}
         {/* Declared unconditionally, not just when it is the anchor: the Browse
             card and the Account row can land on this route inside another tab's
@@ -66,11 +62,5 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.surface,
-  },
-  wordmark: {
-    width: 84,
-    height: 32,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
   },
 });

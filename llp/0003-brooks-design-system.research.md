@@ -281,6 +281,102 @@ wears `#icon-search` instead; its ring cannot be confused with the rule, and
 Search itself is a pushed screen, so the tab bar is the only place that glyph is
 a destination.
 
+### The header collapses on scroll
+
+[observed 2026-08-21] The tabs had a native transparent `Stack` header with the
+wordmark in a `Stack.Toolbar`. It is app-drawn now
+(`components/brooks-header/`), for the same reason the tab bar is: the chrome the
+reader touches on every screen should be the site's own. The bar is flat
+`#003789` with the white wordmark at the leading edge and the site's own trailing
+glyphs, which is the header brooksrunning.com actually ships — the earlier plan
+of a transparent header cross-fading to a blurred white bar past the hero
+([superseded] in *Screen patterns*) was a native-app idiom the site never had.
+
+[observed] The motion is a port of the `instagram-header-on-scroll-animation`
+study in `rn-makeitanimated`, which is more careful than "hide on scroll down"
+and worth keeping intact. It runs two regimes:
+
+- **Near the top** (within three header heights) the header's offset is a direct
+  function of scroll offset, so it peels away with the finger and comes straight
+  back with it.
+- **Deeper in** absolute offset says nothing useful, so the header hides against
+  the offset the *drag began at* — a short flick from deep in a list hides the bar
+  by exactly the distance dragged — and a fast upward flick (>1.25pt/ms) reveals
+  it outright on a 160ms timing animation instead. A slow upward drag does not:
+  without the velocity split the bar flickers on every gentle scroll.
+
+The two regimes cannot both own the header, which is the part that is not
+obvious. A flick-reveal at offset 200 would be overwritten on the next frame by
+the near-top formula, which says "offset 200, therefore hidden" — so the reveal
+latches a `skipTopInterpolation` flag that hands control to the flick regime
+until the reader is genuinely back at the top.
+
+[observed] Three deliberate deviations from the study:
+
+- **The block is full-bleed.** The status-bar inset is padding *inside* the
+  header, not a strip that stays behind it, so a minimized header leaves no blue
+  anywhere and the wordmark is never clipped against a band above it. The study
+  could leave its safe area filled because its app is black; a blue remnant over
+  white commerce content is just a bruise.
+- **The snap is a worklet, and it stands down during a fling.** The study
+  finished a half-hidden bar with `scheduleOnRN` + an imperative
+  `scrollToOffset`, then blocked touches for a 300ms `setTimeout` so the
+  programmatic scroll could not be interrupted. Reanimated's `scrollTo` does it
+  from the worklet, so the snap never crosses to the JS thread and there is
+  nothing to guard. [observed 2026-08-21] It also only fires when the finger
+  lifted at rest (<0.2pt/ms): `scrollTo` *cancels* iOS's deceleration, so
+  snapping into a fling replaced the reader's flick with a ~header-height scroll
+  — the content visibly stopped short, and the to-top branch yanked it backwards.
+  A list still travelling resolves the header on its own, so there is nothing to
+  snap.
+- **The flick is decided once per gesture.** The study re-reads
+  `velocityOnEndDrag` on every frame, and that value outlives its gesture — so
+  any later direction flip during deceleration (the rubber-band at the end of a
+  list, an overshoot settling back) still read as a flick and slammed the header
+  open with no finger on the screen. The lift now sets a `revealRequest` flag,
+  cleared when the next drag begins.
+- **Position and opacity share one style function.** The study evaluates the same
+  branch conditions twice per frame in two `useAnimatedStyle` bodies, which only
+  invites the two to disagree.
+
+[observed] The header owns the status-bar style, because it owns what is behind
+the clock: light while the blue is up, then the screen's own choice once it is
+gone (`dark` by default; Home passes `light` for its video hero). That flip is
+the only place this animation touches the JS thread, and only on a crossing. It
+is also gated on `useIsFocused`: tab screens stay mounted when they lose focus,
+and React Native resolves the status bar from the last *mounted* entry rather
+than the visible one, so an unfocused screen has to withdraw its entry or the bar
+reports whichever tab mounted most recently.
+
+[observed] **Which controls appear is per screen**, which is the whole point of
+the module's shape: `useBrooksHeader({ actions: [...] })` returns the header
+element and the scroll props that drive it from one call, so a screen cannot
+half-wire it. Named built-ins (`search`, `account`, `cart`, `menu`, `filters`)
+resolve to the site's glyphs, correct line weights, and destinations; a screen
+that needs something else passes a config object instead. Today:
+
+| Screen | Controls | Why |
+|---|---|---|
+| Home | search | Nothing should compete with the hero, and every other control is a tab away. |
+| Browse | search · account · cart | Browse *is* the mega menu the hamburger opens. |
+| Cart | search · account · menu | No cart glyph on the cart, and no badge to double the count already in the title. |
+| Profile | search · cart · menu | No account glyph on the account screen. |
+
+The cart glyph takes its count from the store rather than from the caller, so a
+screen cannot show a stale badge; it keeps the lime-fill/blue-text treatment,
+ringed in the bar's own blue.
+
+[observed] Home is the one screen whose content runs *under* the bar rather than
+below it — the site's header floats over its hero, and `StretchyParallaxScrollView`
+already owned the only scroll handler Reanimated allows per scrollable, so it
+takes the header's three worklets as a `scrollHandlers` prop instead of the
+header attaching a second handler that would silently replace it. Every other
+screen pads its content by `headerHeight` and turns the native inset adjustment
+off, since the safe area is already inside that number.
+
+[observed] Reduced-motion readers get the header pinned open, not a faster
+collapse: chrome that vanishes is a layout change, not decoration.
+
 ## Voice
 
 [observed — verbatim site copy] Optimistic, lightly wry, second person. Use these
@@ -515,8 +611,10 @@ continuous morph.
 
 [inferred] Pattern ownership follows LLP 0001.
 
-- **Home** (Nike): transparent header over the hero that cross-fades to a blurred
-  white bar past ~70% of hero height; parallax hero; staggered entrance matching
+- **Home** (Nike): [superseded 2026-08-21 → *The header collapses on scroll*] a
+  transparent header over the hero cross-fading to a blurred white bar past ~70%
+  of hero height. The header is the site's flat blue bar now, and it collapses
+  rather than cross-fades. Parallax hero; staggered entrance matching
   the site's own; horizontal rails for new arrivals and best sellers; editorial
   cards that land on merchandise.
 - **PLP** (Zappos utility, adidas rhythm): collapsing large title; sticky control
@@ -555,7 +653,9 @@ continuous morph.
   dash riding the bar's top edge under the focused icon. Search traded its slot
   back for Shoe Finder's; it is a pushed screen entered from the Browse header
   field and the category header, and it still drives the live Constructor.io
-  type-ahead (LLP 0002) through the native `Stack.SearchBar`.
+  type-ahead (LLP 0002) through the native `Stack.SearchBar`. [observed
+  2026-08-21] `search` is now also the one control Home's header carries, and the
+  first control on every other tab's — see *The header collapses on scroll*.
 
 ## Wow list
 

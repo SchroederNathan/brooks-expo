@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { useBrooksHeader } from '@/components/brooks-header';
 import { BrooksIcon } from '@/components/icons';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
@@ -40,113 +42,123 @@ const SECTIONS = [
 const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', 'Launch'];
 
 export function Shop() {
+  // Browse *is* the site's mega menu, so the hamburger would only point at the
+  // screen the reader is already on.
+  const { header, headerHeight, scrollProps } = useBrooksHeader({
+    actions: ['search', 'account', 'cart'],
+  });
+
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.surface }}
-      contentInsetAdjustmentBehavior="automatic"
-      // The native tab bar insets scroll content automatically, so only a
-      // breathing-room pad remains.
-      contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.head}>
-        <Txt variant="h1">Shop</Txt>
-        <Press onPress={() => router.push('/search')} scaleTo={0.97} style={styles.searchBar}>
-          <BrooksIcon name="search" size={15} color={colors.inkMuted} />
-          <Txt variant="body" c={colors.inkMuted}>
-            Search shoes, apparel…
-          </Txt>
-        </Press>
-      </View>
-
-      {/* Franchise shortcuts — the fastest path for a runner who knows the shoe. */}
-      <Txt variant="eyebrow" c={colors.inkMuted} style={styles.railLabel}>
-        Franchises
-      </Txt>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.rail}
+    <View style={styles.root}>
+      <Animated.ScrollView
+        {...scrollProps}
+        contentContainerStyle={{
+          paddingTop: headerHeight + spacing.md,
+          paddingBottom: spacing.xl,
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        {FRANCHISES.map((f) => {
-          const p = catalog.products.find((x) => x.franchise === f && x.colors.length);
-          return (
-            <Press
-              key={f}
-              scaleTo={0.95}
-              style={styles.franchise}
-              onPress={() =>
-                router.push({
-                  pathname: '/category/[id]',
-                  params: { id: 'brooks-running-shoes', title: f, franchise: f },
-                })
-              }
-            >
-              <View style={styles.franchiseArt}>
-                {p ? (
-                  <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
-                ) : null}
-              </View>
-              <Txt variant="caption" style={{ padding: spacing.sm }}>
-                {f}
-              </Txt>
-            </Press>
-            );
-        })}
-      </ScrollView>
-
-      {/* Shoe Finder moved off the tab bar when the native search tab took the
-          fifth slot; this card is its primary entry point now. */}
-      <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.navigate('/(tabs)/(finder)/finder')}>
-        <View style={{ flex: 1, gap: spacing.xs }}>
-          <Txt variant="eyebrow" c={colors.lime}>
-            Shoe Finder
-          </Txt>
-          <Txt variant="h3" c={colors.surface}>
-            {VOICE.finderWelcome}
-          </Txt>
+        <View style={styles.head}>
+          <Txt variant="h1">Shop</Txt>
+          <Press onPress={() => router.push('/search')} scaleTo={0.97} style={styles.searchBar}>
+            <BrooksIcon name="search" size={15} color={colors.inkMuted} />
+            <Txt variant="body" c={colors.inkMuted}>
+              Search shoes, apparel…
+            </Txt>
+          </Press>
         </View>
-        <BrooksIcon name="caretRight" size={16} color={colors.surface} />
-      </Press>
 
-      {SECTIONS.map((s) => (
-        <View key={s.title} style={styles.section}>
-          <Txt variant="eyebrow" c={colors.inkMuted} style={{ paddingHorizontal: spacing.gutter }}>
-            {s.title}
-          </Txt>
-          <View style={{ marginTop: spacing.md }}>
-            {s.rows.map((r) => {
-              const n = productsIn(catalog, r.id).length;
-              return (
-                <Press
-                  key={r.id}
-                  scaleTo={0.99}
-                  style={styles.row}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/category/[id]',
-                      params: { id: r.id, title: r.label },
-                    })
-                  }
-                >
-                  <Txt variant="h3">{r.label}</Txt>
-                  <View style={styles.rowRight}>
-                    <Txt variant="tiny" c={colors.inkMuted}>
-                      {n}
-                    </Txt>
-                    <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
-                  </View>
-                </Press>
+        {/* Franchise shortcuts — the fastest path for a runner who knows the shoe. */}
+        <Txt variant="eyebrow" c={colors.inkMuted} style={styles.railLabel}>
+          Franchises
+        </Txt>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.rail}
+        >
+          {FRANCHISES.map((f) => {
+            const p = catalog.products.find((x) => x.franchise === f && x.colors.length);
+            return (
+              <Press
+                key={f}
+                scaleTo={0.95}
+                style={styles.franchise}
+                onPress={() =>
+                  router.push({
+                    pathname: '/category/[id]',
+                    params: { id: 'brooks-running-shoes', title: f, franchise: f },
+                  })
+                }
+              >
+                <View style={styles.franchiseArt}>
+                  {p ? (
+                    <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
+                  ) : null}
+                </View>
+                <Txt variant="caption" style={{ padding: spacing.sm }}>
+                  {f}
+                </Txt>
+              </Press>
               );
-            })}
+          })}
+        </ScrollView>
+
+        {/* Shoe Finder moved off the tab bar when the native search tab took the
+            fifth slot; this card is its primary entry point now. */}
+        <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.navigate('/(tabs)/(finder)/finder')}>
+          <View style={{ flex: 1, gap: spacing.xs }}>
+            <Txt variant="eyebrow" c={colors.lime}>
+              Shoe Finder
+            </Txt>
+            <Txt variant="h3" c={colors.surface}>
+              {VOICE.finderWelcome}
+            </Txt>
           </View>
-        </View>
-      ))}
-    </ScrollView>
+          <BrooksIcon name="caretRight" size={16} color={colors.surface} />
+        </Press>
+
+        {SECTIONS.map((s) => (
+          <View key={s.title} style={styles.section}>
+            <Txt variant="eyebrow" c={colors.inkMuted} style={{ paddingHorizontal: spacing.gutter }}>
+              {s.title}
+            </Txt>
+            <View style={{ marginTop: spacing.md }}>
+              {s.rows.map((r) => {
+                const n = productsIn(catalog, r.id).length;
+                return (
+                  <Press
+                    key={r.id}
+                    scaleTo={0.99}
+                    style={styles.row}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/category/[id]',
+                        params: { id: r.id, title: r.label },
+                      })
+                    }
+                  >
+                    <Txt variant="h3">{r.label}</Txt>
+                    <View style={styles.rowRight}>
+                      <Txt variant="tiny" c={colors.inkMuted}>
+                        {n}
+                      </Txt>
+                      <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
+                    </View>
+                  </Press>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </Animated.ScrollView>
+      {header}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.surface },
   head: { paddingHorizontal: spacing.gutter, gap: spacing.lg, marginBottom: spacing.xl },
   searchBar: {
     height: 48,
