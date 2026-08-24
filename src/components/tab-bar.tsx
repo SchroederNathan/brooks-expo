@@ -15,7 +15,7 @@ import { select } from '@/utils/haptics';
  * The app-owned bottom tab bar, replacing `NativeTabs`.
  *
  * @ref LLP 0003#icons-and-the-logo — The system bar accepted only SF Symbols /
- * Material Symbols, so no tab could wear a Brooks sprite glyph and the cart
+ * Material Symbols, so no tab could wear the app's own glyph and the cart
  * badge lost its lime-on-blue treatment. Drawing the bar ourselves gets both
  * back, and lifts the tab ceiling from four to five (the system bar spent a
  * slot on the detached search role and folded a fifth tab into "More").
@@ -64,7 +64,7 @@ const TABS: { route: string; icon: TabIconName; label: string }[] = [
   { route: '(account)', icon: 'account', label: 'Profile' },
 ];
 
-export function BrooksTabBar({ state, navigation, insets }: BottomTabBarProps) {
+export function AppTabBar({ state, navigation, insets }: BottomTabBarProps) {
   const reduced = useReducedMotion();
   const { count } = useCart();
   const reportHeight = useContext(BottomTabBarHeightCallbackContext);

@@ -1,7 +1,7 @@
 /**
  * The single theme entry point: `import { colors, spacing, type } from '../theme'`.
  *
- * Values were read out of brooksrunning.com's production stylesheet (LLP 0003)
+ * The palette and type ramp are the demo's own (see colors.ts and typography.ts)
  * and are the source of truth; the file layout follows the expo-design-system
  * skill (one token class per file).
  */

@@ -1,7 +1,5 @@
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { useMemo } from 'react';
 import {
   FlatList,
@@ -12,13 +10,14 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useBrooksHeader } from '@/components/brooks-header';
+import { useAppHeader } from '@/components/app-header';
 import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
 import { Txt } from '@/components/themed-text';
+import { BrandMark } from '@/screens/home/wordmark';
 import { catalog } from '@/data/catalog';
-import { HERO, HOME_GEAR, STORIES, USE_CASES } from '@/data/editorial';
+import { HERO, HOME_GEAR, SECTION_TINT, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
 import type { Product } from '@/data/types';
 import { colors, font, spacing } from '@/theme';
@@ -59,21 +58,15 @@ export function Home() {
   // with the hero, and every other control it could carry is a tab away.
   // The hero runs under the bar rather than below it — the site's own header
   // floats over its hero — so `headerHeight` is deliberately unused here.
-  const { header, handlers, scrollRef } = useBrooksHeader({
+  const { header, handlers, scrollRef } = useAppHeader({
     actions: ['search'],
     hiddenStatusBarStyle: 'light',
   });
   const { width } = useWindowDimensions();
   const heroHeight = Math.round((width / PAPER_WIDTH) * PAPER_HERO_HEIGHT);
 
-  const player = useVideoPlayer(HERO.video, (videoPlayer) => {
-    videoPlayer.loop = true;
-    videoPlayer.muted = true;
-    videoPlayer.play();
-  });
-
   const newArrivals = useMemo(() => {
-    const leadIds = ['120482', '120443']; // Ghost 18, then Adrenaline GTS 25 — Paper order.
+    const leadIds = ['120482', '120443']; // Two fixed leads, so the rail opens consistently.
     const leads = leadIds
       .map((id) => catalog.products.find((product) => product.id === id))
       .filter((product) => product != null);
@@ -94,15 +87,14 @@ export function Home() {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         header={
           <View style={styles.hero}>
-            <VideoView
+            {/* Drawn, not filmed: the campaign video this replaced was the
+                retailer's own. The scrim below still runs over it, so the hero
+                copy keeps the contrast it was laid out against. */}
+            <LinearGradient
+              colors={HERO.tint}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
-              player={player}
-              nativeControls={false}
-              contentFit="cover"
-              surfaceType="textureView"
-              allowsVideoFrameAnalysis={false}
-              playsInline
-              pointerEvents="none"
             />
             <LinearGradient
               colors={['rgba(14,19,31,0.60)', 'rgba(14,19,31,0.24)', 'rgba(14,19,31,0.08)']}
@@ -145,10 +137,9 @@ export function Home() {
         }
       >
         <View style={styles.gearSection}>
-          <Image
-            source={require('../../../assets/home/summer-sky.webp')}
+          <LinearGradient
+            colors={SECTION_TINT.gear}
             style={StyleSheet.absoluteFill}
-            contentFit="cover"
           />
           <SectionTitle>Summer’s hottest new gear</SectionTitle>
           <FlatList
@@ -198,17 +189,18 @@ export function Home() {
         </View>
 
         <View style={styles.runClub}>
-          <Image
-            source={require('../../../assets/home/run-club.jpg')}
+          <LinearGradient
+            colors={SECTION_TINT.member}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
-            contentFit="cover"
           />
           <View style={styles.runClubScrim}>
             <Txt variant="h1" c={colors.surface} style={styles.centeredText}>
-              Brooks Run Club
+              Member preview
             </Txt>
             <Txt variant="body" c="rgba(255,255,255,0.88)" style={styles.runClubBody}>
-              FREE shipping and early access to new gear.
+              Sample account screens — sign-in is local to this device.
             </Txt>
             <UnderlinedAction label="Join now" onPress={() => router.push('/login')} onDark />
           </View>
@@ -229,16 +221,14 @@ export function Home() {
         </View>
 
         <View style={styles.promise}>
-          <Image
-            source={require('../../../assets/home/run-happy-promise.png')}
-            style={styles.promiseSeal}
-            contentFit="contain"
-          />
+          <View style={styles.promiseSeal}>
+            <BrandMark width={132} color={colors.surface} />
+          </View>
           <Txt c={colors.surface} style={[styles.promiseText, styles.promiseLead]}>
-            Take it for a 90-day trial run.
+            This is a user-interface demo.
           </Txt>
           <Txt c={colors.surface} style={styles.promiseText}>
-            If you’re not happy, we’re not happy.
+            Nothing here can be bought and no order is placed.
           </Txt>
         </View>
         <View
@@ -265,7 +255,7 @@ function GearCard({ item }: { item: GearItem }) {
         })
       }
     >
-      <Image source={item.image} style={styles.gearImage} contentFit="cover" />
+      <LinearGradient colors={item.tint} style={styles.gearImage} />
       <Txt variant="tiny" style={styles.gearLabel}>
         {item.label}
       </Txt>
@@ -287,7 +277,7 @@ function UseCaseCard({ item }: { item: UseCaseItem }) {
         })
       }
     >
-      <Image source={item.image} style={styles.useCaseImage} contentFit="cover" />
+      <LinearGradient colors={item.tint} style={styles.useCaseImage} />
       <Txt variant="eyebrow" style={styles.useCaseLabel}>
         {item.label}
       </Txt>
@@ -309,7 +299,7 @@ function StoryCard({ story }: { story: StoryItem }) {
         })
       }
     >
-      <Image source={story.image} style={styles.storyImage} contentFit="cover" />
+      <LinearGradient colors={story.tint} style={styles.storyImage} />
       <View style={styles.storyMeta}>
         <Txt variant="tiny" c={colors.blue} style={styles.storyEyebrow}>
           {story.eyebrow}
@@ -442,7 +432,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     backgroundColor: colors.blue,
   },
-  promiseSeal: { width: 79, height: 79 },
+  // Was a 79pt circular seal image; now a frame the drawn mark centres in.
+  promiseSeal: { height: 79, alignItems: 'center', justifyContent: 'center' },
   promiseLead: { marginTop: spacing.gutter },
   promiseText: {
     color: colors.surface,

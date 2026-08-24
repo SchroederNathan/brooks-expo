@@ -1,17 +1,12 @@
-# Brooks Mobile Commerce Prototype
+# Ecommerce Demo
 
-An exploration of what a best-in-class native shopping experience for
-[Brooks Running](https://www.brooksrunning.com) could feel like, built with
-Expo SDK 57. Ported from a research monorepo into this standalone repository;
-the design goal is unchanged: distinctively native, refined, and compelling
-enough to show Brooks executives why Expo is a strong foundation for their
-mobile app.
+A native mobile commerce demo built with Expo SDK 57 — home feature, product
+listing and detail, a shoe-finder quiz, live search, and a cart. The point is
+the interface: what a genuinely native shopping experience can feel like on a
+phone.
 
-| | |
-|---|---|
-| ![Home](./docs/expo-home.png) | ![PDP](./docs/expo-pdp.png) |
-
-More screenshots in `docs/`: PLP, cart, shoe finder, live search.
+Everything in it is synthetic. There is no store behind it, no network calls to
+anyone's API, and no third-party imagery, copy, or branding.
 
 ## Running the app
 
@@ -19,36 +14,45 @@ More screenshots in `docs/`: PLP, cart, shoe finder, live search.
 bun install
 bun run ios       # expo run:ios — build + launch on the iOS simulator
 bun run android   # expo run:android — build + launch on the Android emulator
-bun run start     # Metro only; press i / a, or scan with Expo Go
+bun run start     # Metro only; press i / a
 bun run web       # run in a browser
 ```
 
-The app boots through an animated Brooks splash into the Project 222 home
-screen, with real Brooks products throughout. Search is live against Brooks's
-own Constructor.io index; everything else works offline from the bundled
-snapshot. It targets Expo Go as well as dev builds.
+## History, and why the data looks the way it does
 
-## The one thing to know about the data
+This started as a prototype of a specific retailer's storefront, built from a
+snapshot of their real catalog. Submitted to TestFlight, it was rejected under
+App Store Review guideline 4.1(a) — Copycats — which was the correct call: the
+app carried their name, logo, typeface, palette, product names, photography,
+customer reviews, and a live query against their search index.
 
-[LLP 0002](./llp/0002-brooks-commerce-api.research.md) is the load-bearing
-document. In short:
+`tools/debrand` is the transform that removed all of it, and it is checked in so
+the result is reproducible rather than a one-time manual scrub:
 
-**brooksrunning.com is behind Akamai Bot Manager and returns `403` to every
-non-browser HTTP client.** An app cannot call its product or cart APIs at all.
-Two Brooks surfaces *are* open to a phone, and the architecture follows from
-that:
+```sh
+node tools/debrand/debrand.js   # catalog: families, copy, colourways, images
+node tools/debrand/reviews.js   # reviews: titles, bodies, authors
+python3 tools/debrand/icons.py  # launcher icons
+bun run sync                    # copy packages/catalog into assets/ + src/data
+```
 
-- **Live:** Constructor.io search (`src/data/constructor.ts`) and the Brooks
-  image CDN, which resizes on demand — so the app streams real Brooks
-  photography.
-- **Snapshotted:** products, prices, and per-size stock, captured by
-  [`tools/harvest`](./tools/harvest) driving a real browser session, committed
-  as `packages/catalog/catalog.json`.
+What each piece does:
 
-The full journey — browse → product → variant → **add to a real Brooks cart** —
-was driven end-to-end against the live endpoints and is documented in LLP 0002.
-No order was placed. The in-app cart is device-local and builds the real Brooks
-variant ids.
+| Was | Now |
+|---|---|
+| Retailer name, logo, licensed typeface | Generated mark, Archivo (OFL) |
+| Their palette and square-cornered chrome | Own teal/amber palette, rounded |
+| 226 real product names, 54 franchises | Invented families (`tools/debrand/names.js`) |
+| Marketing copy, brand heritage, an athlete | Copy generated from product attributes |
+| 4,894 photos from their image CDN | Colourway swatches, drawn on device |
+| 624 real customer reviews, 557 real names | Generated reviews and initials |
+| Live query to their search index | On-device search over the bundled catalog |
+| Icon set lifted from their SVG sprite | 34 glyphs drawn for this project |
+
+`brand.config.js` holds the app's identity — display name, bundle identifier,
+Android package, scheme — in one place, so a swap is a single-file edit. The
+bundle identifier is deliberately brand-neutral, because it cannot be changed
+once a build is uploaded.
 
 ## Project structure
 
@@ -56,28 +60,16 @@ variant ids.
 src/
   app/          # expo-router routes only (thin files)
   screens/      # screen bodies the routes render
-  components/   # shared primitives (button, chip, product-tile, …)
+  components/   # shared primitives (button, chip, product-tile, swatch, …)
   data/         # generated copies of packages/catalog + editorial content
-  store/        # cart + Run Club membership (expo-sqlite key-value storage)
+  store/        # cart + membership (expo-sqlite key-value storage)
   theme/        # design tokens: colors, spacing, typography, radius, shadows, motion
   utils/        # kv-storage, haptics, price formatting
 packages/catalog/   # source of truth for the data layer
-tools/harvest/      # captures the catalog from brooksrunning.com (Playwright)
+tools/debrand/      # the de-branding transform
+tools/harvest/      # the original catalog harvester, and `sync`
 llp/                # design rationale (Linked Literate Programming)
 diaries/            # AI-agent development diaries
-```
-
-Design tokens keep the values read out of Brooks's own production stylesheet
-([LLP 0003](./llp/0003-brooks-design-system.research.md)) in the
-expo-design-system file layout. Code links back to rationale with
-`@ref LLP NNNN#section` comments.
-
-## Re-harvesting the catalog
-
-```sh
-cd tools/harvest && bun install && cd ../..
-bun run harvest   # slow, checkpointed, polite — drives a real browser
-bun run sync      # copy packages/catalog into assets/ and src/data/
 ```
 
 `packages/catalog` is the source of truth. The copies under `src/data/` and
@@ -85,19 +77,17 @@ bun run sync      # copy packages/catalog into assets/ and src/data/
 
 ## Scope
 
-The intended experience mirrors the commerce-focused Brooks website: the
-Josh Kerr / Project 222 home feature, Men's, Women's, New Arrivals, Shoe
-Finder, Run Club login, product shopping, live search, and cart. Completing
-checkout, submitting payment, and placing an order are out of scope.
+Browsing, product detail, variant selection, search, the finder quiz, and a
+device-local cart. Checkout, payment, and placing an order are out of scope and
+the UI says so.
 
 ## Project documentation
 
 The project uses [Linked Literate Programming](https://github.com/ccheever/llp)
-to keep code connected to design rationale.
+to keep code connected to design rationale. Note that LLP 0002 and 0003
+document the original prototype's data and design sources; they describe what
+this branch removed.
 
-- [LLP 0000: Brooks](./llp/0000-brooks.explainer.md) — product and system entry point
-- [LLP 0001: Mobile Shoe Commerce Design Survey](./llp/0001-mobile-shoe-commerce-design.research.md) — benchmarks and rubric
-- [LLP 0002: The Brooks Commerce API](./llp/0002-brooks-commerce-api.research.md) — **read this before touching data**
-- [LLP 0003: Brooks Design System and Screen Patterns](./llp/0003-brooks-design-system.research.md) — brand tokens, voice, screen specs
-- [LLP 0004: Building on Exact Today](./llp/0004-building-on-exact.research.md) — historical research from the original monorepo
+- [LLP 0000](./llp/0000-brooks.explainer.md) — product and system entry point
+- [LLP 0001](./llp/0001-mobile-shoe-commerce-design.research.md) — benchmarks and rubric
 - [AGENTS.md](./AGENTS.md) — working instructions for AI agents

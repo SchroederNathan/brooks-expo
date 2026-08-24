@@ -6,13 +6,13 @@ import { tap } from '../utils/haptics';
 import { Txt } from './themed-text';
 
 /**
- * Brooks buttons: 50pt tall and square. Primary actions use the brand's
+ * Buttons: 50pt tall. Primary actions use the palette's
  * uppercase label and hard offset shadow; the PDP purchase variant follows
  * the storefront's blue, sentence-case, split-label treatment without a
  * shadow.
  *
  * @ref LLP 0003#brand — Square corners and the hard offset press shadow are not
- * stylistic preferences; they are what Brooks's own buttons do. Rounding these
+ * stylistic preferences; they keep the commerce actions unmistakable. Flattening these
  * would make the app read as a generic commerce template. The shadow is an
  * absolutely positioned view, not a shadow prop, so it renders identically on
  * every platform.

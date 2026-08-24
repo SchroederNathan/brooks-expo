@@ -1,6 +1,6 @@
 import type { StatusBarStyle } from 'expo-status-bar';
 
-import { BrooksHeader } from './header';
+import { AppHeader } from './header';
 
 import type { HeaderAction } from './actions';
 import { useHeaderScroll } from './use-header-scroll';
@@ -33,7 +33,7 @@ type Options = {
  * forget to mount and no shared values to thread:
  *
  * ```tsx
- * const { header, headerHeight, scrollProps } = useBrooksHeader({
+ * const { header, headerHeight, scrollProps } = useAppHeader({
  *   actions: ['search', 'cart', 'menu'],
  * });
  *
@@ -55,12 +55,12 @@ type Options = {
  * `scrollProps`. A full-bleed screen ignores `headerHeight` and lets its own
  * media run under the bar, which is what the site does with its hero.
  */
-export function useBrooksHeader(options?: Options) {
+export function useAppHeader(options?: Options) {
   const { state, headerHeight, handlers, scrollProps, scrollRef } = useHeaderScroll();
 
   return {
     header: (
-      <BrooksHeader
+      <AppHeader
         actions={options?.actions}
         state={state}
         onLogoPress={options?.onLogoPress}

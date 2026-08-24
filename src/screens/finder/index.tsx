@@ -4,7 +4,7 @@ import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProductTile } from '@/components/product-tile';
-import { BrooksIcon } from '@/components/icons';
+import { Icon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Squiggle } from '@/components/squiggle';
@@ -21,11 +21,10 @@ const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
 /**
  * The Shoe Finder.
  *
- * @ref LLP 0003#shoe-finder — A condensed but faithful take on Brooks's real
- * 16-step quiz ("Shoe Finder S26 US"): single-select steps auto-advance with a
- * selection haptic, the flow branches on trail, the barefoot "Take 'em off"
- * checkpoint plays as a full-screen beat, and results name *why* — which is what
- * turns a quiz into advice.
+ * A condensed shoe-finder quiz over the sample catalog: single-select steps
+ * auto-advance with a selection haptic, the flow branches on trail, the
+ * barefoot checkpoint plays as a full-screen beat, and results name *why* —
+ * which is what turns a quiz into advice.
  */
 
 type Answers = {
@@ -207,7 +206,7 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
       if (p.bestFor.some((b) => /everyday|daily/i.test(b))) score += 1;
     }
 
-    // Cushion: the quiz's "feel" answer maps 1:1 to Brooks's own vocabulary.
+    // Cushion: the quiz's "feel" answer maps 1:1 to the catalog's vocabulary.
     if (a.feel && p.cushion === a.feel) {
       score += 3;
       reasons.push(
@@ -331,7 +330,7 @@ export function Finder() {
           </Txt>
           <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             {results.length
-              ? 'Ranked for how you actually run, from the real Brooks catalog.'
+              ? 'Ranked from the generated sample catalog.'
               : 'Try loosening an answer or two.'}
           </Txt>
         </View>
@@ -421,7 +420,7 @@ export function Finder() {
           hitSlop={10}
           onPress={() => (stepIndex === 0 ? reset() : setStepIndex(stepIndex - 1))}
         >
-          <BrooksIcon name="caretLeft" size={16} color={colors.inkMuted} />
+          <Icon name="caretLeft" size={16} color={colors.inkMuted} />
         </Press>
         <Txt variant="tiny" c={colors.inkMuted}>
           {stepIndex + 1} of {flow.length}

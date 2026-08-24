@@ -1,3 +1,10 @@
+import {
+  Archivo_400Regular,
+  Archivo_500Medium,
+  Archivo_700Bold,
+  Archivo_800ExtraBold,
+  Archivo_900Black,
+} from '@expo-google-fonts/archivo';
 import { Caveat_600SemiBold } from '@expo-google-fonts/caveat';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router/stack';
@@ -16,18 +23,18 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'FilsonPro-Regular': require('../../assets/fonts/FilsonProRegular.otf'),
-    'FilsonPro-Medium': require('../../assets/fonts/FilsonProMedium.otf'),
-    'FilsonPro-Bold': require('../../assets/fonts/FilsonProBold.otf'),
-    'FilsonPro-Heavy': require('../../assets/fonts/FilsonProHeavy.otf'),
-    'FilsonPro-Black': require('../../assets/fonts/FilsonProBlack.otf'),
+    Archivo_400Regular,
+    Archivo_500Medium,
+    Archivo_700Bold,
+    Archivo_800ExtraBold,
+    Archivo_900Black,
     Caveat_600SemiBold,
   });
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
 
-  // Hold the splash until Filson Pro is ready: letting the system font paint first
+  // Hold the splash until the type is ready: letting the system font paint first
   // causes a visible reflow, which is exactly the kind of tell that makes an app
   // feel like a web page in a shell.
   if (!fontsLoaded) return null;
@@ -46,7 +53,7 @@ export default function RootLayout() {
             {/* The root header stays hidden because each tab route owns its
                 branded nested Stack header; this title still feeds web
                 document titles and accessibility. */}
-            <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
+            <Stack.Screen name="(tabs)" options={{ title: 'Ecommerce Demo' }} />
             {/* iOS 18+ zoom is opted in per Link.AppleZoom on the tile; this
                 screen keeps the stack default so Android / older iOS still
                 push. @ref LLP 0003#screen-patterns */}
@@ -55,13 +62,12 @@ export default function RootLayout() {
             <Stack.Screen
               name="login"
               options={{
-                title: 'Brooks Run Club',
+                title: 'Member preview',
                 presentation: 'modal',
               }}
             />
           </Stack>
-          {/* Native only: web has no native splash to hand off from, and
-              lottie-react-native's web renderer would be an extra dependency. */}
+          {/* Native only: web has no native splash to hand off from. */}
           {Platform.OS !== 'web' && <AnimatedSplash />}
         </CartProvider>
       </SafeAreaProvider>

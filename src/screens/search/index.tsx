@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import type { SearchBarCommands } from 'react-native-screens';
 
-import { BrooksIcon } from '@/components/icons';
+import { Icon } from '@/components/icons';
 import { Chip } from '@/components/chip';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -27,10 +27,10 @@ import { colors, font, spacing } from '@/theme';
 /**
  * Search.
  *
- * @ref LLP 0002#constructor-io — The one screen that talks to a real Brooks API
- * live from the device: type-ahead against the same Constructor.io index the
- * website's search box uses. Constructor carries no prices, so every hit is
- * joined back to the catalog snapshot by style id before it renders a price.
+ * Type-ahead runs on-device against the bundled catalog (see
+ * `data/constructor.ts`, which used to be a live client for a real retailer's
+ * search index). Hits are joined back to the snapshot by style id before they
+ * render a price, which is also what the offline fallback path below does.
  *
  * The input is the system search bar (`Stack.SearchBar`), which pairs with the
  * tab bar's `role="search"` trigger. Web has no native header search bar, so it
@@ -128,7 +128,7 @@ export function Search() {
       >
         {Platform.OS === 'web' && (
           <View style={styles.inputWrap}>
-            <BrooksIcon name="search" size={16} color={colors.inkMuted} />
+            <Icon name="search" size={16} color={colors.inkMuted} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -154,7 +154,7 @@ export function Search() {
               ))}
             </View>
             <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.xl }}>
-              Search is live against the same index brooksrunning.com uses.
+              Search runs on the device, against the bundled sample catalog.
             </Txt>
           </View>
         )}
@@ -210,7 +210,7 @@ export function Search() {
                         </Txt>
                       )}
                     </View>
-                    <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
+                    <Icon name="caretRight" size={14} color={colors.inkFaint} />
                   </Press>
                   <Divider style={{ marginLeft: spacing.gutter + 64 + spacing.lg }} />
                 </View>

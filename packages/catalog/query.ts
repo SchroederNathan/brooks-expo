@@ -1,12 +1,12 @@
 /**
  * Pure query helpers over the catalog snapshot.
  *
- * Deliberately free of any React or platform import so both the Expo app and the
- * Exact app can share it verbatim.
+ * Deliberately free of any React or platform import, so the same file serves
+ * the app and the tools in `tools/`.
  *
- * @ref LLP 0002#facets — Filter vocabulary mirrors the facets Brooks's own PLP
- * exposes (gender, cushion, width, size, color, rating), so the app's filter
- * sheet stays truthful to the merchandising data rather than inventing axes.
+ * The filter vocabulary is taken from the facets the catalog data itself
+ * carries (gender, cushion, width, size, colour, rating), so the filter sheet
+ * stays truthful to the merchandising data rather than inventing axes.
  */
 import type { Catalog, Colorway, Product } from './types';
 
@@ -32,7 +32,7 @@ export function productsIn(catalog: Catalog, categoryId: string): Product[] {
       .filter((p) => order.has(p.id))
       .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   }
-  // Constructor group ids are hierarchical, so a product in
+  // Group ids are hierarchical, so a product in
   // `mens-shoes-road-running-shoes` is also in `mens-shoes` and `mens`.
   return catalog.products.filter((p) => p.groups.includes(categoryId));
 }
@@ -120,11 +120,11 @@ export function colorwayOf(p: Product, code?: string): Colorway {
 }
 
 /**
- * Brooks variant ids concatenate style, width, color, and a zero-padded size:
- * style 110498 + width 1D + color 197 + size 9.0 -> "1104981D197.090".
+ * Variant ids concatenate style, width, colour, and a zero-padded size:
+ * style 110498 + width 1D + colour 197 + size 9.0 -> "1104981D197.090".
  *
- * @ref LLP 0002#variant-id — Confirmed by round-tripping this id through the real
- * Cart-AddProduct endpoint, which accepted it and returned the matching line item.
+ * The format is retained because the cart is keyed on it and the screens
+ * already render it; nothing resolves it against a real inventory system.
  */
 export function variantId(
   productId: string,

@@ -1,21 +1,21 @@
 /**
- * The Brooks catalog schema.
+ * The catalog schema.
  *
- * @ref LLP 0002#normalized-schema — Shaped around what the real Brooks endpoints
- * actually return, not around what a shopping UI wishes it returned. The two
- * notable consequences: stock lives per (colorway, size) because Brooks tracks
- * it there, and image URLs are stored bare so any consumer can size them via
- * the Demandware CDN's `sw`/`sh` query params.
+ * The shape is inherited from a commerce backend rather than designed around
+ * what a shopping UI wishes it had, which is why stock lives per (colorway,
+ * size) rather than per product. `tools/debrand` fills it with synthetic data;
+ * the shape is worth keeping because it is the shape real storefront data
+ * comes in, and the screens are built to handle that.
  */
 
 export type Gender = 'mens' | 'womens' | 'unisex';
 export type ProductType = 'Shoes' | 'Apparel' | 'Other';
 
-/** Brooks's own cushioning vocabulary, from the `spec_FeelUnderFootTitle` facet. */
+/** Cushioning vocabulary, as the catalog's facet data expresses it. */
 export type Cushion = 'Plush' | 'Balanced' | 'Responsive' | string;
 
 export interface Size {
-  /** Variation value used by Brooks, e.g. "9.5" or "M". */
+  /** Variation value, e.g. "9.5" or "M". */
   value: string;
   label: string;
   /** Derived from SFCC `selectable`: false means this size is out of stock. */
@@ -32,14 +32,15 @@ export interface Width {
 
 export interface ProductImage {
   /**
-   * Bare CDN URL with no query string. Size it at the call site — the Brooks
-   * Demandware CDN resizes on demand, so one URL serves every density.
+   * A `swatch:#RRGGBB,...#frame` URI. The synthetic catalog has no photography,
+   * so this describes colours to draw rather than an image to fetch — see
+   * `images.ts`.
    */
   url: string;
   alt: string;
 }
 
-/** One customer review from Brooks's TurnTo-backed PDP endpoint. */
+/** One product review. Generated; see `tools/debrand/reviews.js`. */
 export interface ProductReview {
   id: number;
   publishedDate: string;
@@ -71,7 +72,7 @@ export interface ReviewsSnapshot {
 }
 
 export interface Colorway {
-  /** Brooks color code, e.g. "197". Combines with the style id to form a variant. */
+  /** Colour code, e.g. "197". Combines with the style id to form a variant. */
   code: string;
   /** e.g. "White/Cyber Yellow/Black". */
   name: string;
@@ -86,12 +87,12 @@ export interface Colorway {
 }
 
 export interface Product {
-  /** Brooks style number, e.g. "110498". */
+  /** Style number, e.g. "110498". */
   id: string;
   name: string;
   gender: Gender | null;
   productType: ProductType;
-  /** Brooks franchise, e.g. "Ghost", "Glycerin", "Hyperion". */
+  /** Product family, e.g. "Halcyon", "Softfall", "Quickstep". */
   franchise: string | null;
   price: number | null;
   listPrice: number | null;
@@ -109,7 +110,7 @@ export interface Product {
   reviewCount: number;
   /** e.g. "New Style". */
   badge: string | null;
-  /** Constructor.io group ids this product belongs to. */
+  /** Merchandising group ids this product belongs to. */
   groups: string[];
   colors: Colorway[];
   url: string;
@@ -146,9 +147,9 @@ export interface Catalog {
   products: Product[];
 }
 
-/** A line in the cart. Identified by the Brooks variant id. */
+/** A line in the cart, identified by its variant id. */
 export interface CartLine {
-  /** Brooks variant id, e.g. "1104981D197.090" (style + width + color + size). */
+  /** Variant id, e.g. "1104981D197.090" (style + width + colour + size). */
   variantId: string;
   productId: string;
   colorCode: string;

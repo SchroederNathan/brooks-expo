@@ -18,7 +18,7 @@ const tabNames = new Set(['index', 'shop', 'finder', 'cart', 'account']);
  *
  * @ref LLP 0003#the-header-collapses-on-scroll — [superseded 2026-08-21] Each
  * tab used to carry a native transparent header with the wordmark in a
- * `Stack.Toolbar`. The header is app-drawn now: `useBrooksHeader` gives a screen
+ * `Stack.Toolbar`. The header is app-drawn now: `useAppHeader` gives a screen
  * the site's blue bar, its own choice of trailing controls, and a bar that
  * collapses on scroll — none of which a system toolbar can do. So the anchors
  * hide the native header entirely and draw their own.

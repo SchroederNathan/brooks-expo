@@ -1,15 +1,15 @@
 /**
- * Run Club membership, local to the prototype.
+ * Membership, local to the device.
  *
- * @ref LLP 0002 — No Brooks auth endpoint is reachable from an app (Akamai), so
- * "signing in" stores a name on the device and nothing more. The screens treat
- * membership as Run Club joining (LLP 0003#login): a perk, never a gate.
+ * There is no auth service behind the demo, so "signing in" stores a name on
+ * the device and nothing more. The screens treat membership as a perk, never a
+ * gate — the guest path stays available everywhere.
  */
 import { useSyncExternalStore } from 'react';
 
 import { storage } from '../utils/kv-storage';
 
-const STORAGE_KEY = 'brooks.member.v1';
+const STORAGE_KEY = 'demo.member.v1';
 
 export interface Member {
   firstName: string;

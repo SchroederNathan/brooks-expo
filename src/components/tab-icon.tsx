@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
-import { BrooksIcon, type BrooksIconName } from '@/components/icons';
+import { Icon, type IconName } from '@/components/icons';
 import { Txt } from '@/components/themed-text';
 import { colors, radius } from '@/theme';
 
@@ -9,7 +9,7 @@ import { colors, radius } from '@/theme';
  * Icons for the app-owned bottom tab bar.
  *
  * @ref LLP 0003#icons-and-the-logo — Three of the five tabs are real sprite
- * glyphs lifted verbatim from brooksrunning.com: `#icon-search` (Shoe Finder),
+ * the app's own drawn glyphs: search (Shoe Finder),
  * `#icon-cart` (Cart), `#icon-account` (Profile). The sprite has no home and no
  * storefront glyph — a website needs neither — so Home and Browse are drawn
  * here to sit at the real set's line weight.
@@ -35,7 +35,7 @@ const STROKE = 2.2;
 export type TabIconName = 'home' | 'browse' | 'finder' | 'cart' | 'account';
 
 /**
- * Sprite-backed tabs. `size` is per glyph, not shared: `BrooksIcon` scales to
+ * Sprite-backed tabs. `size` is per glyph, not shared: `Icon` scales to
  * fit a `size` box on the glyph's *longer* axis, so a single value would render
  * the wide-and-short funnel wider than the tall-and-narrow account figure. These
  * values equalize drawn width instead — except the account figure, which is
@@ -43,7 +43,7 @@ export type TabIconName = 'home' | 'browse' | 'finder' | 'cart' | 'account';
  * `thicken` then brings each glyph's encoded weight up to the shared ~2.2px; the
  * funnel reaches it unaided (1.75 viewBox units × 21/16.89 ≈ 2.18).
  */
-const sprite: Partial<Record<TabIconName, { name: BrooksIconName; size: number; thicken: number }>> =
+const sprite: Partial<Record<TabIconName, { name: IconName; size: number; thicken: number }>> =
   {
     finder: { name: 'search', size: 21, thicken: 0 },
     cart: { name: 'cart', size: 20, thicken: 0.9 },
@@ -64,7 +64,7 @@ export function TabIcon({
   return (
     <View style={styles.slot}>
       {real ? (
-        <BrooksIcon name={real.name} size={real.size} color={color} thicken={real.thicken} />
+        <Icon name={real.name} size={real.size} color={color} thicken={real.thicken} />
       ) : (
         <Drawn name={name} color={color} />
       )}

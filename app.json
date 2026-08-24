@@ -28,11 +28,9 @@
     },
     "plugins": [
       "expo-router",
-      "expo-image",
       "expo-font",
       "expo-splash-screen",
-      "expo-sqlite",
-      "expo-video"
+      "expo-sqlite"
     ],
     "newArchEnabled": true,
     "splash": {

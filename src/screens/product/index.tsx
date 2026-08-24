@@ -1,5 +1,4 @@
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -14,7 +13,7 @@ import { AnimatedPaginationDots } from '@/components/animated-pagination-dots';
 import {
   BalancedCushionIcon,
   BalancedSupportIcon,
-  BrooksIcon,
+  Icon,
   InfoIcon,
 } from '@/components/icons';
 import { Button } from '@/components/button';
@@ -24,6 +23,7 @@ import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
+import { BrandMark } from '@/screens/home/wordmark';
 import { UnderlineRail } from '@/components/underline-rail';
 import { notify, select } from '@/utils/haptics';
 import { catalog } from '@/data/catalog';
@@ -43,8 +43,8 @@ const OPTION_GAP = spacing.xs;
 const SIZE_OPTION_W = (OPTION_CONTENT_W - OPTION_GAP * 4) / 5;
 const WIDTH_OPTION_W = (OPTION_CONTENT_W - OPTION_GAP * 3) / 4;
 
-// @ref LLP 0003#pdp-detail-sections — Brooks pairs these catalog taxonomy
-// values with fixed explanatory copy on the live PDP.
+// Fixed explanatory copy keyed off the catalog's taxonomy values, so the PDP
+// can say what a cushioning level means rather than just naming it.
 const CUSHION_DESCRIPTION: Record<string, string> = {
   Balanced: 'A blend of soft and dynamic cushioning that offers a smooth feeling with each step.',
 };
@@ -58,7 +58,7 @@ const SUPPORT_DESCRIPTION: Record<string, string> = {
  *
  * @ref LLP 0003#pdp — GOAT's presentation with Zappos's fit confidence: an
  * edge-to-edge swipeable gallery, colorway swatches that are real shoe
- * thumbnails (Brooks colorways are multi-color, so dots lie) with a sliding
+ * thumbnails (colorways are multi-color, so single dots lie) with a sliding
  * ink underline (`UnderlineRail`), a size grid with diagonally marked
  * out-of-stock choices (`selectable: false`, LLP 0002), width at equal rank
  * with size, and a sticky blue purchase bar.
@@ -316,13 +316,13 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               ))}
             </View>
             <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-              Four widths is the Brooks difference — most running brands stop at one.
+              Four widths across the sample catalog, so the size picker has something to show.
             </Txt>
           </View>
         )}
 
         {/* ------------------------------------------------------- PROMISE -- */}
-        <RunHappyPromise />
+        <DemoNotice />
 
         {/* ------------------------------------------------------- DETAILS -- */}
         <View style={styles.detailsSection}>
@@ -396,7 +396,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
                   rating={reviewRating}
                   count={reviewCount}
                   data={reviewData}
-                  productUrl={product.url}
                 />
               ) : null}
             </>
@@ -407,7 +406,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
       {/* ------------------------------------------------------ TOP BUTTONS -- */}
       <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
         <Press onPress={() => router.back()} scaleTo={0.9} style={styles.circleBtn}>
-          <BrooksIcon name="caretLeft" size={16} />
+          <Icon name="caretLeft" size={16} />
         </Press>
         <Press
           onPress={() => router.push('/cart')}
@@ -442,21 +441,24 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   );
 }
 
-function RunHappyPromise() {
+/**
+ * The band that carried the retailer's named returns guarantee. Their seal
+ * artwork and their wording are both gone; what a demo can honestly promise is
+ * that it is a demo.
+ */
+function DemoNotice() {
   return (
     <View style={styles.promiseBand}>
-      <Image
-        source={require('../../../assets/home/run-happy-promise.png')}
-        style={styles.promiseSeal}
-        contentFit="contain"
-      />
+      <View style={styles.promiseSeal}>
+        <BrandMark width={56} color={colors.ink} />
+      </View>
       <View style={{ flex: 1 }}>
         <View style={styles.promiseTitleRow}>
-          <Txt variant="eyebrow">90-day free returns</Txt>
+          <Txt variant="eyebrow">Demo build</Txt>
           <InfoIcon size={14} />
         </View>
         <Txt variant="bodySmall" style={{ marginTop: spacing.xs }}>
-          Take our gear for a 90-day test run. If you don’t love it, return it for free.
+          Sample data only. Checkout is disabled and no order is ever placed.
         </Txt>
       </View>
     </View>
@@ -485,7 +487,7 @@ function AccordionHeader({
         {label}
       </Txt>
       {accessory ? <View style={styles.accordionAccessory}>{accessory}</View> : null}
-      <BrooksIcon name={open ? 'caretUp' : 'caretDown'} size={16} color={colors.ink} />
+      <Icon name={open ? 'caretUp' : 'caretDown'} size={16} color={colors.ink} />
     </Press>
   );
 }
@@ -612,7 +614,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.lg,
   },
-  promiseSeal: { width: 68, height: 68 },
+  promiseSeal: { width: 68, height: 68, alignItems: 'center', justifyContent: 'center' },
   promiseTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',

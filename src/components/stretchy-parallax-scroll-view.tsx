@@ -8,7 +8,7 @@ import Animated, {
   type AnimatedRef,
 } from 'react-native-reanimated';
 
-import type { ScrollWorklets } from '@/components/brooks-header/scroll-direction';
+import type { ScrollWorklets } from '@/components/app-header/scroll-direction';
 
 type Props = Omit<
   ComponentProps<typeof Animated.ScrollView>,

@@ -10,21 +10,19 @@
  * this same file for the app, and CJS is the one module format both read
  * without a loader (`tsx`) in between.
  *
- * Why the identifiers are brand-neutral while `name` is not: the bundle
- * identifier cannot be changed once a build is uploaded to App Store Connect,
- * so it is fixed up front and deliberately says nothing about whose catalog
- * the app is showing. The display name is cheap to change per version and is
- * what the de-branding work swaps.
+ * The bundle identifier cannot be changed once a build is uploaded to App
+ * Store Connect, so it is fixed up front and deliberately says nothing about
+ * whose catalog the app shows. The display name is cheap to change per version.
  */
 
 /** @typedef {{ name: string, bundleIdentifier: string, androidPackage: string, scheme: string }} Brand */
 
 /** @type {Brand} */
 const brand = {
-  name: 'Brooks',
+  name: 'Ecommerce Demo',
   bundleIdentifier: 'com.exponathan.ecommercedemo',
   androidPackage: 'com.exponathan.ecommercedemo',
-  scheme: 'brooks',
+  scheme: 'ecomdemo',
 };
 
 module.exports = { brand };

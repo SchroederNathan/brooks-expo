@@ -2,7 +2,7 @@
  * Shadows are CSS boxShadow strings (never legacy shadow/elevation props, per
  * expo-native-ui). Two tokens, both derived from ink #0E131F:
  *
- * - `hard`: Brooks's brutalist "pressed sticker" offset — a hard 4pt shadow
+ * - `hard`: a "pressed sticker" offset — a hard 4pt shadow
  *   with zero blur. The Button renders its press shadow as an absolutely
  *   positioned View instead (pixel-exact on every platform); this token
  *   documents the brand treatment for any future soft surface that needs it.

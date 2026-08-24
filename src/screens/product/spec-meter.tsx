@@ -6,9 +6,9 @@ import { Txt } from '@/components/themed-text';
 /**
  * The PDP cushion/support meter.
  *
- * @ref LLP 0003#wow-list — Turns Brooks's technical fit story into a graphic: a
- * labeled track with a lime marker on the stop this shoe occupies. Brooks's own
- * PDP renders these as "Feel under foot" and "Support level" scales.
+ * Turns the catalog's fit attributes into a graphic: a labeled track with an
+ * accent marker on the stop this shoe occupies. Rendered as "Feel under foot"
+ * and "Support level" scales.
  */
 export function SpecMeter({
   label,

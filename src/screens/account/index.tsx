@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useBrooksHeader } from '@/components/brooks-header';
-import { BrooksIcon } from '@/components/icons';
+import { useAppHeader } from '@/components/app-header';
+import { Icon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -26,7 +26,7 @@ export function Account() {
   const member = useMember();
   const cart = useCart();
   // The account glyph is dropped: this is the account screen.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({
+  const { header, headerHeight, scrollProps } = useAppHeader({
     actions: ['search', 'cart', 'menu'],
   });
 
@@ -48,7 +48,7 @@ export function Account() {
           <View style={styles.card}>
             <View style={styles.cardTopRow}>
               <Txt variant="eyebrow" c={colors.lime}>
-                Brooks Run Club
+                Member preview
               </Txt>
               <View style={styles.memberBadge}>
                 <Txt variant="tiny" c={colors.blue}>
@@ -77,7 +77,7 @@ export function Account() {
         ) : (
           <View style={styles.card}>
             <Txt variant="eyebrow" c={colors.lime}>
-              Brooks Run Club
+              Member preview
             </Txt>
             <Txt variant="h2" c={colors.surface} style={{ marginTop: spacing.sm }}>
               {VOICE.runClub}
@@ -108,7 +108,7 @@ export function Account() {
             detail="Prototype — checkout is out of scope"
           />
           <Row
-            label="Run Happy Promise"
+            label="About this demo"
             detail="90-day trial run on every order"
           />
         </View>
@@ -128,7 +128,7 @@ export function Account() {
           </Txt>
           <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
             Catalog snapshot harvested {new Date(catalog.harvestedAt).toLocaleDateString()} ·
-            photography and search live from Brooks
+            with generated sample data, entirely on device
           </Txt>
         </View>
       </Animated.ScrollView>
@@ -148,7 +148,7 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
           </Txt>
         ) : null}
       </View>
-      {onPress ? <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} /> : null}
+      {onPress ? <Icon name="caretRight" size={14} color={colors.inkFaint} /> : null}
     </Press>
   );
 }

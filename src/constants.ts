@@ -1,4 +1,4 @@
-/** Brooks Run Club — the membership framing used on login and the cart. */
+/** The membership framing used on login and the cart. Sample perks only. */
 export const RUN_CLUB_PERKS = [
   'Free standard shipping',
   'Free express shipping over $160',

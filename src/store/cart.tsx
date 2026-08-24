@@ -1,11 +1,9 @@
 /**
  * Cart state.
  *
- * @ref LLP 0000#live-brooks-data — The journey ends at a working cart; we never
- * submit payment or place an order. The Brooks Cart-AddProduct endpoint is
- * documented in LLP 0002 and we build the exact variant id it expects, but the
- * cart itself lives on the device: adding to a stranger's real Brooks basket
- * from a prototype would be both unreliable (Akamai) and rude.
+ * The journey ends at a working cart; the demo never submits payment or places
+ * an order. The cart lives entirely on the device — there is no storefront
+ * behind it to post to.
  */
 import React, {
   createContext,
@@ -21,7 +19,7 @@ import { byId, colorwayOf, variantId } from '../data/query';
 import type { Product } from '../data/types';
 import { storage } from '../utils/kv-storage';
 
-const STORAGE_KEY = 'brooks.cart.v1';
+const STORAGE_KEY = 'demo.cart.v1';
 const FREE_SHIPPING_OVER = 100;
 
 export interface CartLine {

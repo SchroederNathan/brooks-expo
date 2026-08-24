@@ -1,48 +1,43 @@
 /**
- * Brooks brand palette.
+ * Demo palette.
  *
- * @ref LLP 0003#brand — Every value here was read out of brooksrunning.com's own
- * production stylesheet rather than eyeballed from screenshots.
+ * Deliberately not the palette this app shipped with. The previous values were
+ * read out of a real retailer's production stylesheet, and a matching palette is
+ * one of the things that makes a replica read as a replica — Apple's 4.1
+ * guidance names user interface alongside name and icon. Teal and amber sit far
+ * enough from that navy-and-lime pairing to be unmistakable.
  *
- * These are deliberately literal hex values, not platform semantic colors: the
- * app reproduces Brooks's light-only brand rendering 1:1 on every platform, so
- * the palette must not adapt per-device or per-scheme.
+ * Literal hex rather than platform semantic colors: the app renders light-only
+ * and identically on every platform, so the palette must not adapt per device.
  */
 
 export const colors = {
-  /** Brooks's "black" is a near-black navy. The site never uses pure #000. */
-  ink: '#0E131F',
-  inkSoft: '#3C4250',
-  /** The site's secondary text gray. */
-  inkMuted: '#707070',
-  inkFaint: '#A0A4AD',
+  /** Near-black with a green cast, to sit under the teal rather than fight it. */
+  ink: '#12191A',
+  inkSoft: '#3A4547',
+  inkMuted: '#6E7A7C',
+  inkFaint: '#A2ACAD',
 
   surface: '#FFFFFF',
-  /** Section/page alt background. Brooks shoots product on this exact value. */
-  surfaceAlt: '#F8F8F8',
-  surfaceSunken: '#F2F2F2',
-  /** The site's default border color. */
-  hairline: '#E5E5E5',
-  /** Stronger rule used by outlined commerce choices and their sold-out slash. */
-  controlBorder: '#C9CBCD',
+  /** Section and page alternate background; also the swatch ground. */
+  surfaceAlt: '#F6F7F7',
+  surfaceSunken: '#EFF1F1',
+  hairline: '#E3E6E6',
+  /** Stronger rule for outlined commerce choices and their sold-out slash. */
+  controlBorder: '#C6CCCC',
 
-  /** Brooks blue — the default theme accent: links, selected states, focus. */
-  blue: '#003789',
-  brightBlue: '#016CCF',
-  /** Dark-theme background and the Run Club card. */
-  navy: '#14295F',
+  /** The accent: links, selected states, focus. */
+  blue: '#0E5C63',
+  brightBlue: '#12A0A8',
+  /** Dark surface and the membership card. */
+  navy: '#123238',
 
-  /**
-   * "Brooks lime." Used on eyebrows-on-navy, progress fills, and focus
-   * outlines. A spark, never a surface. (The cart badge wore it until the
-   * native tab bar's system badge fixed the text color to white — see
-   * LLP 0003#icons-and-the-logo.)
-   */
-  lime: '#ECF000',
+  /** The spark: eyebrows on dark, progress fills, focus outlines. Never a surface. */
+  lime: '#FFB020',
 
-  sale: '#D4281C',
-  success: '#097B52',
+  sale: '#C0392B',
+  success: '#0B7A55',
 
-  overlay: 'rgba(14, 19, 31, 0.55)',
-  scrim: 'rgba(14, 19, 31, 0.35)',
+  overlay: 'rgba(18, 25, 26, 0.55)',
+  scrim: 'rgba(18, 25, 26, 0.35)',
 } as const;

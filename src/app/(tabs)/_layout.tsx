@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router/js-tabs';
 
-import { BrooksTabBar } from '@/components/tab-bar';
+import { AppTabBar } from '@/components/tab-bar';
 
 /**
  * App-owned bottom tab bar. Five tabs: Home, Browse, Shoe Finder, Cart,
@@ -10,7 +10,7 @@ import { BrooksTabBar } from '@/components/tab-bar';
  * icons had to be SF Symbols / Material Symbols and the cart badge had to wear
  * the system's fixed-white text. It also capped the app at four regular tabs
  * plus the detached search role: a fifth tipped UITabBarController into a
- * "More" tab. Drawing the bar in JS restores the Brooks sprite glyphs and the
+ * "More" tab. Drawing the bar in JS restores the app's own glyphs and the
  * lime-on-blue badge, and lets Shoe Finder have a tab again.
  *
  * Search gave up its slot in the trade. It is still reachable everywhere it was
@@ -19,12 +19,12 @@ import { BrooksTabBar } from '@/components/tab-bar';
  * `Stack.SearchBar` still comes up with it.
  *
  * Each trigger targets one clone of the shared array-group Stack so every tab
- * gets the same native Brooks toolbar without duplicating its layout.
+ * gets the same native toolbar without duplicating its layout.
  */
 export default function TabLayout() {
   return (
     <Tabs
-      tabBar={(props) => <BrooksTabBar {...props} />}
+      tabBar={(props) => <AppTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="(index)" options={{ title: 'Home' }} />

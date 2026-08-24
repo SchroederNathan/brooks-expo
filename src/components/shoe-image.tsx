@@ -1,39 +1,32 @@
-import { Image, type ImageStyle } from 'expo-image';
+import type { ViewStyle } from 'react-native';
 
-import { brooksImage } from '../data/images';
-import { motion } from '../theme';
+import { Swatch } from './swatch';
 
 /**
- * Product photography, always sized through the Brooks CDN so a 170pt tile
- * fetches a ~340px image rather than the 2500px master.
+ * Product imagery. The synthetic catalog ships colourway swatches instead of
+ * photography, so this renders locally and never hits the network. The props
+ * are unchanged from the CDN-backed version so call sites did not have to move.
  */
 export function ShoeImage({
   url,
   width,
   height,
   style,
-  contentFit = 'contain',
+  contentFit,
   priority,
-  transition = motion.base,
+  transition,
 }: {
   url: string;
   width: number;
   height?: number;
-  style?: ImageStyle;
+  style?: ViewStyle;
+  /** Accepted and ignored: a generated swatch always fills its frame. */
   contentFit?: 'contain' | 'cover';
   priority?: 'low' | 'normal' | 'high';
   transition?: number;
 }) {
-  const h = height ?? width;
-  return (
-    <Image
-      source={{ uri: brooksImage(url, { width: width * 2, height: h * 2 }) }}
-      style={[{ width, height: h }, style]}
-      contentFit={contentFit}
-      transition={transition}
-      priority={priority}
-      cachePolicy="memory-disk"
-      recyclingKey={url}
-    />
-  );
+  void contentFit;
+  void priority;
+  void transition;
+  return <Swatch url={url} width={width} height={height} style={style} />;
 }

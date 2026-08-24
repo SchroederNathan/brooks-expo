@@ -1,405 +1,330 @@
 import type { ReactElement } from 'react';
-import Svg, { Circle, G, Path, Polygon, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/theme';
 
 /**
- * Brooks's own icon set.
+ * The app's icon set.
  *
- * @ref LLP 0003#icons-and-the-logo — Every glyph here is verbatim path data from the inline
- * SVG sprite brooksrunning.com ships in its page header (captured 2026-08-17
- * via a real browser session; the site is behind Akamai, see LLP 0002). Each
- * entry notes the sprite's symbol id. Do not redraw or "clean up" the paths:
- * being the real asset is the entire point of this file.
+ * Every glyph here is drawn for this project. The set it replaced was verbatim
+ * path data lifted from a real retailer's inline SVG sprite, which made the
+ * icons third-party artwork shipped inside the binary — the same category of
+ * content as the logo and the product photography.
  *
- * Single-color glyphs live in the registry and take their fill/stroke from the
- * `color` prop. The two-color exceptions (`InfoIcon`, `CushionMeter`) are
- * separate components below.
+ * All glyphs share a 24x24 viewBox and a 2-unit stroke, so unlike the sprite
+ * they came from, they need no per-glyph weight correction to look even beside
+ * each other. `thicken` is kept because call sites pass it, and now simply adds
+ * stroke width.
+ *
+ * Single-color glyphs live in the registry and take their color from the
+ * `color` prop. The multi-color exceptions are separate components below.
  */
 
 type Glyph = {
-  /** viewBox width/height as shipped by the site. */
+  /** viewBox width/height. Uniform here, but kept so call sites can scale. */
   vb: readonly [number, number];
   render: (c: string) => ReactElement;
 };
 
+const BOX = [24, 24] as const;
+
+/** Shared stroke setup for the outline glyphs. */
+const S = {
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  fill: 'none',
+} as const;
+
+/** A five-pointed star path on the 24x24 grid, reused by the rating glyphs. */
+const STAR_D =
+  'M12 3.2l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1-5.4-3-5.4 3 1.1-6.1L3.2 9.6l6.1-.8z';
+
 const glyphs = {
-  /** #icon-search */
   search: {
-    vb: [18, 18],
+    vb: BOX,
     render: (c) => (
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={c}
-        d="M8.05732 1.86694C4.64376 1.86694 1.86694 4.64376 1.86694 8.05732C1.86694 11.4699 4.64376 14.2477 8.05732 14.2477C11.4709 14.2477 14.2477 11.4699 14.2477 8.05732C14.2477 4.64376 11.4709 1.86694 8.05732 1.86694ZM16.9675 18.0002C16.6924 18.0002 16.433 17.8931 16.2384 17.6976L12.9762 14.4354C11.5554 15.5339 9.85842 16.1146 8.05732 16.1146C3.61498 16.1146 0 12.4997 0 8.05732C0 3.614 3.61498 0 8.05732 0C12.4997 0 16.1146 3.614 16.1146 8.05732C16.1146 9.83189 15.5202 11.5711 14.4354 12.9762L17.6986 16.2384C18.1005 16.6403 18.1005 17.2957 17.6986 17.6976C17.503 17.8931 17.2446 18.0002 16.9675 18.0002Z"
-      />
-    ),
-  },
-  /** #icon-cart */
-  cart: {
-    vb: [20, 18],
-    render: (c) => (
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={c}
-        d="M16.493 8.226L18.23 3.29H4.806L5.589 8.226H16.493ZM8.212 13.839C7.418 13.84 6.772 14.484 6.772 15.275C6.772 16.067 7.418 16.712 8.213 16.712C9.008 16.712 9.655 16.067 9.655 15.275C9.655 14.484 9.009 13.84 8.215 13.839H8.212ZM14.259 13.839C13.466 13.84 12.819 14.484 12.819 15.275C12.819 16.067 13.467 16.712 14.261 16.712C15.056 16.712 15.703 16.067 15.703 15.275C15.703 14.484 15.056 13.84 14.263 13.839H14.259ZM14.261 18C12.753 18 11.527 16.778 11.527 15.275C11.527 14.76 11.67 14.266 11.937 13.839H10.537C10.805 14.266 10.947 14.761 10.947 15.275C10.947 16.778 9.721 18 8.213 18C6.705 18 5.48 16.778 5.48 15.275C5.48 14.76 5.622 14.266 5.889 13.839H5.631C5.203 13.839 4.854 13.534 4.854 13.161L2.956 1.451H0V0H3.592C3.939 0 4.21 0.294 4.338 0.547L4.524 1.839H19.223C19.537 1.839 19.705 2.005 19.816 2.116C20 2.299 20 2.576 20 2.709L17.729 9.352L17.68 9.4C17.463 9.616 17.286 9.774 17.087 9.774H5.872L6.269 12.387H17.864V13.839H16.585C16.852 14.266 16.994 14.76 16.994 15.275C16.994 16.778 15.768 18 14.261 18Z"
-      />
-    ),
-  },
-  /** #icon-account */
-  account: {
-    vb: [16, 18],
-    render: (c) => (
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={c}
-        d="M8.00001 1.396C6.19001 1.396 4.71801 2.943 4.71801 4.845C4.71801 6.746 6.19001 8.293 8.00001 8.293C9.81101 8.293 11.282 6.746 11.282 4.845C11.282 2.943 9.81101 1.396 8.00001 1.396ZM14.543 16.453C14.206 11.084 10.141 9.653 8.00001 9.653C5.85901 9.653 1.79401 11.084 1.45701 16.453H14.543ZM0.717008 18C0.322008 18 8.07034e-06 17.678 8.07034e-06 17.283C-0.00599193 11.591 3.33501 9.512 5.28301 8.785C4.08401 7.874 3.36101 6.423 3.36101 4.868C3.36101 2.184 5.44201 0 8.00001 0C10.558 0 12.639 2.184 12.639 4.868C12.639 6.424 11.916 7.874 10.718 8.785C12.665 9.512 16.007 11.591 16 17.282C16 17.678 15.678 18 15.283 18H0.717008Z"
-      />
-    ),
-  },
-  /** #icon-hamburger */
-  hamburger: {
-    vb: [18, 14],
-    render: (c) => (
-      <>
-        <Rect width={18} height={2} fill={c} />
-        <Rect y={6} width={18} height={2} fill={c} />
-        <Rect y={12} width={18} height={2} fill={c} />
-      </>
-    ),
-  },
-  /** #icon-filters */
-  filters: {
-    vb: [16.89, 11.53],
-    render: (c) => (
-      <>
-        <Rect width={16.89} height={1.75} fill={c} />
-        <Rect x={2.86} y={4.89} width={11.18} height={1.75} fill={c} />
-        <Rect x={5.65} y={9.78} width={5.6} height={1.75} fill={c} />
-      </>
-    ),
-  },
-  /** #icon-close */
-  close: {
-    vb: [18, 17],
-    render: (c) => (
-      <>
-        <Path fill={c} d="M1 15.557 16.557 0l1.414 1.414L2.414 16.97z" />
-        <Path fill={c} d="M2.414 0 17.97 15.556l-1.414 1.414L1 1.414z" />
-      </>
-    ),
-  },
-  /** #icon-close-thin */
-  closeThin: {
-    vb: [32, 32],
-    render: (c) => (
-      <Path
-        fillRule="nonzero"
-        fill={c}
-        d="M24.5,0.792893219 L25.2071068,1.5 L13.7068932,12.9998932 L25.2071068,24.5 L24.5,25.2071068 L12.9998932,13.7068932 L1.5,25.2071068 L0.792893219,24.5 L12.2928932,12.9998932 L0.792893219,1.5 L1.5,0.792893219 L12.9998932,12.2928932 L24.5,0.792893219 Z"
-      />
-    ),
-  },
-  /** #icon-close-updated */
-  closeUpdated: {
-    vb: [16, 16],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M15.7365 14.4593L9.2735 8.00025L15.7325 1.53725C16.0835 1.18625 16.0835 0.61425 15.7325 0.26325C15.3815 -0.08775 14.8095 -0.08775 14.4595 0.26325L7.9995 6.72725L1.5365 0.26825C1.1855 -0.08275 0.6135 -0.08275 0.2625 0.26825C-0.0875 0.61925 -0.0875 1.19025 0.2625 1.54125L6.7265 8.00125L0.2675 14.4642C-0.0825 14.8142 -0.0825 15.3863 0.2675 15.7373C0.6185 16.0883 1.1905 16.0883 1.5415 15.7373L8.0005 9.27325L14.4645 15.7323C14.8145 16.0833 15.3855 16.0833 15.7365 15.7323C16.0885 15.3822 16.0885 14.8103 15.7365 14.4593Z"
-      />
-    ),
-  },
-  /** #icon-caret-down */
-  caretDown: {
-    vb: [38, 22],
-    render: (c) => (
-      <Path fill={c} d="M34.586.586l2.828 2.828L19 21.83.614 3.413 3.444.587 19 16.17z" />
-    ),
-  },
-  /** #icon-caret-up */
-  caretUp: {
-    vb: [38, 22],
-    render: (c) => (
-      <Path fill={c} d="M3.442 21.83L.614 19 19.029.586l18.385 18.416-2.83 2.826L19.027 6.245z" />
-    ),
-  },
-  /** #icon-caret-left */
-  caretLeft: {
-    vb: [22, 38],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M21.636 34.78l-2.828 2.828L.392 19.192 18.81.808l2.826 2.83L6.052 19.194z"
-      />
-    ),
-  },
-  /** #icon-caret-right */
-  caretRight: {
-    vb: [22, 38],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M.392 3.636L3.221.808l18.415 18.415L3.219 37.608.393 34.777l15.583-15.555z"
-      />
-    ),
-  },
-  /** #icon-arrow-left */
-  arrowLeft: {
-    vb: [23, 14],
-    render: (c) => (
-      <Polygon
-        transform="translate(1, 1)"
-        fill={c}
-        fillRule="nonzero"
-        points="6.14721821 -0.480465511 7.02278179 0.480465511 1.677 5.35 22 5.35 22 6.65 1.677 6.65 7.02278179 11.5195345 6.14721821 12.4804655 -0.965092685 6"
-      />
-    ),
-  },
-  /** #icon-arrow-right */
-  arrowRight: {
-    vb: [23, 14],
-    render: (c) => (
-      <Polygon
-        transform="translate(11.517454, 7) scale(-1, 1) translate(-11.517454, -7)"
-        fill={c}
-        fillRule="nonzero"
-        points="7.14721821 0.519534489 8.02278179 1.48046551 2.677 6.35 23 6.35 23 7.65 2.677 7.65 8.02278179 12.5195345 7.14721821 13.4804655 0.034907315 7"
-      />
-    ),
-  },
-  /** #icon-long-arrow */
-  longArrow: {
-    vb: [40, 32],
-    render: (c) => (
-      <>
-        <Path
-          fill="none"
-          stroke={c}
-          strokeWidth={5.3333}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M24.030 4.808l11.314 11.314-11.314 11.314"
-        />
-        <Path
-          fill="none"
-          stroke={c}
-          strokeWidth={5.3333}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M2.667 16h26.667"
-        />
-      </>
-    ),
-  },
-  /** #icon-diagonal-arrow */
-  diagonalArrow: {
-    vb: [13, 14],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M4.54578 3.42299C4.19965 3.4203 3.92123 3.69872 3.92392 4.04484C3.9266 4.39097 4.20937 4.67374 4.5555 4.67642L7.76947 4.70135L2.82155 9.64927C2.5787 9.89212 2.58178 10.2889 2.82843 10.5356C3.07507 10.7822 3.47189 10.7853 3.71474 10.5425L8.66266 5.59454L8.68759 8.80851C8.69027 9.15464 8.97304 9.4374 9.31917 9.44009C9.66529 9.44277 9.94371 9.16436 9.94102 8.81823L9.89949 3.46451L4.54578 3.42299Z"
-      />
-    ),
-  },
-  /** #icon-checkmark — the round-cap stroked check. */
-  checkmark: {
-    vb: [40, 32],
-    render: (c) => (
-      <Path
-        fill="none"
-        stroke={c}
-        strokeWidth={8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M34.511 3.883l-21.574 23.681-8.936-8.936"
-      />
-    ),
-  },
-  /** #icon-checkmark-nocircle */
-  checkmarkNoCircle: {
-    vb: [24, 24],
-    render: (c) => (
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={c}
-        d="M21 6.285L9.84 19.018 3 13l1.319-1.49 5.341 4.686L19.525 5 21 6.285z"
-      />
-    ),
-  },
-  /** #icon-tooltip — the "?" in a solid disc, knocked out via evenodd. */
-  tooltip: {
-    vb: [15, 15],
-    render: (c) => (
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill={c}
-        d="M7.5 15C11.9421 15 15 11.9421 15 7.5C15 3.35786 11.9421 0 7.5 0C3.35786 0 0 3.35786 0 7.5C0 11.9421 3.35786 15 7.5 15ZM8.01746 8.9925L7.33121 9.285C7.02746 9.02625 6.89246 8.71125 6.89246 8.37375C6.89246 7.62712 7.44853 7.23686 7.9795 6.86423C8.46458 6.5238 8.92871 6.19808 8.92871 5.62875C8.92871 5.06625 8.48996 4.5825 7.60121 4.5825C6.75746 4.5825 6.22871 4.95375 5.81246 5.505L5.24996 4.8975C5.78996 4.2 6.62246 3.75 7.69121 3.75C9.06371 3.75 9.89621 4.52625 9.89621 5.49375C9.89621 6.43457 9.22678 6.89919 8.62941 7.3138C8.14817 7.6478 7.71371 7.94935 7.71371 8.44125C7.71371 8.62125 7.82621 8.84625 8.01746 8.9925ZM8.18621 10.86C8.18621 11.1975 7.90496 11.4788 7.56746 11.4788C7.22996 11.4788 6.94871 11.1975 6.94871 10.86C6.94871 10.5225 7.22996 10.2413 7.56746 10.2413C7.90496 10.2413 8.18621 10.5225 8.18621 10.86Z"
-      />
-    ),
-  },
-  /** #icon-plus */
-  plus: {
-    vb: [24, 24],
-    render: (c) => <Path fill={c} d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z" />,
-  },
-  /** #icon-minus */
-  minus: {
-    vb: [24, 24],
-    render: (c) => <Path fill={c} d="M0 10h24v4h-24z" />,
-  },
-  /** #icon-star */
-  star: {
-    vb: [32, 32],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M16 26.534l-9.889 5.466 1.889-11.578-8-8.199 11.056-1.689 4.944-10.534 4.944 10.534 11.056 1.689-8 8.199 1.889 11.578z"
-      />
-    ),
-  },
-  /** #icon-border-star--full — the PLP/PDP rating-teaser star. */
-  borderStarFull: {
-    vb: [15, 15],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M3.5 9.6l-.8 4.9c-.1.4.3.7.7.5l4.1-2.3 4.1 2.3c.3.2.8-.1.7-.5l-.8-4.9 3.4-3.4c.3-.3.1-.7-.3-.8L10 4.7 7.9.3c-.2-.3-.7-.3-.8 0L5 4.7l-4.6.7c-.4.1-.5.5-.3.8l3.4 3.4z"
-      />
-    ),
-  },
-  /** #icon-border-star--half */
-  borderStarHalf: {
-    vb: [15, 15],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M3.5 9.6l-.8 4.9c-.1.4.3.7.7.5l4.1-2.3 4.1 2.3c.3.2.8-.1.7-.5l-.8-4.9 3.4-3.4c.3-.3.1-.7-.3-.8L10 4.7 7.9.3c-.2-.3-.7-.3-.8 0L5 4.7l-4.6.7c-.4.1-.5.5-.3.8l3.4 3.4zm4-7.9l1.8 3.9 4.1.6-3 3.1.7 4.3-3.6-2V1.7z"
-      />
-    ),
-  },
-  /** #icon-border-star--empty */
-  borderStarEmpty: {
-    vb: [15, 15],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M3.5 9.6l-.8 4.9c-.1.4.3.7.7.5l4.1-2.3 4.1 2.3c.3.2.8-.1.7-.5l-.8-4.9 3.4-3.4c.3-.3.1-.7-.3-.8L10 4.7 7.9.3c-.2-.3-.7-.3-.8 0L5 4.7l-4.6.7c-.4.1-.5.5-.3.8l3.4 3.4zm1.1-.3l-3-3.1 4.1-.6 1.8-3.9 1.8 3.9 4.1.6-3 3.1.7 4.3-3.6-2-3.6 2 .7-4.3z"
-      />
-    ),
-  },
-  /** #icon-rating-star — filled with a fine same-color outline, as shipped. */
-  ratingStar: {
-    vb: [14, 14],
-    render: (c) => (
-      <Path
-        fill={c}
-        stroke={c}
-        strokeWidth={0.5}
-        d="M7.98776 2.17275L7.75 1.44098L7.51224 2.17275L6.27741 5.97315H2.28142H1.512L2.13448 6.42541L5.3673 8.77419L4.13247 12.5746L3.89471 13.3064L4.51718 12.8541L7.75 10.5053L10.9828 12.8541L11.6053 13.3064L11.3675 12.5746L10.1327 8.77419L13.3655 6.42541L13.988 5.97315H13.2186H9.22259L7.98776 2.17275Z"
-      />
-    ),
-  },
-  /** #icon-pin */
-  pin: {
-    vb: [16, 24],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M8 0C3.593 0 0 3.526 0 7.872c0 1.567.47 3.031 1.27 4.258 2.016 3.087 6.298 8.996 6.298 8.996a.533.533 0 0 0 .869-.007l1.569-2.241c.781.17 1.438.435 1.878.733.487.33.674.652.674.924 0 .356-.359.824-1.186 1.213-.827.39-2.035.652-3.372.652-1.337 0-2.545-.262-3.372-.652-.827-.389-1.186-.857-1.186-1.213 0-.349.345-.805 1.147-1.192a.533.533 0 1 0-.463-.96c-.99.476-1.751 1.2-1.751 2.152 0 .969.782 1.7 1.798 2.179 1.016.478 2.354.753 3.827.753 1.473 0 2.81-.275 3.827-.753 1.016-.479 1.798-1.21 1.798-2.179 0-.742-.485-1.361-1.143-1.807-.497-.336-1.115-.6-1.818-.79l4.056-5.794C15.574 10.924 16 9.43 16 7.872 16 3.526 12.407 0 8 0zm0 1.067c3.84 0 6.933 3.02 6.933 6.748 0 1.352-.373 2.618-1.087 3.63l-5.85 8.288c-.662-.908-4.035-5.544-5.832-8.273a6.6 6.6 0 0 1-1.097-3.645C1.067 4.087 4.16 1.067 8 1.067zm.267 3.2A3.475 3.475 0 0 0 4.8 7.733 3.475 3.475 0 0 0 8.267 11.2a3.475 3.475 0 0 0 3.466-3.467 3.475 3.475 0 0 0-3.466-3.466zm0 1.066c1.332 0 2.4 1.068 2.4 2.4 0 1.332-1.068 2.4-2.4 2.4a2.392 2.392 0 0 1-2.4-2.4c0-1.332 1.068-2.4 2.4-2.4z"
-      />
-    ),
-  },
-  /** #icon-clock */
-  clock: {
-    vb: [18, 18],
-    render: (c) => (
-      <Path
-        fill={c}
-        d="M9 0c2.027 0 4.012.69 5.59 1.944a.75.75 0 1 1-.934 1.174A7.41 7.41 0 0 0 9 1.5C4.865 1.5 1.5 4.865 1.5 9s3.365 7.5 7.5 7.5 7.5-3.365 7.5-7.5c0-1.147-.25-2.244-.742-3.262a.75.75 0 0 1 1.35-.653A8.908 8.908 0 0 1 18 9c0 4.962-4.038 9-9 9s-9-4.038-9-9 4.038-9 9-9zm-.286 3c.395 0 .715.348.715.778v4.666h2.857c.394 0 .714.349.714.778 0 .43-.32.778-.714.778H8.714C8.32 10 8 9.652 8 9.222V3.778c0-.43.32-.778.714-.778z"
-      />
-    ),
-  },
-  /** #icon-expand */
-  expand: {
-    vb: [20, 21],
-    render: (c) => (
-      <G fill={c} fillRule="evenodd">
-        <Path d="m10.464 16.798-.04-.841-5.165.246L15.505 5.957l-.596-.596L4.663 15.608l.247-5.165-.842-.04-.32 6.715z" />
-        <Path d="m9.604 4.748.04.84 5.164-.246L4.562 15.59l.596.595L15.404 5.937l-.246 5.166.84.04.32-6.715z" />
+      <G stroke={c} {...S}>
+        <Circle cx={10.5} cy={10.5} r={6.5} />
+        <Path d="M15.5 15.5L21 21" />
       </G>
     ),
   },
-  /** #icon-circle — pagination dot. */
+  cart: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M3 4h2.2l2.3 10.4h10L20 7H6.2" />
+        <Circle cx={9} cy={19} r={1.6} />
+        <Circle cx={17} cy={19} r={1.6} />
+      </G>
+    ),
+  },
+  account: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Circle cx={12} cy={8} r={4} />
+        <Path d="M4.5 20.5c1.2-3.7 4-5.5 7.5-5.5s6.3 1.8 7.5 5.5" />
+      </G>
+    ),
+  },
+  hamburger: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M3.5 7h17M3.5 12h17M3.5 17h17" />
+      </G>
+    ),
+  },
+  filters: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M3 6h18M6 12h12M10 18h4" />
+      </G>
+    ),
+  },
+  close: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M5.5 5.5l13 13M18.5 5.5l-13 13" />
+      </G>
+    ),
+  },
+  closeThin: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S} strokeWidth={1.4}>
+        <Path d="M5.5 5.5l13 13M18.5 5.5l-13 13" />
+      </G>
+    ),
+  },
+  closeUpdated: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Circle cx={12} cy={12} r={9} />
+        <Path d="M8.8 8.8l6.4 6.4M15.2 8.8l-6.4 6.4" />
+      </G>
+    ),
+  },
+  caretDown: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M5.5 9l6.5 6.5L18.5 9" />
+      </G>
+    ),
+  },
+  caretUp: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M5.5 15l6.5-6.5L18.5 15" />
+      </G>
+    ),
+  },
+  caretLeft: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M15 5.5L8.5 12l6.5 6.5" />
+      </G>
+    ),
+  },
+  caretRight: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M9 5.5L15.5 12 9 18.5" />
+      </G>
+    ),
+  },
+  arrowLeft: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M20 12H4.5M11 5.5L4.5 12l6.5 6.5" />
+      </G>
+    ),
+  },
+  arrowRight: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M4 12h15.5M13 5.5l6.5 6.5-6.5 6.5" />
+      </G>
+    ),
+  },
+  longArrow: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S} strokeWidth={1.6}>
+        <Path d="M2 12h20M17 7.5l4.5 4.5-4.5 4.5" />
+      </G>
+    ),
+  },
+  diagonalArrow: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M7 17L17 7M9 7h8v8" />
+      </G>
+    ),
+  },
+  checkmark: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Circle cx={12} cy={12} r={9} />
+        <Path d="M8 12.4l2.8 2.8L16.4 9.6" />
+      </G>
+    ),
+  },
+  checkmarkNoCircle: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M4.5 12.8l5 5L19.5 7" />
+      </G>
+    ),
+  },
+  tooltip: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M4 5h16v11H13l-4 3.5V16H4z" />
+      </G>
+    ),
+  },
+  plus: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M12 4.5v15M4.5 12h15" />
+      </G>
+    ),
+  },
+  minus: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M4.5 12h15" />
+      </G>
+    ),
+  },
+  star: {
+    vb: BOX,
+    render: (c) => <Path d={STAR_D} fill={c} />,
+  },
+  borderStarFull: {
+    vb: BOX,
+    render: (c) => <Path d={STAR_D} fill={c} stroke={c} strokeWidth={1.4} strokeLinejoin="round" />,
+  },
+  borderStarHalf: {
+    vb: BOX,
+    render: (c) => (
+      <G>
+        <Defs>
+          {/* Hard stop at the midpoint: one gradient is cheaper than a clip
+              path and renders identically on both platforms. */}
+          <LinearGradient id="halfStar" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0.5" stopColor={c} />
+            <Stop offset="0.5" stopColor={c} stopOpacity={0} />
+          </LinearGradient>
+        </Defs>
+        <Path d={STAR_D} fill="url(#halfStar)" stroke={c} strokeWidth={1.4} strokeLinejoin="round" />
+      </G>
+    ),
+  },
+  borderStarEmpty: {
+    vb: BOX,
+    render: (c) => (
+      <Path d={STAR_D} fill="none" stroke={c} strokeWidth={1.4} strokeLinejoin="round" />
+    ),
+  },
+  ratingStar: {
+    vb: BOX,
+    render: (c) => <Path d={STAR_D} fill={c} />,
+  },
+  pin: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M12 21c4-4.6 6-7.9 6-10.6A6 6 0 006 10.4C6 13.1 8 16.4 12 21z" />
+        <Circle cx={12} cy={10.2} r={2.2} />
+      </G>
+    ),
+  },
+  clock: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Circle cx={12} cy={12} r={9} />
+        <Path d="M12 7v5.4l3.6 2.2" />
+      </G>
+    ),
+  },
+  expand: {
+    vb: BOX,
+    render: (c) => (
+      <G stroke={c} {...S}>
+        <Path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" />
+      </G>
+    ),
+  },
   circle: {
-    vb: [7, 7],
-    render: (c) => <Circle cx={3.5} cy={3.5} r={3.5} fill={c} />,
+    vb: BOX,
+    render: (c) => <Circle cx={12} cy={12} r={9} fill={c} />,
   },
-  /** #icon-square — pagination square. */
   square: {
-    vb: [7, 7],
-    render: (c) => <Rect width={8} height={8} fill={c} />,
+    vb: BOX,
+    render: (c) => <Rect x={3} y={3} width={18} height={18} rx={2} fill={c} />,
   },
-  /** #icon-squiggle-1 — the footer newsletter squiggle. */
   squiggle1: {
-    vb: [133, 15],
+    vb: BOX,
     render: (c) => (
-      <Path
-        fillRule="nonzero"
-        fill={c}
-        d="M121.594023,0 C125.318473,0 126.929404,1.67879247 128.763812,5.82401699 L129.309086,7.08563879 C130.501698,9.79018647 131.225567,10.5514109 132.835956,10.5977079 L133,10.6 L133,14.6 C129.084426,14.6 127.421882,12.794485 125.513599,8.39285807 L125.102525,7.43743137 C123.892233,4.68665882 123.204943,4 121.594023,4 C119.580039,4 118.695163,4.83243383 117.57386,7.53421917 L117.090428,8.75636603 C115.46404,12.9353613 114.037864,14.7 110.588255,14.7 C107.526863,14.7 105.969034,13.1485276 103.505488,8.99533332 L102.680231,7.58570701 C101.069741,4.87638781 100.216889,4 99.2823298,4 C98.1783603,4 97.3686713,4.78949222 95.8805082,7.36297043 L95.3618044,8.27895977 C92.8263,12.7936255 91.1013877,14.6 87.576195,14.6 C84.1738627,14.6 82.7771196,12.9024329 81.326814,8.91915492 L80.9900647,7.97492259 L80.7923638,7.43902101 C79.7847077,4.79142626 78.9618305,4 76.9706371,4 C75.235349,4 74.2334753,4.93215273 72.8624225,7.64979105 L72.1047577,9.21906168 C70.2649428,13.0588079 68.842311,14.7 65.8648169,14.7 C62.8458474,14.7 61.2956513,13.1599685 58.7949876,9.00736323 L57.9487993,7.58442603 C56.3205777,4.88784185 55.4557599,4 54.5588919,4 C53.5415687,4 52.4804511,4.98708408 50.3385892,7.94785712 L49.4784752,9.14850552 C46.4940547,13.280822 44.9156664,14.7 42.0523376,14.7 C39.1421884,14.7 37.7165021,13.116474 35.7446206,9.23739939 L35.2474171,8.24442719 C33.6428445,5.03696389 32.7200768,4 31.3467272,4 C29.9652046,4 28.9243578,5.0555049 27.3701149,7.93969845 L26.4593091,9.66910674 L26.1340688,10.2678205 C24.4752981,13.254837 23.1231603,14.6 20.7411692,14.6 C18.2571203,14.6 16.9074774,13.1680363 15.1732298,9.94209106 L14.3288124,8.32833222 L14.0269856,7.76361236 C12.6005521,5.14999679 11.6262057,4.2 10.3357161,4.2 C9.26441712,4.2 8.71511824,4.85340614 7.66323714,7.46397065 L7.39546158,8.13789196 C5.63749039,12.5667276 3.98269275,14.5671867 0.26289827,14.6006234 L0,14.5997705 L0.0606308796,10.6002295 C1.61441308,10.6237593 2.34563403,9.87922359 3.44936082,7.2204379 L3.83131771,6.26910445 C5.53579693,1.96451626 6.92273828,0.2 10.3357161,0.2 C13.68316,0.2 15.5214538,2.06831302 17.7008619,6.14521261 L18.5502205,7.76992693 C19.665277,9.88527857 20.3013396,10.6 20.7411692,10.6 C21.1507868,10.6 21.763912,9.93467647 22.7999733,8.02510466 L23.6743196,6.36575793 C25.979444,2.0047735 27.8717314,0 31.3467272,0 C34.7613981,0 36.4767887,1.83408553 38.6621821,6.12884249 L39.163086,7.12898097 C40.5282536,9.85788512 41.2457031,10.7 42.0523376,10.7 C43.0696609,10.7 44.1307785,9.71291592 46.2726404,6.75214288 L47.1327543,5.55149448 C50.1171748,1.41917797 51.6955631,0 54.5588919,0 C57.5220914,0 59.0228981,1.56622731 61.5378093,5.78816839 L61.861173,6.33525592 C63.8113475,9.64572129 64.7741688,10.7 65.8648169,10.7 C66.6493886,10.7 67.258227,10.0299504 68.3696335,7.75122567 L68.9768226,6.48262197 C71.1064631,2.06025068 73.0811026,0 76.9706371,0 C81.1569785,0 83.0585217,2.03593569 84.647052,6.32236974 L84.989769,7.27896186 C85.9532732,9.9939818 86.422275,10.6 87.576195,10.6 C88.9836639,10.6 89.913842,9.71522215 91.5467736,6.89196569 L92.0728394,5.96307258 C94.4796593,1.67812532 96.0493227,0 99.2823298,0 C102.218722,0 103.722411,1.50077865 106.101961,5.50983697 L106.930336,6.92479813 C108.62747,9.78205597 109.527227,10.7 110.588255,10.7 C111.688275,10.7 112.22022,10.1325515 113.153973,7.82730122 L113.628134,6.6192336 C115.397536,2.11383335 117.334585,0 121.594023,0 Z"
-      />
+      <G stroke={c} {...S} strokeWidth={2.2}>
+        <Path d="M2 14c2.5-5 5-5 7.5 0s5 5 7.5 0 3.5-3.5 5-1.5" />
+      </G>
     ),
   },
-  /** #cta-hover-squiggle — the link-hover underline squiggle. */
   ctaHoverSquiggle: {
-    vb: [112, 7],
+    vb: BOX,
     render: (c) => (
-      <Path
-        fill={c}
-        transform="translate(0 -1)"
-        d="M100.79,8a9.91,9.91,0,0,1-6.47-2.28,7.36,7.36,0,0,0-9.46,0A9.91,9.91,0,0,1,78.39,8a9.94,9.94,0,0,1-6.48-2.28,7.35,7.35,0,0,0-9.45,0A9.91,9.91,0,0,1,56,8a9.88,9.88,0,0,1-6.47-2.28,7.36,7.36,0,0,0-9.46,0A9.85,9.85,0,0,1,33.6,8a9.92,9.92,0,0,1-6.48-2.28A7,7,0,0,0,22.4,4a7,7,0,0,0-4.73,1.72A9.91,9.91,0,0,1,11.2,8,9.88,9.88,0,0,1,4.73,5.72,7,7,0,0,0,0,4V1A9.88,9.88,0,0,1,6.47,3.28,7,7,0,0,0,11.2,5a7,7,0,0,0,4.73-1.72A9.88,9.88,0,0,1,22.4,1a9.91,9.91,0,0,1,6.47,2.28A7,7,0,0,0,33.6,5a7,7,0,0,0,4.72-1.72,10.32,10.32,0,0,1,12.94,0A7,7,0,0,0,56,5a7,7,0,0,0,4.72-1.72,10.33,10.33,0,0,1,12.95,0A7,7,0,0,0,78.39,5a7,7,0,0,0,4.73-1.72,10.32,10.32,0,0,1,12.94,0A7,7,0,0,0,100.79,5a7.05,7.05,0,0,0,4.74-1.72A9.88,9.88,0,0,1,112,1V4a7,7,0,0,0-4.73,1.72A9.92,9.92,0,0,1,100.79,8Z"
-      />
+      <G stroke={c} {...S} strokeWidth={1.8}>
+        <Path d="M2 13c3-4 6-4 9 0s6 4 9 0" />
+      </G>
     ),
   },
-  /** #icon-long-squiggle — stroked wave, themed per accent on the site. */
   longSquiggle: {
-    vb: [81, 8],
+    vb: BOX,
     render: (c) => (
-      <G fill="none" stroke={c} strokeWidth={3.35} transform="translate(0 2)">
-        <Path d="M0,3.96974975 C4.6229997,3.96974975 5.67824964,0.0502499968 10.1002494,0.0502499968 C14.5724991,0.0502499968 15.577499,3.96974975 20.2004987,3.96974975" />
-        <Path d="M20.2004987,3.96974975 C24.8234984,3.96974975 25.8787483,0.0502499968 30.3007481,0.0502499968 C34.7729978,0.0502499968 35.7779977,3.96974975 40.4009974,3.96974975" />
-        <Path d="M40.4009974,3.96974975 C45.0239971,3.96974975 46.079247,0.0502499968 50.5012468,0.0502499968 C54.9734965,0.0502499968 55.9784964,3.96974975 60.6014961,3.96974975" />
-        <Path d="M60.6014961,3.96974975 C65.2244958,3.96974975 66.2797458,0.0502499968 70.7017455,0.0502499968 C75.1739952,0.0502499968 76.1789951,3.96974975 80.8019948,3.96974975" />
+      <G stroke={c} {...S} strokeWidth={1.6}>
+        <Path d="M1 13c2-3.5 4-3.5 6 0s4 3.5 6 0 4-3.5 6 0 3 2 4 .5" />
       </G>
     ),
   },
 } satisfies Record<string, Glyph>;
 
-export type BrooksIconName = keyof typeof glyphs;
+export type IconName = keyof typeof glyphs;
 
 /**
- * A single-color Brooks glyph, scaled to fit a `size` × `size` box with its
- * shipped aspect ratio preserved (many Brooks glyphs are not square).
+ * A single-color glyph, scaled to fit a `size` x `size` box.
  *
- * The sprite's glyphs encode different native line weights (the search ring is
- * ~1.9 viewBox units, the cart ~1.3), so equal render sizes read as unequal
- * stroke widths. A fill can't be thinned, but it can be fattened: `thicken`
- * adds that many rendered pixels of line weight by stroking the fill in the
- * same color. Paths that already stroke themselves keep their own width.
+ * `thicken` adds that many rendered pixels of stroke weight. The glyphs are a
+ * uniform weight already, so it is only needed where a call site wants one
+ * icon to read heavier than its neighbours.
  */
-export function BrooksIcon({
+export function Icon({
   name,
   size = 18,
   color = colors.ink,
   thicken = 0,
 }: {
-  name: BrooksIconName;
+  name: IconName;
   size?: number;
   color?: string;
   thicken?: number;
@@ -422,10 +347,7 @@ export function BrooksIcon({
   );
 }
 
-/**
- * #icon-info — the PDP "i" info disc. Two colors as shipped: a solid disc with
- * the letterform knocked out in the surface color.
- */
+/** The PDP "i" info disc: a solid disc with the letterform knocked out. */
 export function InfoIcon({
   size = 14,
   color = colors.ink,
@@ -436,59 +358,10 @@ export function InfoIcon({
   glyphColor?: string;
 }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-      <Circle cx={7} cy={7} r={7} fill={color} />
-      <Path
-        fill={glyphColor}
-        fillRule="evenodd"
-        d="M6.45,5.67h-1a.83.83,0,0,0-.22,0A.21.21,0,0,0,5,5.88a.2.2,0,0,0,.11.24,1.19,1.19,0,0,0,.36.09c.33,0,.46.16.41.49-.09.62-.22,1.23-.32,1.85-.07.41-.13.83-.2,1.25A1.11,1.11,0,0,0,6.23,11,4.73,4.73,0,0,0,7,11a2,2,0,0,0,1.42-.61.54.54,0,0,0,.15-.22A.26.26,0,0,0,8.5,10a.17.17,0,0,0-.18,0c-.1,0-.18.09-.28.13a2,2,0,0,1-.34.12.39.39,0,0,1-.28,0,.31.31,0,0,1-.13-.25.86.86,0,0,1,0-.32c0-.27.09-.54.14-.8.14-.73.27-1.45.41-2.18A1.52,1.52,0,0,0,7.89,6a.36.36,0,0,0-.39-.32Z"
-      />
-      <Path
-        fill={glyphColor}
-        fillRule="evenodd"
-        d="M6.82,3A.9.9,0,0,0,6,3.52a.89.89,0,0,0,.16,1,.89.89,0,0,0,1.54-.59A.89.89,0,0,0,6.82,3Z"
-      />
-    </Svg>
-  );
-}
-
-/**
- * The two product-detail shoe diagrams Brooks serves as standalone SVG assets.
- *
- * @ref LLP 0003#pdp-detail-sections — Captured from the live Ghost 18 PDP's
- * `PDP-Icon-BalancedCushion.svg` and `PDP-Icon-BalancedSupport.svg`. Keep the
- * path data and 100×100 viewBox verbatim; these do not belong to the header
- * sprite, but they are still part of Brooks's product icon language.
- */
-export function BalancedCushionIcon({ size = 80, color = colors.ink }: ProductDiagramProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-      <Path
-        d="M12.2239 32.9388C11.0976 33.0836 10.8025 34.7732 10.6138 35.7509C10.1425 38.192 8.36539 39.0334 8.14969 40.1605C7.42037 43.9713 8.65646 48.796 14.6454 51.4912C18.7184 53.4211 28.8309 53.946 37.4981 54.0171C37.4981 54.0171 58.9714 54.6243 70.4593 53.3412C81.9472 52.0582 87.6865 47.2283 89.7212 44.3611C91.7558 41.4938 92.034 39.5175 91.9494 36.4179M12.2239 32.9388C12.3216 32.926 12.4203 32.9215 12.5194 32.9223C12.9114 32.9255 13.3104 33.0187 13.6893 33.0825C13.7914 32.2969 13.752 31.4766 13.809 30.6808C13.9439 28.8083 14.2598 26.7201 14.9353 24.9686C15.3115 23.9928 15.8383 23.0775 16.2063 22.0973C16.2235 21.0113 14.7124 17.852 16.7057 17.7076C16.7529 17.7041 16.8 17.7025 16.8481 17.7029C18.6041 17.7173 20.9083 20.2375 21.8123 21.5536C22.4843 22.5326 23.1967 24.2226 24.129 24.8637C25.2396 25.6273 27.0564 25.9788 28.7361 25.9926C29.6585 26.0001 30.5396 25.9058 31.2401 25.7221C32.612 25.3622 34.8989 24.0723 35.9483 23.1123C36.053 23.0165 36.1418 22.9147 36.2118 22.7914C35.3886 21.2797 35.595 19.5177 36.2502 18.1026C36.7495 17.0244 37.6494 16.3666 38.1136 16.1052C38.2785 16.0123 38.4347 15.9771 38.5858 15.9784C38.9608 15.9814 39.3048 16.2067 39.6736 16.3181C41.2247 16.787 60.1192 26.0784 60.1192 26.0784C60.1192 26.0784 65.8337 28.8219 67.7888 29.4325C70.3929 30.3462 73.3519 31.0996 75.34 31.4861C78.3795 32.0775 81.4498 32.5243 84.5484 32.5497L87.9389 32.4599C88.3829 32.4636 88.8116 32.486 89.2047 32.5432C91.6321 32.8939 91.9044 35.1749 91.9301 35.8368C91.9377 36.0347 91.9442 36.2283 91.9494 36.4179M12.2239 32.9388C12.2239 32.9388 19.5132 37.84 26.7167 39.2957C33.9203 40.7513 55.7737 44.6145 66.7784 43.7702C77.7831 42.926 88.1443 38.5169 91.9494 36.4179"
-        stroke={color}
-        strokeWidth={2.5}
-      />
-      <Path d="M88.987 59.0601H12.1141" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
-      <Path
-        d="M50.1141 60.1117L62.6714 81.8617H37.5567L50.1141 60.1117Z"
-        stroke={color}
-        strokeWidth={2.5}
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-export function BalancedSupportIcon({ size = 80, color = colors.ink }: ProductDiagramProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-      <Path
-        d="M9.71932 40.0209C8.7874 40.8192 9.18317 42.2727 8.98832 43.2823C8.5017 45.8026 6.73686 46.1671 6.51415 47.3309C5.76115 51.2655 7.5497 54.9401 13.7332 57.7228C17.9384 59.7154 28.3794 60.2574 37.3281 60.3308C37.3281 60.3308 59.4989 60.9577 71.36 59.633C83.221 58.3082 89.1467 53.3215 91.2475 50.3611C93.3482 47.4007 93.6355 45.3602 93.5481 42.16M9.71932 40.0209C9.71932 40.0209 10.2842 39.2074 11.3586 39.2074C11.7633 39.2107 12.1607 38.8034 12.5518 38.8693C12.6573 38.0582 12.8107 37.0581 12.8696 36.2365C13.0089 34.3032 13.335 32.1471 14.0325 30.3387C14.4209 29.3313 14.9648 28.3863 15.3448 27.3742C15.3625 26.2529 13.8023 22.991 15.8604 22.8419C15.9091 22.8383 15.9578 22.8366 16.0074 22.8371C17.8204 22.8519 20.1995 25.454 21.1328 26.8128C21.8267 27.8236 22.5622 29.5685 23.5248 30.2305C24.6714 31.0188 26.5473 31.3818 28.2816 31.396C29.234 31.4038 30.1436 31.3064 30.8669 31.1167C32.2833 30.7452 34.6446 29.4133 35.728 28.4221C35.8362 28.3232 35.9278 28.2181 36.0001 28.0908C35.1502 26.53 35.3632 24.7108 36.0398 23.2498C36.5553 22.1365 37.4844 21.4573 37.9636 21.1874C38.1339 21.0915 38.2952 21.0552 38.4512 21.0565C38.8384 21.0597 39.1936 21.2923 39.5743 21.4073C41.1758 21.8914 60.684 31.4846 60.684 31.4846C60.684 31.4846 66.5842 34.3172 68.6028 34.9476C71.2914 35.891 74.3465 36.6689 76.3991 37.068C79.5374 37.6785 82.7075 38.1399 85.9067 38.1661L89.4073 38.0734C89.8657 38.0772 90.3084 38.1004 90.7142 38.1594C93.2205 38.5215 93.5016 40.8766 93.5281 41.5599C93.536 41.7643 93.5428 41.9642 93.5481 42.16M9.71932 40.0209C9.71932 40.0209 18.5326 44.9283 25.9701 46.4312C33.4076 47.9341 55.7999 51.2022 67.162 50.3305C78.5241 49.4588 89.6195 44.3271 93.5481 42.16"
-        stroke={color}
-        strokeWidth={2.5}
-      />
-      <Path d="M9.18872 68.5338H87.9787" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
-      <Path d="M9.18872 78.1836H87.9787" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={12} fill={color} />
+      <Circle cx={12} cy={6.6} r={1.6} fill={glyphColor} />
+      <Rect x={10.6} y={9.8} width={2.8} height={8.4} rx={1.4} fill={glyphColor} />
     </Svg>
   );
 }
@@ -499,9 +372,45 @@ type ProductDiagramProps = {
 };
 
 /**
- * #icon-cushion-level-{standard,more,most}-s — the PDP cushion meter: an
- * outlined track with one of three filled thirds. `#5E88BA` is the shipped
- * meter blue; it appears nowhere else in the palette, so it stays literal here.
+ * The product-detail cushioning diagram.
+ *
+ * Replaces a shoe cross-section the retailer served as its own SVG asset. This
+ * is an abstract stack — layers over a baseline — which says the same thing
+ * about cushioning depth without being a drawing of anybody's shoe.
+ */
+export function BalancedCushionIcon({ size = 80, color = colors.ink }: ProductDiagramProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <G stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <Rect x={14} y={26} width={72} height={14} rx={7} />
+        <Rect x={14} y={44} width={72} height={10} rx={5} />
+        <Path d="M12 66h76" />
+        <Path d="M50 70l12 20H38z" />
+      </G>
+    </Svg>
+  );
+}
+
+/**
+ * The product-detail support diagram: the same stack with guidance rails either
+ * side, again abstract rather than a shoe.
+ */
+export function BalancedSupportIcon({ size = 80, color = colors.ink }: ProductDiagramProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <G stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <Rect x={22} y={26} width={56} height={22} rx={8} />
+        <Path d="M14 26v22M86 26v22" />
+        <Path d="M12 66h76M12 80h76" />
+      </G>
+    </Svg>
+  );
+}
+
+/**
+ * The PDP cushion meter: an outlined track with one of three thirds filled.
+ * The fill takes the palette accent rather than the meter blue the previous
+ * version hard-coded, which was a value from someone else's stylesheet.
  */
 export function CushionMeter({
   level,
@@ -510,11 +419,20 @@ export function CushionMeter({
   level: 'standard' | 'more' | 'most';
   width?: number;
 }) {
-  const fillX = { standard: 2, more: 47, most: 94 }[level];
+  const fillX = { standard: 2, more: 47, most: 92 }[level];
   return (
     <Svg width={width} height={(width / 140) * 16} viewBox="0 0 140 16" fill="none">
-      <Rect x={1} y={1} width={138} height={14} stroke="#5E88BA" strokeWidth={2} fill="none" />
-      <Rect x={fillX} width={46} height={16} fill="#5E88BA" />
+      <Rect
+        x={1}
+        y={1}
+        width={138}
+        height={14}
+        rx={3}
+        stroke={colors.blue}
+        strokeWidth={2}
+        fill="none"
+      />
+      <Rect x={fillX} y={2} width={46} height={12} rx={2} fill={colors.blue} />
     </Svg>
   );
 }

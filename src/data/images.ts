@@ -1,63 +1,70 @@
 /**
- * Brooks image CDN helpers.
+ * Swatch helpers for the synthetic catalog.
  *
- * @ref LLP 0002#image-cdn — Brooks serves product photography from a Demandware
- * Scene7-style CDN that resizes on demand and, unlike the rest of the site, is
- * open to any HTTP client. We store bare URLs and size them here, so a grid
- * thumbnail never downloads a 2500px master. This is the single biggest lever on
- * how fast the app feels on a phone.
+ * The de-branded catalog carries no photography. Every colorway instead stores
+ * the colors it describes, and `tools/debrand` encodes them into the image
+ * slots as `swatch:#RRGGBB,#RRGGBB#frame`. Keeping the `images` array — one
+ * entry per original photo — means the PDP gallery, its thumbnail rail, and the
+ * pagination dots all keep working against real counts rather than being
+ * special-cased for a catalog with no pictures.
+ *
+ * Nothing here touches the network. That is the point: an app with no image
+ * host has no third-party image dependency to explain.
  */
 
 export type ImageFit = 'fit' | 'cut';
 
 export interface ImageOpts {
-  /** Rendered width in points. Multiply by pixel density at the call site if needed. */
+  /** Rendered width in points. Kept for call-site compatibility. */
   width: number;
   height?: number;
   fit?: ImageFit;
-  /**
-   * Brooks shoots on near-white; matching the placeholder to it prevents the
-   * flash of grey behind transparent PNG margins.
-   */
   background?: string;
 }
 
-export const BROOKS_IMAGE_BG = 'F8F8F8';
+/** Neutral ground the swatches sit on, matching the old product-shot backdrop. */
+export const SWATCH_BG = '#F8F8F8';
+
+export interface Swatch {
+  /** One to three hex stops, in the order the colorway names them. */
+  stops: string[];
+  /** Which of the colorway's frames this is; frames are composed differently. */
+  frame: number;
+}
+
+const FALLBACK: Swatch = { stops: [SWATCH_BG], frame: 0 };
 
 /**
- * Size a bare Brooks CDN url.
+ * Parse a `swatch:` URI.
  *
- * Brooks masters are PNGs with transparency; `sfrm=png` keeps the alpha channel
- * so shoes sit on our own background rather than a baked-in one.
+ * Tolerant on purpose: a stale catalog, or one harvested before the de-brand,
+ * yields the neutral fallback instead of throwing inside a list renderer.
  */
-export function brooksImage(bareUrl: string, opts: ImageOpts): string {
-  if (!bareUrl) return '';
-  const base = bareUrl.split('?')[0];
-  const { width, height = width, fit = 'fit', background = BROOKS_IMAGE_BG } = opts;
-  const q = new URLSearchParams({
-    sw: String(Math.round(width)),
-    sh: String(Math.round(height)),
-    sm: fit,
-    sfrm: 'png',
-    strip: 'false',
-    bgcolor: background,
-  });
-  return `${base}?${q.toString()}`;
+export function parseSwatch(uri: string): Swatch {
+  if (!uri || !uri.startsWith('swatch:')) return FALLBACK;
+  const [colors, frame] = uri.slice('swatch:'.length).split('#');
+  const stops = colors
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /^#[0-9A-Fa-f]{6}$/.test(s));
+  if (!stops.length) return FALLBACK;
+  return { stops, frame: Number.parseInt(frame ?? '0', 10) || 0 };
+}
+
+/** True when a url is a swatch rather than something fetchable. */
+export function isSwatch(uri: string): boolean {
+  return typeof uri === 'string' && uri.startsWith('swatch:');
 }
 
 /**
- * Brooks encodes the shot angle as a single letter before the slug:
- * `110498-197-{angle}-hyperion-max-4-...`. `l` is the hero side profile.
+ * The primary color of a colorway — used where a single dot has to stand in for
+ * the whole colorway, such as the PDP's colorway selector.
  */
-export const ANGLE_HERO = 'l';
-
-export function angleOf(url: string): string | null {
-  const m = url.match(/-(\d{3})-([a-z])-/);
-  return m ? m[2] : null;
+export function primaryStop(uri: string): string {
+  return parseSwatch(uri).stops[0] ?? SWATCH_BG;
 }
 
-/** Hero shot for a colorway, falling back to whatever the first image is. */
+/** Hero frame for a colorway. Frame 0 is the one the harvest listed first. */
 export function heroImage(images: { url: string }[]): string {
-  const hero = images.find((i) => angleOf(i.url) === ANGLE_HERO);
-  return (hero ?? images[0])?.url ?? '';
+  return images[0]?.url ?? '';
 }

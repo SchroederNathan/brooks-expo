@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useBrooksHeader } from '@/components/brooks-header';
-import { BrooksIcon } from '@/components/icons';
+import { useAppHeader } from '@/components/app-header';
+import { Icon } from '@/components/icons';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
@@ -15,7 +15,7 @@ import { colors, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 
-/** The shape of the Brooks site's own shop navigation. */
+/** The shop navigation. */
 const SECTIONS = [
   {
     title: 'Shop by gender',
@@ -38,13 +38,13 @@ const SECTIONS = [
   },
 ];
 
-/** Brooks's franchises, the way runners actually shop. */
-const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', 'Launch'];
+/** The synthetic catalog's product families, as `tools/debrand` named them. */
+const FRANCHISES = ['Halcyon', 'Softfall', 'Steadyline', 'Quickstep', 'Ridgewalk', 'Liftoff'];
 
 export function Shop() {
   // Browse *is* the site's mega menu, so the hamburger would only point at the
   // screen the reader is already on.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({
+  const { header, headerHeight, scrollProps } = useAppHeader({
     actions: ['search', 'account', 'cart'],
   });
 
@@ -61,7 +61,7 @@ export function Shop() {
         <View style={styles.head}>
           <Txt variant="h1">Shop</Txt>
           <Press onPress={() => router.push('/search')} scaleTo={0.97} style={styles.searchBar}>
-            <BrooksIcon name="search" size={15} color={colors.inkMuted} />
+            <Icon name="search" size={15} color={colors.inkMuted} />
             <Txt variant="body" c={colors.inkMuted}>
               Search shoes, apparel…
             </Txt>
@@ -87,7 +87,7 @@ export function Shop() {
                 onPress={() =>
                   router.push({
                     pathname: '/category/[id]',
-                    params: { id: 'brooks-running-shoes', title: f, franchise: f },
+                    params: { id: 'demo-running-shoes', title: f, franchise: f },
                   })
                 }
               >
@@ -115,7 +115,7 @@ export function Shop() {
               {VOICE.finderWelcome}
             </Txt>
           </View>
-          <BrooksIcon name="caretRight" size={16} color={colors.surface} />
+          <Icon name="caretRight" size={16} color={colors.surface} />
         </Press>
 
         {SECTIONS.map((s) => (
@@ -143,7 +143,7 @@ export function Shop() {
                       <Txt variant="tiny" c={colors.inkMuted}>
                         {n}
                       </Txt>
-                      <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
+                      <Icon name="caretRight" size={14} color={colors.inkFaint} />
                     </View>
                   </Press>
                 );

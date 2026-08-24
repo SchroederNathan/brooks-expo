@@ -1,8 +1,9 @@
 /**
- * TurnTo review data captured from the real Brooks PDP controllers.
+ * Generated product reviews, bundled with the app.
  *
- * @ref LLP 0002#turnto-reviews — The controllers share the storefront's
- * Akamai boundary, so reviews are harvested through a browser and bundled.
+ * The real harvested reviews were written by named members of the public, so
+ * they were replaced wholesale — see `tools/debrand/reviews.js`. Ratings and
+ * fit-dimension averages are kept; titles, bodies, and authors are synthetic.
  */
 import raw from '../../assets/reviews.json';
 import type { ProductReviews, ReviewsSnapshot } from './types';

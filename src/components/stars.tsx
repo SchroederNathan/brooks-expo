@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { BrooksIcon } from './icons';
+import { Icon } from './icons';
 import { colors, spacing } from '../theme';
 import { Txt } from './themed-text';
 
@@ -25,7 +25,7 @@ export function Stars({
     <View style={[styles.row, { gap: 5 }]}>
       <View style={styles.stars}>
         {[1, 2, 3, 4, 5].map((i) => (
-          <BrooksIcon
+          <Icon
             key={i}
             name={i <= half ? 'borderStarFull' : i - 0.5 === half ? 'borderStarHalf' : 'borderStarEmpty'}
             size={size}

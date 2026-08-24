@@ -1,21 +1,20 @@
 /**
- * Brooks type ramp.
+ * Type ramp.
  *
- * @ref LLP 0003#brand — Brooks sets everything in Filson Pro (Monotype). The
- * licensed OTFs are bundled in assets/fonts; Filson has no 600, so the ramp's
- * 800 slot is Filson "Heavy" (usWeightClass 800), not "ExtraBold".
+ * Archivo (SIL Open Font License) replaces the licensed brand face the demo
+ * used to bundle. It is a grotesque with real 800 and 900 cuts, so the five
+ * slots below map one-to-one onto the weights the layouts already ask for and
+ * no call site had to change.
  *
  * Weight is set via fontFamily names (static font files loaded with expo-font),
- * never fontWeight. Color stays out of the ramp: `Txt` applies it via its `c`
- * prop so one ramp serves ink-on-surface and white-on-navy alike.
+ * not fontWeight — the two do not mix reliably on Android.
  */
-
 export const font = {
-  black: 'FilsonPro-Black',
-  extraBold: 'FilsonPro-Heavy',
-  bold: 'FilsonPro-Bold',
-  medium: 'FilsonPro-Medium',
-  regular: 'FilsonPro-Regular',
+  black: 'Archivo_900Black',
+  extraBold: 'Archivo_800ExtraBold',
+  bold: 'Archivo_700Bold',
+  medium: 'Archivo_500Medium',
+  regular: 'Archivo_400Regular',
   /** The site's handwritten accent face. At most one use per screen. */
   script: 'Caveat_600SemiBold',
 } as const;

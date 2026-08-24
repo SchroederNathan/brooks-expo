@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FilterSheet, SORT_OPTIONS, countActiveFilters } from '@/screens/category/filter-sheet';
 import { ProductTile } from '@/components/product-tile';
-import { BrooksIcon } from '@/components/icons';
+import { Icon } from '@/components/icons';
 import { Chip } from '@/components/chip';
 import { Press } from '@/components/press';
 import { Squiggle } from '@/components/squiggle';
@@ -98,7 +98,7 @@ export function Category({
       <View style={[styles.bar, { paddingTop: insets.top }]}>
         <View style={styles.barRow}>
           <Press onPress={() => router.back()} scaleTo={0.9} hitSlop={10} style={styles.barBtn}>
-            <BrooksIcon name="caretLeft" size={16} />
+            <Icon name="caretLeft" size={16} />
           </Press>
           <View style={[styles.barTitle, { opacity: showBarTitle ? 1 : 0 }]}>
             <Txt variant="productTitle" numberOfLines={1}>
@@ -111,7 +111,7 @@ export function Category({
             hitSlop={10}
             style={styles.barBtn}
           >
-            <BrooksIcon name="search" size={16} />
+            <Icon name="search" size={16} />
           </Press>
         </View>
 

@@ -1,4 +1,3 @@
-import * as Linking from 'expo-linking';
 import { StyleSheet, View } from 'react-native';
 
 import { Press } from '@/components/press';
@@ -8,25 +7,22 @@ import type { ProductReviews, ReviewDimension } from '@/data/types';
 import { colors, spacing } from '@/theme';
 
 /**
- * The expanded Brooks review summary, fit rails, and newest TurnTo reviews.
+ * The expanded review summary, fit rails, and most recent reviews.
  *
- * @ref LLP 0003#pdp-reviews — Preserve the storefront's information order
- * while using native press targets and the app's existing type and icon system.
+ * The reviews are generated (see `tools/debrand`). "Write a review" and "See
+ * all reviews" are inert on purpose: there is no review service behind the
+ * demo, and the previous version's "see all" opened the real storefront in the
+ * browser, which is exactly the outbound association the de-brand removes.
  */
 export function ReviewsPanel({
   rating,
   count,
   data,
-  productUrl,
 }: {
   rating: number;
   count: number;
   data?: ProductReviews;
-  productUrl: string;
 }) {
-  const openBrooksReviews = () => {
-    void Linking.openURL(`${productUrl}#reviews`);
-  };
   const dimensions = (data?.dimensions || []).slice(0, 2);
   const recent = data?.recent || [];
 
@@ -62,7 +58,7 @@ export function ReviewsPanel({
         <>
           <View style={styles.listHeader}>
             <Txt variant="caption">3 most recent reviews</Txt>
-            <Press accessibilityRole="link" onPress={openBrooksReviews} hitSlop={8}>
+            <Press accessibilityRole="link" onPress={() => {}} hitSlop={8}>
               <Txt variant="caption" style={styles.textLink}>
                 See all reviews
               </Txt>
@@ -95,7 +91,7 @@ export function ReviewsPanel({
 
           <Press
             accessibilityRole="link"
-            onPress={openBrooksReviews}
+            onPress={() => {}}
             scaleTo={0.98}
             style={styles.secondaryCta}
           >

@@ -1,20 +1,25 @@
 /**
  * The catalog snapshot, bundled with the app.
  *
- * @ref LLP 0002#why-a-snapshot — brooksrunning.com is behind Akamai Bot Manager,
- * which 403s every non-browser client, so the app cannot fetch products at
- * runtime. `tools/harvest` drives a real browser session to capture the live
- * catalog and writes it here. Photography and search stay live: the Brooks image
- * CDN and Constructor.io are both reachable from the device.
+ * The data is synthetic: `tools/debrand` rewrites the harvested catalog into
+ * invented families, generated copy, and colourway swatches, so nothing here
+ * describes anyone's real merchandise. It is bundled rather than fetched
+ * because there is no store behind it.
  */
 import raw from '../../assets/catalog.json';
+import { setSearchCatalog } from './constructor';
 import type { Catalog } from './types';
 
 export const catalog = raw as unknown as Catalog;
 
+// Search runs on-device against this same snapshot. Registering it at module
+// load keeps the search screen from having to own the wiring, and there is no
+// async step to wait for now that nothing is fetched.
+setSearchCatalog(catalog);
+
 export const HOME_CATEGORY = 'featured-new-arrivals';
 
-/** The shop tabs, in the order the Brooks site presents them. */
+/** The shop tabs, in the order the demo presents them. */
 export const SHOP_SECTIONS = [
   { id: 'featured-new-arrivals', label: 'New Arrivals' },
   { id: 'mens-shoes', label: "Men's Shoes" },

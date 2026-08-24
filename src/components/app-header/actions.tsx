@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { BrooksIcon, type BrooksIconName } from '@/components/icons';
+import { Icon, type IconName } from '@/components/icons';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { useCart } from '@/store/cart';
@@ -23,7 +23,7 @@ export type HeaderActionName = 'search' | 'account' | 'cart' | 'menu' | 'filters
 export type HeaderActionConfig = {
   /** React key, and the accessibility label's fallback. */
   key: string;
-  icon: BrooksIconName;
+  icon: IconName;
   label: string;
   onPress: () => void;
   /** Count for the lime badge. Falsy values draw no badge. */
@@ -38,7 +38,7 @@ export type HeaderAction = HeaderActionName | HeaderActionConfig;
 
 /**
  * The shared glyph box. `size` is per glyph rather than global because
- * `BrooksIcon` fits the box on the glyph's *longer* axis, so one value would
+ * `Icon` fits the box on the glyph's *longer* axis, so one value would
  * render the wide-and-short hamburger wider than the tall-and-narrow account
  * figure. `thicken` then brings each glyph's encoded weight up to ~2.2px — the
  * same normalization the tab bar does, so a glyph reads at one weight whether
@@ -115,7 +115,7 @@ export function HeaderActions({ actions }: { actions: readonly HeaderAction[] })
             hitSlop={{ top: 14, bottom: 14, left: 9, right: 9 }}
             style={styles.action}
           >
-            <BrooksIcon
+            <Icon
               name={config.icon}
               size={config.size ?? 20}
               color={colors.surface}

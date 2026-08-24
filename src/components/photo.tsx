@@ -1,9 +1,11 @@
-import { Image, type ImageStyle } from 'expo-image';
+import type { ViewStyle } from 'react-native';
 
-import { brooksImage } from '../data/images';
-import { motion } from '../theme';
+import { Swatch } from './swatch';
 
-/** Editorial/lifestyle photography: fills its frame, no CDN transparency tricks. */
+/**
+ * Editorial imagery slot. The lifestyle photography was a third party's, so this is a
+ * swatch too — square-cornered, since editorial frames set their own radius.
+ */
 export function Photo({
   url,
   style,
@@ -12,19 +14,13 @@ export function Photo({
   priority,
 }: {
   url: string;
-  style?: ImageStyle;
+  style?: ViewStyle;
   width: number;
   height: number;
   priority?: 'low' | 'normal' | 'high';
 }) {
+  void priority;
   return (
-    <Image
-      source={{ uri: brooksImage(url, { width: width * 2, height: height * 2, fit: 'cut' }) }}
-      style={[{ width: '100%', height: '100%' }, style]}
-      contentFit="cover"
-      transition={motion.slow}
-      priority={priority}
-      cachePolicy="memory-disk"
-    />
+    <Swatch url={url} width={width} height={height} rounded={false} style={style} />
   );
 }

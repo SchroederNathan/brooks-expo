@@ -14,7 +14,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { Press } from '@/components/press';
-import { BrooksWordmark } from '@/screens/home/wordmark';
+import { BrandMark } from '@/screens/home/wordmark';
 import { colors, motion, spacing } from '@/theme';
 
 import { HeaderActions, type HeaderAction } from './actions';
@@ -22,11 +22,9 @@ import { useHeaderMetrics } from './metrics';
 import type { HeaderScrollState } from './use-header-scroll';
 
 /**
- * The Brooks header: blue bar, wordmark left, screen-chosen controls right.
+ * The app header: flat accent bar, mark left, screen-chosen controls right.
  *
- * @ref LLP 0003#the-header-collapses-on-scroll — Both the bar and its collapse
- * are ports. The chrome is brooksrunning.com's own sticky header (flat
- * `#003789`, white wordmark, trailing sprite glyphs). The motion is the
+ * The collapse-on-scroll motion follows the
  * `instagram-header-on-scroll-animation` study from rn-makeitanimated, which
  * splits into two regimes:
  *
@@ -72,7 +70,7 @@ type Props = {
   hiddenStatusBarStyle?: StatusBarStyle;
 };
 
-export function BrooksHeader({
+export function AppHeader({
   actions = ['search', 'account', 'cart', 'menu'],
   state,
   onLogoPress,
@@ -165,7 +163,7 @@ export function BrooksHeader({
     };
   }, [headerHeight, reduceMotion]);
 
-  // The clock sits on Brooks blue while the header is up and on the screen's own
+  // The clock sits on the accent bar while the header is up and on the screen's own
   // content once it is gone, so the status-bar style has to follow the header.
   // This is the one place the animation touches the JS thread, and only on a
   // crossing — not per frame.
@@ -189,11 +187,11 @@ export function BrooksHeader({
         <Animated.View style={[styles.row, { height: barHeight }]}>
           <Press
             accessibilityRole="button"
-            accessibilityLabel="Brooks home"
+            accessibilityLabel="Home"
             onPress={onLogoPress ?? (() => router.navigate('/'))}
             hitSlop={{ top: 12, bottom: 12, left: 4, right: 12 }}
           >
-            <BrooksWordmark width={108} color={colors.surface} />
+            <BrandMark width={108} color={colors.surface} />
           </Press>
           <HeaderActions actions={actions} />
         </Animated.View>

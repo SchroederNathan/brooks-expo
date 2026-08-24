@@ -1,17 +1,16 @@
 /**
  * Human labels for the raw facet vocabulary the catalog carries.
  *
- * @ref LLP 0003#product-taxonomy — Brooks teaches customers "Neutral vs Support"
- * as the top-level split, and names its support levels Flexible / Balanced /
- * Structured (GuideRails™) / Max. The catalog stores the raw SFCC slugs; these
- * maps translate without inventing vocabulary.
+ * The catalog stores raw facet slugs; these maps turn them into the words a
+ * shopper reads. "Neutral vs Support" is the top-level split, with support
+ * graded Flexible / Balanced / Structured / Max.
  */
 
 export const SUPPORT_LABEL: Record<string, string> = {
   neutral: 'Neutral',
   flexible_support: 'Flexible support',
   balanced_support: 'Balanced support',
-  structured_support: 'Structured (GuideRails™)',
+  structured_support: 'Structured',
   max_support: 'Max support',
 };
 

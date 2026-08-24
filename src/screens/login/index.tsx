@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BrooksIcon } from '@/components/icons';
+import { Icon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
@@ -21,10 +21,10 @@ import { RUN_CLUB_PERKS } from '@/constants';
 import { colors, font, spacing } from '@/theme';
 
 /**
- * Join Brooks Run Club.
+ * Create a sample membership.
  *
  * @ref LLP 0003#login — adidas's membership framing: joining a club, never
- * passing a gate. The guest path stays visible at all times. No Brooks auth API
+ * passing a gate. The guest path stays visible at all times. No auth API
  * is reachable from an app (LLP 0002), so this stores a first name on-device
  * and asks for nothing sensitive.
  */
@@ -62,14 +62,14 @@ export function Login() {
       >
         <View style={styles.head}>
           <Press haptic={false} hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
-            <BrooksIcon name="close" size={14} color={colors.inkMuted} />
+            <Icon name="close" size={14} color={colors.inkMuted} />
           </Press>
         </View>
 
         {/* --------------------------------------------------- THE PITCH --- */}
         <View style={styles.card}>
           <Txt variant="eyebrow" c={colors.lime}>
-            Brooks Run Club
+            Member preview
           </Txt>
           <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.sm }}>
             Join the club.{'\n'}Run happier.
@@ -78,7 +78,7 @@ export function Login() {
             {RUN_CLUB_PERKS.map((perk) => (
               <View key={perk} style={styles.perk}>
                 <View style={styles.perkTick}>
-                  <BrooksIcon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
+                  <Icon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
                 </View>
                 <Txt variant="body" c="rgba(255,255,255,0.9)" style={{ flex: 1 }}>
                   {perk}

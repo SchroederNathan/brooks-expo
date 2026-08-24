@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
-import { useBrooksHeader } from '@/components/brooks-header';
+import { useAppHeader } from '@/components/app-header';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
@@ -24,17 +24,15 @@ const FREE_SHIPPING_OVER = 100;
 /**
  * The Bag.
  *
- * @ref LLP 0003#cart — GOAT's immediacy: swipe-to-delete with undo, a
- * free-shipping progress bar, quantity steppers, and Brooks's own empty-state
- * voice. Each line carries the real Brooks variant id (LLP 0002), which is the
- * point where this prototype's cart and Brooks's production cart speak the same
- * language.
+ * Swipe-to-delete with undo, a free-shipping progress bar, and quantity
+ * steppers. Each line carries the variant id its size and width resolve to,
+ * which is what a real cart line would be keyed on.
  */
 export function Cart() {
   const cart = useCart();
   // No cart glyph on the cart, and no badge to double up on the count already
   // in the title.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({
+  const { header, headerHeight, scrollProps } = useAppHeader({
     actions: ['search', 'account', 'menu'],
   });
   const [undo, setUndo] = useState<CartItemView | null>(null);
@@ -156,7 +154,7 @@ export function Cart() {
                       Size {item.size}
                       {item.width ? ` · ${widthLabel(item)}` : ''}
                     </Txt>
-                    {/* The real Brooks variant id — the cart's proof of fidelity. */}
+                    {/* The line's variant id: style + width + colour + size. */}
                     <Txt variant="tiny" c={colors.inkFaint}>
                       #{item.variantId}
                     </Txt>
@@ -198,9 +196,8 @@ export function Cart() {
               Prototype note
             </Txt>
             <Txt variant="bodySmall" c={colors.surface} style={{ marginTop: spacing.xs }}>
-              The journey ends here by design — no order is ever placed. Every line
-              above already carries the exact variant id Brooks's own Cart-AddProduct
-              endpoint accepts, so the last mile is documented, not guessed.
+              This is a demo. Checkout is disabled and no order is ever placed.
+              The catalog, prices, and reviews are all generated sample data.
             </Txt>
           </View>
         )}
