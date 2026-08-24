@@ -1,6 +1,5 @@
 {
   "expo": {
-    "name": "Brooks",
     "slug": "brooks-expo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +8,6 @@
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/app.icon",
-      "bundleIdentifier": "com.exponathan.brooks",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -21,8 +19,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.exponathan.brooks"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -37,7 +34,6 @@
       "expo-sqlite",
       "expo-video"
     ],
-    "scheme": "brooks",
     "newArchEnabled": true,
     "splash": {
       "backgroundColor": "#FFFFFF"
