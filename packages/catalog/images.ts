@@ -3,7 +3,9 @@
  *
  * The de-branded catalog carries no photography. Every colorway instead stores
  * the colors it describes, and `tools/debrand` encodes them into the image
- * slots as `swatch:#RRGGBB,#RRGGBB#frame`. Keeping the `images` array — one
+ * slots as `swatch:RRGGBB,RRGGBB@frame`. Note the stops carry no leading '#'
+ * and the frame is separated by '@': a '#' delimiter collides with the hex
+ * colours it is delimiting. Keeping the `images` array — one
  * entry per original photo — means the PDP gallery, its thumbnail rail, and the
  * pagination dots all keep working against real counts rather than being
  * special-cased for a catalog with no pictures.
@@ -42,11 +44,12 @@ const FALLBACK: Swatch = { stops: [SWATCH_BG], frame: 0 };
  */
 export function parseSwatch(uri: string): Swatch {
   if (!uri || !uri.startsWith('swatch:')) return FALLBACK;
-  const [colors, frame] = uri.slice('swatch:'.length).split('#');
+  const [colors, frame] = uri.slice('swatch:'.length).split('@');
   const stops = colors
     .split(',')
     .map((s) => s.trim())
-    .filter((s) => /^#[0-9A-Fa-f]{6}$/.test(s));
+    .filter((s) => /^[0-9A-Fa-f]{6}$/.test(s))
+    .map((s) => `#${s}`);
   if (!stops.length) return FALLBACK;
   return { stops, frame: Number.parseInt(frame ?? '0', 10) || 0 };
 }

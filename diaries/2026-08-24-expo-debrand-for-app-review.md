@@ -68,6 +68,14 @@ brand association by itself.
 "Kraken"`, so renaming the franchise field left `Ghost` in the name. Five
 products, invisible until a residual scan by field rather than by document.
 
+**A `#` delimiter inside hex colours.** The swatch URI was encoded as
+`swatch:#RRGGBB,#RRGGBB#frame`. Splitting on `#` to recover the frame index
+also split the colours, so `parseSwatch` produced an empty stop list and every
+one of the 4,894 swatches fell back to the neutral ground. Typecheck passed,
+`expo export` passed, and the PLP rendered — just as 58 identical pale-grey
+tiles. Only looking at the screen caught it. Re-encoded without `#` at all
+(`swatch:RRGGBB,RRGGBB@0`).
+
 **A stray non-ASCII digit.** A hex literal came out as `'#2F8F४4'.replace(…)` —
 a Devanagari four. It evaluated correctly, which is exactly why it would have
 survived review. Worth a lint rule.
@@ -85,6 +93,11 @@ names user interface alongside name and icon, and LLP 0003 had documented
 square corners as a deliberate trait *of that brand*. Copying a distinctive
 treatment for no reason is what makes two apps look like one, so the tokens
 changed too.
+
+**Three green checks and a broken screen.** `tsc --noEmit`, `expo export`, and
+the residual-token scan all passed with the swatch encoding broken. Every check
+was structural; none of them looked at a pixel. Verifying on a simulator was
+not a formality at the end, it was the only step that could have found it.
 
 **Replacing photography without a rasteriser.** No `rsvg-convert`, `magick`, or
 `cairosvg` on the machine. PIL was present, so the launcher icons are drawn
@@ -115,9 +128,9 @@ Not observed — this task did not touch the other system.
 
 ## Follow-ups
 
-- Visual verification of the swatch renderer and new palette on a simulator was
-  still building when this entry was written. The bundle exports and typechecks
-  clean; the screens have not been looked at.
 - `tools/harvest/` still targets the real storefront. Kept as the provenance
   record for the schema, but it is a footgun on this branch.
 - The invented family names are not trademark-cleared. Fine for a demo.
+- One cosmetic artefact of the mark replacement: a feature string now reads
+  "RoadRubber rubber outsole". Harmless, but the `MARKS` replacements do not
+  check whether the following word makes them redundant.

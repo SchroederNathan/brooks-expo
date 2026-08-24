@@ -19,8 +19,8 @@ import { colors, spacing } from '@/theme';
 /**
  * Account.
  *
- * @ref LLP 0003#login — Run Club framing throughout: a member sees their club
- * card; a guest sees the pitch, with browsing never gated behind either.
+ * Membership framing throughout: a member sees their card; a guest sees the
+ * pitch, with browsing never gated behind either.
  */
 export function Account() {
   const member = useMember();

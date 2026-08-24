@@ -117,7 +117,11 @@ function main() {
       // carries the frame index so each frame can be composed differently.
       c.images = (c.images ?? []).map((_, i) => {
         stats.images++;
-        return { url: `swatch:${stops.join(',')}#${i}`, alt: `${p.name} — ${name}` };
+        // Stops are stored without their leading '#', and the frame index is
+        // separated by '@'. A '#' delimiter collides with the hex colours
+        // themselves, which silently parses every swatch down to nothing.
+        const bare = stops.map((hex) => hex.replace('#', '')).join(',');
+        return { url: `swatch:${bare}@${i}`, alt: `${p.name} — ${name}` };
       });
     }
   }

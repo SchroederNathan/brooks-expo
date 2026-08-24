@@ -37,7 +37,7 @@ import { colors, font, spacing } from '@/theme';
  * keeps the old in-body input.
  */
 
-const TRENDING = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Trail', 'Sports bra'];
+const TRENDING = ['Halcyon', 'Softfall', 'Steadyline', 'Quickstep', 'Trail', 'Sports bra'];
 
 export function Search() {
   const [query, setQuery] = useState('');
@@ -253,7 +253,7 @@ export function Search() {
           <View style={[styles.block, { alignItems: 'center', paddingTop: spacing.xxl }]}>
             <Txt variant="h3">No matches for “{query.trim()}”</Txt>
             <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm, textAlign: 'center' }}>
-              Try a franchise name — Ghost, Glycerin, Adrenaline…
+              Try a product family — Halcyon, Softfall, Steadyline…
             </Txt>
           </View>
         )}

@@ -193,7 +193,7 @@ export function Cart() {
         {scopeNote && (
           <View style={styles.scopeNote}>
             <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 10 }}>
-              Prototype note
+              Demo build
             </Txt>
             <Txt variant="bodySmall" c={colors.surface} style={{ marginTop: spacing.xs }}>
               This is a demo. Checkout is disabled and no order is ever placed.

@@ -141,7 +141,7 @@ export function Home() {
             colors={SECTION_TINT.gear}
             style={StyleSheet.absoluteFill}
           />
-          <SectionTitle>Summer’s hottest new gear</SectionTitle>
+          <SectionTitle>New gear</SectionTitle>
           <FlatList
             horizontal
             data={HOME_GEAR}
@@ -153,7 +153,7 @@ export function Home() {
         </View>
 
         <View style={styles.useCaseSection}>
-          <SectionTitle>Wherever the day takes you</SectionTitle>
+          <SectionTitle>Shop by activity</SectionTitle>
           <FlatList
             horizontal
             data={USE_CASES}
@@ -207,7 +207,7 @@ export function Home() {
         </View>
 
         <View style={styles.storySection}>
-          <SectionTitle>Stories to transform your run</SectionTitle>
+          <SectionTitle>Stories</SectionTitle>
           <FlatList
             horizontal
             data={STORIES}
