@@ -6,7 +6,12 @@
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
 **Revised:** 2026-08-21
-**Related:** LLP 0000, LLP 0001, LLP 0002
+**Related:** LLP 0000, LLP 0001, LLP 0002, LLP 0005
+
+> **Superseded in part by [LLP 0005](./0005-debranding.explainer.md).** The
+> brand tokens, the icon sprite, the logo, and the home feature described here
+> were removed from the shipping app after an App Store Review 4.1(a)
+> rejection. The screen patterns still stand; their brand attribution does not.
 
 ## Summary
 

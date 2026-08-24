@@ -6,7 +6,12 @@
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
 **Revised:** 2026-07-14
-**Related:** LLP 0000, LLP 0003, LLP 0004
+**Related:** LLP 0000, LLP 0003, LLP 0004, LLP 0005
+
+> **Superseded in part by [LLP 0005](./0005-debranding.explainer.md).** The
+> live search client, the image-CDN helpers, and the harvested reviews described
+> here were removed from the shipping app after an App Store Review 4.1(a)
+> rejection. The normalized schema and the variant id format still stand.
 
 ## Summary
 
