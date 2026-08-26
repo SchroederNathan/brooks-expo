@@ -103,3 +103,33 @@ gutter padding moved from the scroller to `contentContainerStyle` so the first
 chip lines up with the gutter and the last scrolls clear of the edge. Verified on
 the iPhone 17 Pro Max simulator: one row in both states, and the rail scrolls to
 reveal `Sports bra`.
+
+## Addendum — the header glyph never opened the keyboard
+
+[confirmed] Home's header search glyph navigated to Browse but left the field
+unfocused, so the screen arrived in its browse state and the runner had to tap
+the field anyway. The intent channel was already right — `focus: '1'` as a route
+param, consumed by an effect in `Shop` that calls `barRef.current?.focus()` after
+60ms.
+
+[observed] Proved with a temporary `console.log` in that effect, read back
+through `debugger-log-registry`: the param arrives as `"1"`, then immediately as
+`""`. The effect body schedules the 60ms timer and *then* calls
+`router.setParams({ focus: '' })` to consume the param. That re-render changes
+`focus`, React runs the effect's cleanup, and the cleanup's `clearTimeout`
+cancels the focus it had just scheduled — every time, because the setParams
+round trip is far shorter than 60ms.
+
+[confirmed] Fix: move the timer into a ref and tear it down only on unmount, so
+consuming the param cannot cancel the pending focus. Verified twice on the
+iPhone 17 Pro Max simulator — once with Browse already mounted, and once from a
+cold app start where the glyph is the first thing that mounts it. Both land with
+the field risen into the title line, the filter button slid in, and the keyboard
+up.
+
+## Improvement ideas (addendum)
+
+- A one-shot route param that an effect must clear is a footgun in exactly this
+  shape: the clear re-runs the effect that owns the pending work. A monotonic
+  token (`focus: String(counter)`) would need no clearing at all. Worth
+  considering if a third caller appears.
