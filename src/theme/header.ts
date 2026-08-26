@@ -20,8 +20,10 @@ import { font } from './typography';
  * values (ink tint, Filson title) handed to `Stack` options.
  *
  * The blue collapsing `useBrooksHeader` is a separate thing and stays: it is a
- * verbatim port of brooksrunning.com's own sticky header, and it belongs to the
- * five tab anchors. Native chrome is for what those anchors push.
+ * verbatim port of brooksrunning.com's own sticky header. [observed 2026-08-26]
+ * It belongs to Home alone now — the other anchors draw no chrome at all and
+ * take their safe area from `components/screen`. Native chrome is still for
+ * what any anchor pushes.
  */
 
 /** The bar's own tint: back chevron and every toolbar button. */

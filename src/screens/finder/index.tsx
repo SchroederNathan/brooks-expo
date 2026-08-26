@@ -1,12 +1,12 @@
 import * as Haptics from 'expo-haptics';
 import { useMemo, useRef, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dimensions, StyleSheet, View } from 'react-native';
 
 import { ProductTile } from '@/components/product-tile';
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
+import { Screen, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { notify, select } from '@/utils/haptics';
@@ -251,7 +251,11 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
 type Phase = 'intro' | 'quiz' | 'results';
 
 export function Finder() {
-  const insets = useSafeAreaInsets();
+  // The Finder never carried the blue header, and still does not: its intro is a
+  // full-bleed navy panel. It takes its safe area from the same primitive every
+  // other headerless screen does.
+  // @ref LLP 0003#the-header-collapses-on-scroll
+  const screenTop = useScreenTopPadding();
   const [phase, setPhase] = useState<Phase>('intro');
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0);
@@ -297,7 +301,7 @@ export function Finder() {
   /* ---------------------------------------------------------------- intro -- */
   if (phase === 'intro') {
     return (
-      <View style={[styles.intro, { paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }]}>
+      <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
         <Txt variant="eyebrow" c={colors.lime}>
           Shoe Finder
         </Txt>
@@ -309,18 +313,14 @@ export function Finder() {
         </Txt>
         <View style={{ flex: 1 }} />
         <Button title={VOICE.finderCta} variant="onDark" onPress={() => setPhase('quiz')} />
-      </View>
+      </Screen>
     );
   }
 
   /* -------------------------------------------------------------- results -- */
   if (phase === 'results') {
     return (
-      <ScrollView
-        style={{ backgroundColor: colors.surface }}
-        contentContainerStyle={{ paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScreenScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
         <View style={{ paddingHorizontal: spacing.gutter }}>
           <Txt variant="eyebrow" c={colors.inkMuted}>
             Your matches
@@ -379,14 +379,16 @@ export function Finder() {
             </Txt>
           </Press>
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     );
   }
 
   /* ------------------------------------------------------------ checkpoint -- */
   if (stepId === 'takeEmOff') {
+    // Extra air above the shared screen top: the checkpoint is a full-screen
+    // beat, and its headline wants more room than a normal screen's first line.
     return (
-      <View style={[styles.checkpoint, { paddingTop: insets.top + 70, paddingBottom: spacing.xl }]}>
+      <View style={[styles.checkpoint, { paddingTop: screenTop + 46, paddingBottom: spacing.xl }]}>
         <Txt variant="eyebrow" c={colors.blue}>
           Quick checkpoint
         </Txt>
@@ -414,7 +416,7 @@ export function Finder() {
   const selected = (answers as Record<string, unknown>)[step.id];
 
   return (
-    <View style={[styles.quiz, { paddingTop: insets.top + spacing.xl, paddingBottom: spacing.xl }]}>
+    <Screen style={[styles.quiz, { paddingBottom: spacing.xl }]}>
       <View style={styles.quizHead}>
         <Press
           haptic={false}
@@ -474,7 +476,7 @@ export function Finder() {
       </View>
 
       <Progress flow={flow} index={stepIndex} />
-    </View>
+    </Screen>
   );
 }
 

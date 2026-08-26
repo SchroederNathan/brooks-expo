@@ -58,7 +58,10 @@ const TOP_ZONE_MULTIPLE = 3;
 const FADE_AT = 0.75;
 
 type Props = {
-  /** Trailing controls, in order. The site's own set is the default. */
+  /**
+   * Trailing controls, in order. The site's own set is the default; Home, the
+   * one screen that mounts this header, asks for `search` alone.
+   */
   actions?: readonly HeaderAction[];
   /** Scroll state from `useHeaderScroll`. */
   state: HeaderScrollState;

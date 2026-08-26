@@ -28,6 +28,14 @@ type Options = {
  * The whole header, in one hook: the element to render and the props that make
  * it collapse.
  *
+ * [observed 2026-08-26] Home is its only caller. Browse, Cart, and Profile each
+ * carried a wordmark-only copy of this bar, which meant three screens paid for a
+ * collapsing animation to reveal a logo they had already shown — and the reader
+ * saw the same blue block on four of five tabs. They draw an in-content `h1`
+ * through `components/screen` instead, and the blue bar goes back to being the
+ * one thing it is good at: floating over Home's video hero.
+ * @ref LLP 0003#the-header-collapses-on-scroll
+ *
  * A screen wires it in three lines, and cannot half-wire it — the scroll state
  * and the bar that reads it come from the same call, so there is no context to
  * forget to mount and no shared values to thread:

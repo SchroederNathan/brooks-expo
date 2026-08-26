@@ -353,35 +353,77 @@ the module's shape: `useBrooksHeader({ actions: [...] })` returns the header
 element and the scroll props that drive it from one call, so a screen cannot
 half-wire it. Named built-ins (`search`, `account`, `cart`, `menu`, `filters`)
 resolve to the site's glyphs, correct line weights, and destinations; a screen
-that needs something else passes a config object instead. Today:
+that needs something else passes a config object instead.
 
-| Screen | Controls | Why |
-|---|---|---|
-| Home | search | Nothing should compete with the hero, and every other control is a tab away. |
-| Browse | *(none)* | Its own search field sits directly below the header, and account, cart, and browse are all tabs. Browse *is* the mega menu the hamburger opens. |
-| Cart | *(none)* | No cart glyph on the cart, and everything else the header could offer is a tab-bar tap away. |
-| Profile | search · cart · menu | No account glyph on the account screen. |
-
-[confirmed 2026-08-26] Browse and Cart carry the wordmark alone. A header glyph
-earns its place by being the *only* way to reach something: this app puts a
-persistent tab bar under the reader's thumb, and Browse additionally owns a
-search field in its first screenful, so the top-right copies were both the
-furthest reach and the redundant one. Home keeps its search glyph because the
-hero fills the screenful where Browse would show a field. `HeaderActions`
-renders nothing for an empty set, so the wordmark does not sit next to an empty
-row holding the gutter.
+[superseded 2026-08-26 → *Only Home wears the header*] Four anchors mounted it:
+Home with `search`, Browse and Cart with the wordmark alone, Profile with
+`search · cart · menu`. Only Home still does.
 
 The cart glyph takes its count from the store rather than from the caller, so a
 screen cannot show a stale badge; it keeps the lime-fill/blue-text treatment,
 ringed in the bar's own blue.
 
+#### Only Home wears the header
+
+[observed 2026-08-26] The blue bar is Home's alone. Browse, Cart, and Profile
+gave it up, and the reason is what the last round of trimming had already
+half-shown: once Browse and Cart carried no controls, each of those screens was
+running a two-regime collapse animation in order to reveal a logo the reader had
+seen on the previous tab. The bar was chrome about the app rather than about the
+screen — and being on four of five tabs, it was also the widest blue block in a
+white catalog.
+
+[observed] Each of those screens already names itself in content — `Shop`,
+`Bag (n)`, `Hey, <name>.` — set in the `h1` ramp step, which is larger and more
+legible than the wordmark ever was and scrolls away like the content it belongs
+to. Removing the bar loses nothing they were saying and gives back roughly a
+header's worth of first screenful.
+
+[confirmed] Home is the exception because its header is the one that is doing
+work: it floats over a full-bleed video hero the way brooksrunning.com's floats
+over its own, the white wordmark and search glyph need the blue behind them to
+be legible against moving footage, and it carries the status-bar flip from
+`light` to `dark` as the hero scrolls past.
+
+[observed] **The safe area had to become a primitive when the header left.**
+`useBrooksHeader` was handing back a `headerHeight` that already contained the
+status-bar inset, so a screen padded by that single number and turned the native
+inset adjustment off. Take the header away and three screens each recompute
+`insets.top + <some gap>` inline — which Shoe Finder and Login had *already*
+written independently, so the drift was real rather than hypothetical.
+`components/screen` holds it instead:
+
+| Export | What it is |
+|---|---|
+| `Screen` | Non-scrolling root: flex, surface fill, safe-area top. |
+| `ScreenScrollView` | Scrolling root: the same top applied to the content container, so the fill still runs under the clock. |
+| `ScreenHeading` | The in-content `h1`, on the shared gutter and bottom rhythm. |
+| `useScreenTopPadding` | The number, for a root that can be neither (a `FlatList`, or a container that owns its scroll handler). |
+
+The gap above the first line is `spacing.xl` — the value Shoe Finder and Login
+had each picked, now named once. `contentInsetAdjustmentBehavior` stays `never`
+for the reason the header's scroll props set it: the safe area is accounted for
+exactly once, and letting UIKit add it again pads the content twice.
+
+[observed] Shoe Finder adopted the primitive with the rest; its intro keeps the
+navy fill by passing it as a style override, which is the design-system rule that
+a caller may override layout but not identity. Login did not: it is presented as
+a modal, whose iOS card starts *below* the status bar already, so it keeps its
+`Platform.OS === 'ios'` branch and the comment saying why.
+
+[observed] The empty Bag lost its magic top offset in the same change. It used to
+start at `headerHeight + spacing.xxl`; it centres in the screen now, which is
+what the state actually wants and which no longer encodes a header that is not
+there.
+
 [observed] Home is the one screen whose content runs *under* the bar rather than
 below it — the site's header floats over its hero, and `StretchyParallaxScrollView`
 already owned the only scroll handler Reanimated allows per scrollable, so it
 takes the header's three worklets as a `scrollHandlers` prop instead of the
-header attaching a second handler that would silently replace it. Every other
-screen pads its content by `headerHeight` and turns the native inset adjustment
-off, since the safe area is already inside that number.
+header attaching a second handler that would silently replace it. [superseded
+2026-08-26 → *Only Home wears the header*] Every other screen used to pad its
+content by `headerHeight` and turn the native inset adjustment off; there are no
+other screens now.
 
 [observed] Reduced-motion readers get the header pinned open, not a faster
 collapse: chrome that vanishes is a layout change, not decoration.
@@ -732,7 +774,9 @@ continuous morph.
   floating white square boxes — a caret and `Bag · 1`. It wears the native
   transparent header now: back chevron leading, share trailing.
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
-  progress bar, and Brooks's own empty-state copy.
+  progress bar, and Brooks's own empty-state copy. [observed 2026-08-26] It opens
+  on a `Bag (n)` heading rather than the blue bar — see *Only Home wears the
+  header*.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
   gate. Guest path always visible.
 - **Tab bar & search** (Nike). [superseded 2026-08-17→2026-08-21] The bar was the
@@ -747,8 +791,10 @@ continuous morph.
   back for Shoe Finder's; it is a pushed screen entered from the Browse header
   field and the category header, and it still drives the live Constructor.io
   type-ahead (LLP 0002) through the native `Stack.SearchBar`. [observed
-  2026-08-21] `search` is now also the one control Home's header carries, and the
-  first control on every other tab's — see *The header collapses on scroll*.
+  2026-08-21] `search` is now also the one control Home's header carries.
+  [observed 2026-08-26] It is the only one anywhere: no other tab draws a header
+  at all, and Browse reaches search through the field in its own first
+  screenful — see *Only Home wears the header*.
 
 ## Wow list
 

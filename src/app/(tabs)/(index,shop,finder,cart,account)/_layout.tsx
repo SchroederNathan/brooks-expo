@@ -18,16 +18,19 @@ const tabNames = new Set(['index', 'shop', 'finder', 'cart', 'account']);
  *
  * @ref LLP 0003#the-header-collapses-on-scroll — [superseded 2026-08-21] Each
  * tab used to carry a native transparent header with the wordmark in a
- * `Stack.Toolbar`. The header is app-drawn now: `useBrooksHeader` gives a screen
- * the site's blue bar, its own choice of trailing controls, and a bar that
- * collapses on scroll — none of which a system toolbar can do. So the anchors
- * hide the native header entirely and draw their own.
+ * `Stack.Toolbar`. Chrome above an anchor is app-drawn now, so every anchor
+ * hides the native header.
  *
- * `finder` still opts out of a header altogether: its intro is a full-bleed navy
- * panel that either kind would sit on top of. `search` is the one screen that
- * keeps the native header, because the native `Stack.SearchBar` is mounted in
- * it; it is not an anchor at all, but a screen pushed onto whichever tab's stack
- * asked for it.
+ * [observed 2026-08-26] What each anchor then draws is no longer the same thing.
+ * Home mounts the blue collapsing `useBrooksHeader`, which floats over its video
+ * hero. Browse, Cart, Profile, and Shoe Finder draw nothing above their content:
+ * they open on an in-content `h1` and take their safe area from
+ * `components/screen`. `finder` is still declared unconditionally below because
+ * it can be pushed onto another tab's stack.
+ *
+ * `search` is the one screen here that keeps the native header, because the
+ * native `Stack.SearchBar` is mounted in it; it is not an anchor at all, but a
+ * screen pushed onto whichever tab's stack asked for it.
  */
 export default function TabStackLayout({ segment }: { segment: string }) {
   const matchedName = segment.match(/\(([^)]+)\)/)?.[1] ?? 'index';

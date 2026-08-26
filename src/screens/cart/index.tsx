@@ -5,10 +5,10 @@ import { StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
-import { useBrooksHeader } from '@/components/brooks-header';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
+import { Screen, ScreenHeading, ScreenScrollView } from '@/components/screen';
 import { ShoeImage } from '@/components/shoe-image';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
@@ -32,12 +32,6 @@ const FREE_SHIPPING_OVER = 100;
  */
 export function Cart() {
   const cart = useCart();
-  // Logo only. No cart glyph on the cart, and search, account, and browse are
-  // all one tab-bar tap away — a duplicate at the top of the screen is the
-  // furthest reach, not the shortest.
-  // @ref LLP 0003#icons-and-the-logo — a header glyph earns its place by being
-  // the only way to reach something.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({ actions: [] });
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const [scopeNote, setScopeNote] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,8 +52,10 @@ export function Cart() {
   }, []);
 
   if (cart.items.length === 0) {
+    // No heading: the empty state's own copy names the screen, and a "Bag (0)"
+    // title above it would only say the same thing twice.
     return (
-      <View style={[styles.root, styles.empty, { paddingTop: headerHeight + spacing.xxl }]}>
+      <Screen style={styles.empty}>
         <Txt variant="eyebrow" c={colors.inkMuted}>
           Your bag
         </Txt>
@@ -73,8 +69,7 @@ export function Cart() {
           onPress={() => router.push('/shop')}
         />
         {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />}
-        {header}
-      </View>
+      </Screen>
     );
   }
 
@@ -82,22 +77,17 @@ export function Cart() {
 
   return (
     <View style={styles.root}>
-      <Animated.ScrollView
-        {...scrollProps}
-        contentContainerStyle={{
-          paddingTop: headerHeight + spacing.lg,
-          paddingBottom: 100,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.head}>
-          <Txt variant="h1">
-            Bag{' '}
-            <Txt variant="h3" c={colors.inkMuted}>
-              ({cart.count})
-            </Txt>
+      {/* @ref LLP 0003#the-header-collapses-on-scroll — the blue header is
+          Home's alone. Nothing it could carry belongs here: there is no cart
+          glyph on the cart, and search, browse, and account are each one
+          tab-bar tap away. */}
+      <ScreenScrollView contentContainerStyle={styles.content}>
+        <ScreenHeading>
+          Bag{' '}
+          <Txt variant="h3" c={colors.inkMuted}>
+            ({cart.count})
           </Txt>
-        </View>
+        </ScreenHeading>
 
         {/* ------------------------------------------- FREE SHIPPING METER -- */}
         <View style={styles.shipCard}>
@@ -214,8 +204,7 @@ export function Cart() {
             {VOICE.promise}
           </Txt>
         </View>
-      </Animated.ScrollView>
-      {header}
+      </ScreenScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
       <View style={styles.stickyBar}>
@@ -333,8 +322,9 @@ function UndoBar({ item, onUndo }: { item: CartItemView; onUndo: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  empty: { alignItems: 'center', paddingHorizontal: spacing.xxl },
-  head: { paddingHorizontal: spacing.gutter, marginBottom: spacing.lg },
+  empty: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xxl },
+  /** 100 clears the sticky checkout bar the last content would otherwise sit under. */
+  content: { paddingBottom: 100 },
 
   shipCard: {
     marginHorizontal: spacing.gutter,
