@@ -223,6 +223,8 @@ weight:
   and **Search gives up its tab instead** — it was always reachable from the
   Browse header's search field and the category header, both of which push
   `/search` onto the current tab's stack, where the native `Stack.SearchBar`
+  [superseded 2026-08-26 → *Browse is the search screen*: there is no pushed
+  search screen; Browse's own field is the search]
   still comes up with it.
 - **The badge.** Lime fill with blue text is the site's own minicart treatment
   and is back.
@@ -427,6 +429,77 @@ other screens now.
 
 [observed] Reduced-motion readers get the header pinned open, not a faster
 collapse: chrome that vanishes is a layout change, not decoration.
+
+#### Browse is the search screen
+
+[observed 2026-08-26] There is no pushed `/search` screen any more, and no
+native `Stack.SearchBar`. Browse opens on a real input — `components/search-bar`,
+the square `#F8F8F8` box with the site's search glyph that the screen had drawn
+for years as a fake `Press` — and the Home header's search glyph and the PLP's bar
+button both `navigate` to Browse with `focus=1` instead of pushing a screen.
+
+[observed] Above Browse's content sit two bands, and they move differently:
+
+- The `Shop` title is **fixed**. It never scrolls.
+- The search field below it **collapses** on exactly the header's two regimes
+  (`useCollapse`, extracted from `BrooksHeader` so the two share one
+  implementation), with the field's own row height as the travel. It peels away
+  under the title as the reader scrolls and returns on an upward flick; the title
+  is untouched either way.
+
+[observed] Focusing the field flips one progress value on the UI thread, eased
+with the tab bar's indicator curve (`INDICATOR_TIMING_EASING`, the same
+`(0.77, 0, 0.175, 1)` bezier as `withTiming` rather than a CSS transition):
+
+- the field rises one title row so it sits where `Shop` was, and the title fades
+  under it;
+- its right edge gives up a 48pt slot, into which the `Filter & sort` button
+  slides from off the right of the screen (`components/filter-button`: the
+  site's `#icon-filters` glyph in an ink-outlined square, wearing the applied
+  count once there is one);
+- the browse content cross-fades to the results (`screens/shop/search-results`,
+  the old screen's body without its chrome), which still run the live
+  Constructor.io type-ahead (LLP 0002).
+
+Once there is text, a cross appears inside the field. It clears the text, blurs
+the input, and hands the screen back to Browse — the collapse formula resumes
+control of the field the moment the progress value returns to zero.
+
+[observed] `Filter & sort` is a native **form sheet** (`/search-filters`,
+`presentation: 'formSheet'`, one 92% detent, grabber shown), presented by the
+root stack. It is a port of the panel brooksrunning.com opens from the same
+button: `SORT BY:` as a radio list in the site's order (Recommended for you, New
+Arrivals, Price high→low, low→high, Best Sellers, Customer Top Rated), then
+collapsible `COLOUR` (a two-column grid of 40pt swatch discs — the one place the
+app draws circles, because the site does), `RATING` (radio + stars, "4 and up"),
+and `FEATURES` (checkboxes), with `Clear all` beside `Apply · n results` at the
+foot. Gender is added because search spans the catalog where the site's panel
+sat under an already-gendered listing. The snapshot carries no colour-family
+facet — Brooks names colourways — so `data/search-query` derives the family from
+the colourway's words; the swatch hexes are [inferred], the site being behind
+Akamai (LLP 0002). Draft state is local to the sheet; Apply writes
+`store/search-filters`, which is how state crosses a root-presented sheet and a
+tab screen that cannot own it.
+
+[observed] Three react-native-screens facts cost time and are worth recording.
+A form sheet's content root must be `collapsable={false}` or React Native
+flattens it and the sheet receives every child directly (it warns "expects at
+most 2 subviews"). A `ScrollView` that is a *direct* child of the sheet gets a
+special "header + scroll view" layout that put the list under the head — a plain
+wrapping `View` opts out. And the sheet walks the *first-subview path* looking
+for a scroll view to size to the whole sheet (`RNSScreen.mm`,
+`tryFindDescendantScrollView`); React Native implements `zIndex` by reordering
+native subviews, so a `zIndex` on the head moved the list's wrapper to index 0,
+the list was found, and its frame was forced to the sheet's full height — its
+last section hidden under the footer. Nothing in the sheet carries a `zIndex`.
+
+[observed] The keyboard is handled by `react-native-keyboard-controller`
+everywhere an input exists: `KeyboardProvider` at the root, Login's form on a
+`KeyboardAwareScrollView` in place of `KeyboardAvoidingView` + `ScrollView`, and
+the results list ending above the keys through `useReanimatedKeyboardAnimation`.
+It is a native module, so the app needs a dev build; Expo Go already could not
+run this project (LLP 0000's Expo Go target is [superseded] in practice since
+the worklets crash recorded in the diaries).
 
 ### Pushed screens wear the native header
 
@@ -874,7 +947,10 @@ results instead, where it changes a decision.
 
 [observed — 2026-08-21] Press-scale, enter/exit, layout transitions, the button
 press-shift, PDP size-grid shake, and the filter-sheet fade stay stripped
-pending the motion overhaul. Stack pushes use the platform default again. On
+pending the motion overhaul. [observed 2026-08-26] The button press-shift is
+back, as the one press feedback in the app: on press-in the shadowed button's
+face travels the shadow's 4pt offset so the two flatten into a single block, on
+a native CSS transition over `motion.press` (70ms) — pushed, not animated. Stack pushes use the platform default again. On
 iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
 gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
 [observed 2026-08-26] That treatment now covers every picture-that-opens-a-screen
@@ -942,7 +1018,10 @@ continuous morph.
   dash riding the bar's top edge under the focused icon. Search traded its slot
   back for Shoe Finder's; it is a pushed screen entered from the Browse header
   field and the category header, and it still drives the live Constructor.io
-  type-ahead (LLP 0002) through the native `Stack.SearchBar`. [observed
+  type-ahead (LLP 0002) through the native `Stack.SearchBar`. [superseded
+  2026-08-26 → *Browse is the search screen*] The pushed screen and the native
+  bar are gone; Browse's own field focuses in place and swaps its content for
+  the results, with `Filter & sort` as a form sheet. [observed
   2026-08-21] `search` is now also the one control Home's header carries.
   [observed 2026-08-26] It is the only one anywhere: no other tab draws a header
   at all, and Browse reaches search through the field in its own first

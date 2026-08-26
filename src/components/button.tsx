@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, ViewProps } from 'react-native';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 
-import { colors, radius, spacing } from '../theme';
+import { colors, motion, radius, spacing } from '../theme';
 import { Txt } from './themed-text';
 
 /**
@@ -18,7 +20,16 @@ import { Txt } from './themed-text';
  * @ref LLP 0003#pdp-purchase-controls — The purchase CTA is the deliberate
  * exception: blue fill, sentence-case action at left, price at right. Its
  * disabled state keeps white copy on the site's `#707070` secondary gray.
+ *
+ * @ref LLP 0003#screen-patterns — Pressing a shadowed button pushes its face
+ * down onto the shadow, so the two flatten into one block: the site's own
+ * hover/active treatment, which on touch is press-in. It runs as a native CSS
+ * transition over `motion.press` so it never touches the JS thread per frame,
+ * and it is off under reduced motion (the face simply sits flat while pressed).
  */
+
+/** The hard shadow's offset, and how far the face travels to meet it. */
+const SHADOW_OFFSET = 4;
 export function Button({
   title,
   onPress,
@@ -50,14 +61,30 @@ export function Button({
     : colors.ink;
 
   const inert = disabled || loading;
+  const shadowed = !inert && !isPurchase;
+  const reduced = useReducedMotion();
+  const [pressed, setPressed] = useState(false);
+
+  const face = {
+    transform: [
+      { translateX: shadowed && pressed ? SHADOW_OFFSET : 0 },
+      { translateY: shadowed && pressed ? SHADOW_OFFSET : 0 },
+    ],
+    transitionProperty: ['transform'] as const,
+    transitionDuration: reduced ? 0 : motion.press,
+    transitionTimingFunction: 'ease-out' as const,
+  };
 
   return (
     <View style={[styles.buttonWrap, style]}>
-      {!inert && !isPurchase ? <View style={styles.buttonShadow} /> : null}
+      {shadowed ? <View style={styles.buttonShadow} /> : null}
+      <Animated.View style={face}>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled: !!inert, busy: !!loading }}
         disabled={inert}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
         onPress={() => {
           if (inert) return;
           onPress?.();
@@ -88,6 +115,7 @@ export function Button({
           </>
         )}
       </Pressable>
+      </Animated.View>
     </View>
   );
 }
@@ -96,10 +124,10 @@ const styles = StyleSheet.create({
   buttonWrap: { position: 'relative' },
   buttonShadow: {
     position: 'absolute',
-    left: 4,
-    top: 4,
-    right: -4,
-    bottom: -4,
+    left: SHADOW_OFFSET,
+    top: SHADOW_OFFSET,
+    right: -SHADOW_OFFSET,
+    bottom: -SHADOW_OFFSET,
     backgroundColor: colors.ink,
   },
   button: {

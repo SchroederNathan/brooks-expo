@@ -105,7 +105,9 @@ export function Category({
         <Stack.Toolbar.Button
           icon={headerIcon.search}
           accessibilityLabel="Search"
-          onPress={() => router.push('/search')}
+          onPress={() =>
+            router.navigate({ pathname: '/(tabs)/(shop)/shop', params: { focus: '1' } })
+          }
         />
       </Stack.Toolbar>
 

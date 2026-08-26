@@ -1,13 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrooksIcon } from '@/components/icons';
@@ -44,81 +38,82 @@ export function Login() {
     router.back();
   };
 
+  // `KeyboardAwareScrollView` (react-native-keyboard-controller) rather than
+  // `KeyboardAvoidingView` + `ScrollView`: it scrolls the *focused field* clear
+  // of the keyboard, tracking the keyboard's own frame on the UI thread, so the
+  // email field is never left under it and the card above never jumps.
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <KeyboardAwareScrollView
       style={styles.root}
+      bottomOffset={spacing.xl}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{
+        paddingTop: Platform.OS === 'ios' ? spacing.xl : insets.top + spacing.xl,
+        paddingBottom: insets.bottom + spacing.xl,
+      }}
     >
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          paddingTop: Platform.OS === 'ios' ? spacing.xl : insets.top + spacing.xl,
-          paddingBottom: insets.bottom + spacing.xl,
-        }}
-      >
-        <View style={styles.head}>
-          <Press hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
-            <BrooksIcon name="close" size={14} color={colors.inkMuted} />
-          </Press>
-        </View>
+      <View style={styles.head}>
+        <Press hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
+          <BrooksIcon name="close" size={14} color={colors.inkMuted} />
+        </Press>
+      </View>
 
-        {/* --------------------------------------------------- THE PITCH --- */}
-        <View style={styles.card}>
-          <Txt variant="eyebrow" c={colors.lime}>
-            Brooks Run Club
-          </Txt>
-          <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.sm }}>
-            Join the club.{'\n'}Run happier.
-          </Txt>
-          <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-            {RUN_CLUB_PERKS.map((perk) => (
-              <View key={perk} style={styles.perk}>
-                <View style={styles.perkTick}>
-                  <BrooksIcon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
-                </View>
-                <Txt variant="body" c="rgba(255,255,255,0.9)" style={{ flex: 1 }}>
-                  {perk}
-                </Txt>
+      {/* --------------------------------------------------- THE PITCH --- */}
+      <View style={styles.card}>
+        <Txt variant="eyebrow" c={colors.lime}>
+          Brooks Run Club
+        </Txt>
+        <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.sm }}>
+          Join the club.{'\n'}Run happier.
+        </Txt>
+        <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
+          {RUN_CLUB_PERKS.map((perk) => (
+            <View key={perk} style={styles.perk}>
+              <View style={styles.perkTick}>
+                <BrooksIcon name="checkmarkNoCircle" size={11} color={colors.blue} thicken={0.7} />
               </View>
-            ))}
-          </View>
+              <Txt variant="body" c="rgba(255,255,255,0.9)" style={{ flex: 1 }}>
+                {perk}
+              </Txt>
+            </View>
+          ))}
         </View>
+      </View>
 
-        {/* ------------------------------------------------------- FORM ---- */}
-        <View style={styles.form}>
-          <Field
-            label="First name"
-            value={firstName}
-            onChange={setFirstName}
-            placeholder="Runner"
-            error={touched && !nameOk ? 'We need something to call you.' : null}
-          />
-          <Field
-            label="Email"
-            value={email}
-            onChange={setEmail}
-            placeholder="you@example.com"
-            keyboardType="email-address"
-            error={touched && !emailOk ? 'That email doesn’t look right.' : null}
-          />
+      {/* ------------------------------------------------------- FORM ---- */}
+      <View style={styles.form}>
+        <Field
+          label="First name"
+          value={firstName}
+          onChange={setFirstName}
+          placeholder="Runner"
+          error={touched && !nameOk ? 'We need something to call you.' : null}
+        />
+        <Field
+          label="Email"
+          value={email}
+          onChange={setEmail}
+          placeholder="you@example.com"
+          keyboardType="email-address"
+          error={touched && !emailOk ? 'That email doesn’t look right.' : null}
+        />
 
-          <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
-            Prototype: membership lives on this device only. Nothing is sent anywhere.
+        <Txt variant="tiny" c={colors.inkFaint} style={{ marginTop: spacing.sm }}>
+          Prototype: membership lives on this device only. Nothing is sent anywhere.
+        </Txt>
+
+        <Button title="Join the club" style={{ marginTop: spacing.lg }} onPress={onJoin} />
+
+        {/* The guest path is always visible — a commerce demo that forces
+            auth dies on stage. */}
+        <Press onPress={() => router.back()} style={styles.guest}>
+          <Txt variant="caption" c={colors.inkMuted}>
+            Continue as guest
           </Txt>
-
-          <Button title="Join the club" style={{ marginTop: spacing.lg }} onPress={onJoin} />
-
-          {/* The guest path is always visible — a commerce demo that forces
-              auth dies on stage. */}
-          <Press onPress={() => router.back()} style={styles.guest}>
-            <Txt variant="caption" c={colors.inkMuted}>
-              Continue as guest
-            </Txt>
-            <View style={styles.guestUnderline} />
-          </Press>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <View style={styles.guestUnderline} />
+        </Press>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 

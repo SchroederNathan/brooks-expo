@@ -63,7 +63,9 @@ export function Cart() {
         <Button
           title="Find your run"
           style={{ marginTop: spacing.xl, alignSelf: 'stretch' }}
-          onPress={() => router.push('/shop')}
+          // Switch to the Browse tab rather than push a copy of it onto the
+          // Cart stack, where the native back chevron sat over its title.
+          onPress={() => router.navigate('/(tabs)/(shop)/shop')}
         />
         {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />}
       </Screen>

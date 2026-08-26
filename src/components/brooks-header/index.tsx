@@ -81,3 +81,6 @@ export function useBrooksHeader(options?: Options) {
     scrollRef,
   };
 }
+
+export { useCollapse } from './use-collapse';
+export { useHeaderScroll, type HeaderScrollState } from './use-header-scroll';

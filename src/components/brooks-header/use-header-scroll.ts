@@ -79,9 +79,23 @@ export type HeaderScrollState = {
  *    drag, which is what a reader expects anyway.
  * 2. Reduced-motion callers get the bar pinned open rather than a shorter
  *    animation. A header that vanishes is a layout change, not decoration.
+ *
+ * [observed 2026-08-26] `travel` is a parameter now: the same state drives the
+ * blue header on Home and the search row on Browse, which is a different height.
+ * `headerHeight` keeps its name in the state so the header's own code reads
+ * unchanged; for any other caller it means "the distance this thing travels".
  */
-export function useHeaderScroll() {
-  const { headerHeight } = useHeaderMetrics();
+export type HeaderScrollOptions = {
+  /**
+   * How far the collapsing element travels to hide, which is also its height.
+   * Defaults to the blue header's own block; Browse passes its search row.
+   */
+  travel?: number;
+};
+
+export function useHeaderScroll(options?: HeaderScrollOptions) {
+  const metrics = useHeaderMetrics();
+  const headerHeight = options?.travel ?? metrics.headerHeight;
   const reduceMotion = useReducedMotion();
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();

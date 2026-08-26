@@ -7,7 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';
+import Animated, { cubicBezier, Easing, useReducedMotion } from 'react-native-reanimated';
 
 import { colors } from '@/theme';
 
@@ -29,6 +29,8 @@ import { colors } from '@/theme';
 export const INDICATOR_MS = 200;
 /** On-screen movement. Native CSS transitions reject cubic-bezier strings. */
 export const INDICATOR_EASING = cubicBezier(0.77, 0, 0.175, 1);
+/** The same curve for `withTiming`, which takes an Easing rather than a CSS value. */
+export const INDICATOR_TIMING_EASING = Easing.bezier(0.77, 0, 0.175, 1);
 const LINE_GAP = 3;
 
 export function UnderlineRail({

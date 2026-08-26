@@ -2,23 +2,16 @@ import { router, useIsFocused } from 'expo-router';
 import { StatusBar, type StatusBarStyle } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { Press } from '@/components/press';
 import { BrooksWordmark } from '@/screens/home/wordmark';
-import { colors, motion, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 import { HeaderActions, type HeaderAction } from './actions';
 import { useHeaderMetrics } from './metrics';
+import { useCollapse } from './use-collapse';
 import type { HeaderScrollState } from './use-header-scroll';
 
 /**
@@ -27,35 +20,14 @@ import type { HeaderScrollState } from './use-header-scroll';
  * @ref LLP 0003#the-header-collapses-on-scroll — Both the bar and its collapse
  * are ports. The chrome is brooksrunning.com's own sticky header (flat
  * `#003789`, white wordmark, trailing sprite glyphs). The motion is the
- * `instagram-header-on-scroll-animation` study from rn-makeitanimated, which
- * splits into two regimes:
- *
- * - **Near the top** the header is a direct function of scroll offset, so it
- *   peels away with the finger and comes back with it.
- * - **Deeper in** offset is meaningless as an absolute, so the header hides
- *   against the anchor the drag *started* at, and an upward flick reveals it
- *   outright on a timing animation instead. Whether a lift was a flick is decided
- *   once, in `useHeaderScroll`, and published as `revealRequest` — see the note
- *   there for why re-reading velocity per frame was wrong.
- *
- * The regimes cannot both own the header, so `skipTopInterpolation` hands
- * control to the flick until the reader is genuinely back at the top. Without
- * it, a flick-reveal at offset 200 is immediately overwritten by the near-top
- * formula, which says "offset 200, therefore hidden".
+ * `instagram-header-on-scroll-animation` study from rn-makeitanimated; it lives
+ * in `useCollapse`, which publishes the bar's offset and opacity, because Browse's
+ * search row collapses on the same rules and composes them with a second motion.
  *
  * The block is full-bleed: the status-bar inset is padding inside the header
  * rather than a strip that stays behind, so a minimized header leaves no blue
  * anywhere and the wordmark is never clipped against a band above it.
  */
-
-/** Where "near the top" ends. Three header heights of runway before the anchor regime. */
-const TOP_ZONE_MULTIPLE = 3;
-/**
- * The whole block fades as it leaves, finishing at 75% of the travel. Fading is
- * what keeps a half-open header from reading as a sliced wordmark: by the time
- * it is half way out it is already mostly gone.
- */
-const FADE_AT = 0.75;
 
 type Props = {
   /**
@@ -82,20 +54,8 @@ export function BrooksHeader({
   hiddenStatusBarStyle = 'dark',
 }: Props) {
   const { insetTop, barHeight } = useHeaderMetrics();
-  const {
-    headerHeight,
-    headerTop,
-    isBarVisible,
-    offsetY,
-    offsetYAnchorOnBeginDrag,
-    reduceMotion,
-    revealRequest,
-  } = state;
-
-  // Opacity is its own value rather than a function of headerTop: the two curves
-  // have different lengths (see FADE_AT), so one cannot be derived from the other.
-  const headerOpacity = useSharedValue(1);
-  const skipTopInterpolation = useSharedValue(false);
+  const { headerHeight } = state;
+  const { translateY, opacity } = useCollapse(state);
   const [gone, setGone] = useState(false);
   // Tab screens stay mounted when they lose focus, and React Native resolves the
   // status bar from the *last mounted* entry rather than the visible one. So an
@@ -103,77 +63,22 @@ export function BrooksHeader({
   // happened to mount most recently.
   const focused = useIsFocused();
 
-  const isTopOfList = useDerivedValue(
-    () => offsetY.get() < headerHeight * TOP_ZONE_MULTIPLE,
-    [headerHeight]
-  );
-  // One style function, not the reference's two: position and opacity read the
-  // same inputs and branch identically, so evaluating the branches twice per
-  // frame only invited the two to disagree.
-  const headerStyle = useAnimatedStyle(() => {
-    if (reduceMotion) {
-      return { transform: [{ translateY: 0 }], opacity: 1, pointerEvents: 'auto' as const };
-    }
-
-    // Back at the very top: the flick regime has nothing left to protect.
-    if (offsetY.get() <= 0 && skipTopInterpolation.get()) {
-      skipTopInterpolation.set(false);
-    }
-
-    if (isTopOfList.get() && !skipTopInterpolation.get()) {
-      headerTop.set(
-        interpolate(offsetY.get(), [0, headerHeight], [0, -headerHeight], Extrapolation.CLAMP)
-      );
-      headerOpacity.set(
-        interpolate(offsetY.get(), [0, headerHeight * FADE_AT], [1, 0], Extrapolation.CLAMP)
-      );
-    }
-
-    if (!isTopOfList.get()) {
-      if (!isBarVisible.get() && revealRequest.get()) {
-        headerTop.set(withTiming(0, { duration: motion.fast }));
-        headerOpacity.set(withTiming(1, { duration: motion.fast }));
-        skipTopInterpolation.set(true); // Keep the near-top formula from undoing it.
-      }
-
-      if (isBarVisible.get() && !revealRequest.get()) {
-        const anchor = offsetYAnchorOnBeginDrag.get();
-        headerTop.set(
-          interpolate(
-            offsetY.get(),
-            [anchor, anchor + headerHeight],
-            [0, -headerHeight],
-            Extrapolation.CLAMP
-          )
-        );
-        headerOpacity.set(
-          interpolate(
-            offsetY.get(),
-            [anchor, anchor + headerHeight * FADE_AT],
-            [1, 0],
-            Extrapolation.CLAMP
-          )
-        );
-      }
-    }
-
-    return {
-      // translateY, not `top`: the header moves every frame, and a transform
-      // keeps it out of the layout pass entirely.
-      transform: [{ translateY: headerTop.get() }],
-      opacity: headerOpacity.get(),
-      // A faded-out header still covers the top of the content, so it has to
-      // stop taking touches as well as stop being visible.
-      pointerEvents: headerOpacity.get() > 0.02 ? ('auto' as const) : ('none' as const),
-    };
-  }, [headerHeight, reduceMotion]);
+  const headerStyle = useAnimatedStyle(() => ({
+    // translateY, not `top`: the header moves every frame, and a transform
+    // keeps it out of the layout pass entirely.
+    transform: [{ translateY: translateY.get() }],
+    opacity: opacity.get(),
+    // A faded-out header still covers the top of the content, so it has to
+    // stop taking touches as well as stop being visible.
+    pointerEvents: opacity.get() > 0.02 ? ('auto' as const) : ('none' as const),
+  }));
 
   // The clock sits on Brooks blue while the header is up and on the screen's own
   // content once it is gone, so the status-bar style has to follow the header.
   // This is the one place the animation touches the JS thread, and only on a
   // crossing — not per frame.
   useAnimatedReaction(
-    () => headerOpacity.get() < 0.5,
+    () => opacity.get() < 0.5,
     (isGone, wasGone) => {
       if (wasGone !== null && isGone !== wasGone) scheduleOnRN(setGone, isGone);
     }

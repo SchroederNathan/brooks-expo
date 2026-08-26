@@ -27,7 +27,7 @@ export const font = {
  */
 export const type = {
   hero: { fontFamily: font.black, fontSize: 40, lineHeight: 44, letterSpacing: -0.5 },
-  h1: { fontFamily: font.black, fontSize: 30, lineHeight: 34, letterSpacing: -0.4 },
+  h1: { fontFamily: font.extraBold, fontSize: 30, lineHeight: 34, letterSpacing: -0.4 },
   h2: { fontFamily: font.extraBold, fontSize: 26, lineHeight: 30, letterSpacing: -0.3 },
   h3: { fontFamily: font.extraBold, fontSize: 20, lineHeight: 24, letterSpacing: -0.2 },
   pdpTitle: { fontFamily: font.extraBold, fontSize: 24, lineHeight: 28, letterSpacing: -0.3 },

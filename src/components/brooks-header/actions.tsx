@@ -53,7 +53,9 @@ const BUILT_INS: Record<HeaderActionName, Omit<HeaderActionConfig, 'key' | 'badg
     label: 'Search',
     size: 20,
     thicken: 0,
-    onPress: () => router.push('/search'),
+    // Search lives in the Browse tab's own field now; `focus` asks it to open
+    // the keyboard on arrival. @ref LLP 0003#browse-is-the-search-screen
+    onPress: () => router.navigate({ pathname: '/(tabs)/(shop)/shop', params: { focus: '1' } }),
   },
   account: {
     icon: 'account',

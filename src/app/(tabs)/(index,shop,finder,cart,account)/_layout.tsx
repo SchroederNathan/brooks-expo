@@ -28,9 +28,9 @@ const tabNames = new Set(['index', 'shop', 'finder', 'cart', 'account']);
  * `components/screen`. `finder` is still declared unconditionally below because
  * it can be pushed onto another tab's stack.
  *
- * `search` is the one screen here that keeps the native header, because the
- * native `Stack.SearchBar` is mounted in it; it is not an anchor at all, but a
- * screen pushed onto whichever tab's stack asked for it.
+ * [observed 2026-08-26] There is no `search` screen any more. Browse *is* the
+ * search screen: its own field takes focus and swaps the browse content for the
+ * live results in place. @ref LLP 0003#browse-is-the-search-screen
  */
 export default function TabStackLayout({ segment }: { segment: string }) {
   const matchedName = segment.match(/\(([^)]+)\)/)?.[1] ?? 'index';
