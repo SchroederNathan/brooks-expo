@@ -475,6 +475,24 @@ distance, and stay pinned to the screen's top edge.
 The positive parallax is disabled when the system requests reduced motion; the
 direct pull-to-stretch response remains.
 
+[observed 2026-08-26] The pull-to-stretch above was laggy. An Argent Instruments
+profile of four pulls on the iPhone 17 Pro simulator put
+`VideoView.safeAreaInsetsDidChange()` (131 ms) and `LinearGradientLayer.display()`
++ `draw(in:)` (247 ms) on the main thread, both reached from
+`RCTMountingManager` layout-metric updates. The cause was that the clip, media,
+and foreground each animated `height`, so every frame of the pull ran a Yoga
+layout on the UI thread, re-laid-out the native video view, and redrew the
+gradient's bitmap. The Hermes side was idle (one React commit). The primitive
+now animates transforms only: the media scales about its top edge by
+`(headerHeight + pull) / headerHeight` inside a clip that is fixed at twice the
+media height and starts one media height above the frame, and the foreground is
+plain content that needs no per-frame style because it moves with the following
+section in both pull and scroll. A re-profile of the same gesture no longer
+lists either symbol. `topInset` is available on the primitive for a screen that
+wants its media to start below a floating bar; Home does not use it, because the
+half-speed drift then opens white space under the bar in too many scroll
+positions — the hero keeps running under the bar.
+
 [observed 2026-08-18] Every native tab now owns a native `Stack` through an
 Expo Router array group. A shared `Stack.Toolbar.View` places the Brooks SVG
 wordmark at the leading edge. `NativeTabs` remains entirely system-rendered

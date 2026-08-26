@@ -10,8 +10,6 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { useBrooksHeader } from '@/components/brooks-header';
 import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
@@ -31,6 +29,12 @@ const GEAR_CARD_WIDTH = 172;
 const USE_CASE_WIDTH = 152;
 const PRODUCT_WIDTH = 244;
 const STORY_WIDTH = 240;
+/**
+ * How far the promise block's colour is carried below the last pixel of
+ * content. Generous enough to outrun a hard fling's rubber band on the tallest
+ * frame; it is a flat fill, so height costs nothing to draw.
+ */
+const OVERSCROLL_FILL = 1000;
 const keyById = (item: { id: string }) => item.id;
 
 type GearItem = (typeof HOME_GEAR)[number];
@@ -54,7 +58,6 @@ function renderStoryItem({ item }: ListRenderItemInfo<StoryItem>) {
 }
 
 export function Home() {
-  const insets = useSafeAreaInsets();
   // Search alone: Home is the one screen where the header should not compete
   // with the hero, and every other control it could carry is a tab away.
   // The hero runs under the bar rather than below it — the site's own header
@@ -91,7 +94,6 @@ export function Home() {
         scrollRef={scrollRef}
         contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.xl }}
         header={
           <View style={styles.hero}>
             <VideoView
@@ -241,10 +243,7 @@ export function Home() {
             If you’re not happy, we’re not happy.
           </Txt>
         </View>
-        <View
-          pointerEvents="none"
-          style={[styles.promiseTabClearance, { height: insets.bottom + 48 }]}
-        />
+        <View pointerEvents="none" style={styles.overscrollFill} />
       </StretchyParallaxScrollView>
       {header}
     </View>
@@ -438,7 +437,12 @@ const styles = StyleSheet.create({
 
   promise: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
+    justifyContent: 'center',
+    // Equal top and bottom: the seal and the promise read as centred in the
+    // block, which they cannot if a bottom spacer carries the block lower than
+    // its own padding. The bar below shortens the screen rather than covering
+    // it, so the block owes it no clearance of its own.
+    paddingVertical: spacing.xxxl,
     paddingHorizontal: spacing.xl,
     backgroundColor: colors.blue,
   },
@@ -452,7 +456,21 @@ const styles = StyleSheet.create({
     letterSpacing: -0.19,
     textAlign: 'center',
   },
-  promiseTabClearance: { backgroundColor: colors.blue },
+  /**
+   * Paints the rubber band under the footer so a bottom overscroll reveals more
+   * Brooks blue rather than the page's white. It hangs *outside* the content
+   * box rather than being extra section height, so it adds nothing to the
+   * scroll view's content size: the end of the promise block is still the end
+   * of the scroll, and the scroll indicator still tells the truth.
+   */
+  overscrollFill: {
+    position: 'absolute',
+    right: 0,
+    bottom: -OVERSCROLL_FILL,
+    left: 0,
+    height: OVERSCROLL_FILL,
+    backgroundColor: colors.blue,
+  },
 
   underlinedAction: { alignItems: 'stretch', gap: 4, alignSelf: 'flex-start' },
   actionUnderline: { height: 2, alignSelf: 'stretch' },

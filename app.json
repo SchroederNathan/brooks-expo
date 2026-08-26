@@ -5,6 +5,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "appStoreUrl": "https://apps.apple.com/app/id6804744941",
       "supportsTablet": true,
       "icon": "./assets/app.icon",
       "infoPlist": {
@@ -40,7 +41,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d67e8b27-333b-4d2c-ac10-e898a6881511"
+        "projectId": "9510f33f-8ac6-48db-93df-58b6bb4f0583"
       }
     },
     "owner": "exponathan"
