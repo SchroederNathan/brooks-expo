@@ -9,6 +9,9 @@ name: Deploy to TestFlight
 on:
   push:
     branches: ['main']
+  # Lets `eas workflow:run` trigger this by hand, which is the only way to
+  # exercise it before the GitHub repo is connected to the EAS project.
+  workflow_dispatch: {}
 
 concurrency:
   cancel_in_progress: true
