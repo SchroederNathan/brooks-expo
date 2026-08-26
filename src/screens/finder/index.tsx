@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { useMemo, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 
@@ -9,7 +8,6 @@ import { Press } from '@/components/press';
 import { Screen, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
-import { notify, select } from '@/utils/haptics';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import type { Product } from '@/data/types';
@@ -22,8 +20,8 @@ const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
  * The Shoe Finder.
  *
  * @ref LLP 0003#shoe-finder — A condensed but faithful take on Brooks's real
- * 16-step quiz ("Shoe Finder S26 US"): single-select steps auto-advance with a
- * selection haptic, the flow branches on trail, the barefoot "Take 'em off"
+ * 16-step quiz ("Shoe Finder S26 US"): single-select steps auto-advance, the
+ * flow branches on trail, the barefoot "Take 'em off"
  * checkpoint plays as a full-screen beat, and results name *why* — which is what
  * turns a quiz into advice.
  */
@@ -278,7 +276,6 @@ export function Finder() {
     // flowFor can grow (trail branch), so recompute against the new answers.
     const newFlow = flowFor(next);
     if (stepIndex + 1 >= newFlow.length) {
-      notify(Haptics.NotificationFeedbackType.Success);
       setPhase('results');
     } else {
       setStepIndex(stepIndex + 1);
@@ -288,7 +285,6 @@ export function Finder() {
   const pick = (step: Step, value: string) => {
     if (advancing.current) return;
     advancing.current = true;
-    select();
     const next = step.set(answers, value);
     setAnswers(next);
     // A beat so the selection state is visible before the slide advances.
@@ -373,7 +369,7 @@ export function Finder() {
               setPhase('quiz');
             }}
           />
-          <Press onPress={reset} haptic={false} style={{ alignSelf: 'center', padding: spacing.sm }}>
+          <Press onPress={reset} style={{ alignSelf: 'center', padding: spacing.sm }}>
             <Txt variant="caption" c={colors.inkMuted}>
               Start over
             </Txt>
@@ -419,7 +415,6 @@ export function Finder() {
     <Screen style={[styles.quiz, { paddingBottom: spacing.xl }]}>
       <View style={styles.quizHead}>
         <Press
-          haptic={false}
           hitSlop={10}
           onPress={() => (stepIndex === 0 ? reset() : setStepIndex(stepIndex - 1))}
         >
@@ -449,7 +444,6 @@ export function Finder() {
             return (
               <Press
                 key={o.value}
-                haptic={false}
                 scaleTo={0.98}
                 onPress={() => pick(step, o.value)}
                 style={[styles.option, isOn && styles.optionOn]}

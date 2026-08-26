@@ -1,8 +1,6 @@
-import * as Haptics from 'expo-haptics';
 import { ActivityIndicator, Pressable, StyleSheet, View, ViewProps } from 'react-native';
 
 import { colors, radius, spacing } from '../theme';
-import { tap } from '../utils/haptics';
 import { Txt } from './themed-text';
 
 /**
@@ -62,7 +60,6 @@ export function Button({
         disabled={inert}
         onPress={() => {
           if (inert) return;
-          tap(Haptics.ImpactFeedbackStyle.Medium);
           onPress?.();
         }}
         style={[

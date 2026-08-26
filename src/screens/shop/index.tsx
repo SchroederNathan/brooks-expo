@@ -1,18 +1,22 @@
-import { router } from 'expo-router';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import { Link, router } from 'expo-router';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { BrooksIcon } from '@/components/icons';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
 import { ScreenHeading, ScreenScrollView } from '@/components/screen';
 import { Txt } from '@/components/themed-text';
+import { ZoomSource } from '@/components/zoom-source';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import { heroImage } from '@/data/images';
 import { productsIn } from '@/data/query';
 import { colors, spacing } from '@/theme';
 
-const { width: W } = Dimensions.get('window');
+const FRANCHISE_WIDTH = 120;
+/** Inside the card's 1pt rule, which the art sits within rather than under. */
+const FRANCHISE_ART_WIDTH = FRANCHISE_WIDTH - 2;
+const FRANCHISE_ART_HEIGHT = 80;
 
 /** The shape of the Brooks site's own shop navigation. */
 const SECTIONS = [
@@ -68,27 +72,36 @@ export function Shop() {
         {FRANCHISES.map((f) => {
           const p = catalog.products.find((x) => x.franchise === f && x.colors.length);
           return (
-            <Press
+            /* The shoe itself opens the franchise, so it zooms into it.
+               @ref LLP 0003#zoom-transitions */
+            <Link
               key={f}
-              scaleTo={0.95}
-              style={styles.franchise}
-              onPress={() =>
-                router.push({
-                  pathname: '/category/[id]',
-                  params: { id: 'brooks-running-shoes', title: f, franchise: f },
-                })
-              }
+              href={{
+                pathname: '/category/[id]',
+                params: { id: 'brooks-running-shoes', title: f, franchise: f },
+              }}
+              asChild
             >
-              <View style={styles.franchiseArt}>
-                {p ? (
-                  <Photo url={heroImage(p.colors[0].images)} width={120} height={80} />
-                ) : null}
-              </View>
-              <Txt variant="caption" style={{ padding: spacing.sm }}>
-                {f}
-              </Txt>
-            </Press>
-            );
+              <Press accessibilityRole="button" scaleTo={0.95} style={styles.franchise}>
+                <ZoomSource
+                  width={FRANCHISE_ART_WIDTH}
+                  height={FRANCHISE_ART_HEIGHT}
+                  style={styles.franchiseArt}
+                >
+                  {p ? (
+                    <Photo
+                      url={heroImage(p.colors[0].images)}
+                      width={FRANCHISE_ART_WIDTH}
+                      height={FRANCHISE_ART_HEIGHT}
+                    />
+                  ) : null}
+                </ZoomSource>
+                <Txt variant="caption" style={{ padding: spacing.sm }}>
+                  {f}
+                </Txt>
+              </Press>
+            </Link>
+          );
         })}
       </ScrollView>
 
@@ -156,8 +169,8 @@ const styles = StyleSheet.create({
   },
   railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },
   rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
-  franchise: { width: 120, borderWidth: 1, borderColor: colors.hairline },
-  franchiseArt: { height: 80, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  franchise: { width: FRANCHISE_WIDTH, borderWidth: 1, borderColor: colors.hairline },
+  franchiseArt: { backgroundColor: colors.surfaceAlt },
   finderCard: {
     flexDirection: 'row',
     alignItems: 'center',

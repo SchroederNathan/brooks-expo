@@ -60,14 +60,27 @@ export const header = {
   } satisfies NativeStackNavigationOptions,
 
   /**
-   * An opaque white bar above a scrolling grid (the PLP). The title is set per
-   * screen; a screen that carries its own large title in-content passes `''`
-   * until that title scrolls away.
+   * A white bar above a scrolling grid (the PLP). The title is set per screen; a
+   * screen that carries its own large title in-content passes `''` until that
+   * title scrolls away.
+   *
+   * [observed 2026-08-26] The white is the *screen's*, not the bar's — the bar
+   * is transparent and the PLP pads its own opaque control row up behind it.
+   * The bar used to be opaque, and UIKit inset the content below it. That inset
+   * is applied a beat late under a zoom transition: the pushed screen paints at
+   * full-window height first, so the control row spent ~0.35s hidden behind the
+   * bar and then popped in, shoving the large title down. Owning the geometry in
+   * JS makes the first painted frame the final one. This is the known
+   * zoom-with-a-header issue Expo's own docs warn about.
+   * @ref LLP 0003#zoom-transitions
+   *
+   * Nothing scrolls behind the bar either way: the control row is sticky and
+   * opaque, so the grid never reaches the band the bar occupies.
    */
   plain: {
     ...base,
-    headerTransparent: false,
-    headerStyle: { backgroundColor: colors.surface },
+    headerTransparent: true,
+    headerBlurEffect: 'none',
     // Filson, not the system face — the one piece of brand the native bar takes.
     // 17/-0.2 matches the `bodyStrong` step rather than inventing a size.
     headerTitleStyle: { fontFamily: font.extraBold, fontSize: 17, color: colors.ink },

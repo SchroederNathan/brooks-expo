@@ -39,7 +39,6 @@ export function ReviewsPanel({
         <Stars value={rating} size={20} showSummary={false} />
         <Press
           accessibilityRole="button"
-          haptic={false}
           onPress={() => {}}
           scaleTo={0.98}
           style={styles.primaryCta}

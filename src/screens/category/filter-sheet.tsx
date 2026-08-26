@@ -11,7 +11,6 @@ import { Chip } from '@/components/chip';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
-import { select } from '@/utils/haptics';
 
 /**
  * The PLP filter sheet.
@@ -92,7 +91,7 @@ export function FilterSheet({
     <Modal visible={visible} animationType="none" transparent onRequestClose={onClose}>
       <View style={styles.backdropWrap}>
         <View style={styles.backdrop}>
-          <Press onPress={onClose} haptic={false} style={{ flex: 1 }}>
+          <Press onPress={onClose} style={{ flex: 1 }}>
             <View />
           </Press>
         </View>
@@ -105,13 +104,7 @@ export function FilterSheet({
           <View style={styles.head}>
             <Txt variant="h2">Filter & sort</Txt>
             {activeCount > 0 ? (
-              <Press
-                haptic={false}
-                onPress={() => {
-                  select();
-                  setDraft({});
-                }}
-              >
+              <Press onPress={() => setDraft({})}>
                 <Txt variant="caption" c={colors.blue}>
                   Clear all ({activeCount})
                 </Txt>

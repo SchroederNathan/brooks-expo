@@ -2,7 +2,6 @@ import { StyleSheet, ViewProps } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { colors, radius, spacing } from '../theme';
-import { select } from '../utils/haptics';
 import { Press } from './press';
 import { Txt } from './themed-text';
 
@@ -45,15 +44,7 @@ export function Chip({
     <Press
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected, disabled: !!disabled }}
-      onPress={
-        disabled
-          ? undefined
-          : () => {
-              select();
-              onPress?.();
-            }
-      }
-      haptic={false}
+      onPress={disabled ? undefined : onPress}
       disabled={disabled}
       scaleTo={0.94}
       style={[

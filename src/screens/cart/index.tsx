@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -13,7 +12,6 @@ import { ShoeImage } from '@/components/shoe-image';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { fmt } from '@/utils/format-price';
-import { notify, select, tap } from '@/utils/haptics';
 import { heroImage } from '@/data/images';
 import { VOICE } from '@/data/editorial';
 import { useCart, type CartItemView } from '@/store/cart';
@@ -39,7 +37,6 @@ export function Cart() {
   const removeWithUndo = useCallback(
     (item: CartItemView) => {
       cart.remove(item.variantId);
-      notify(Haptics.NotificationFeedbackType.Warning);
       setUndo(item);
       if (undoTimer.current) clearTimeout(undoTimer.current);
       undoTimer.current = setTimeout(() => setUndo(null), 5000);
@@ -123,7 +120,6 @@ export function Cart() {
               >
                 <View style={styles.line}>
                   <Press
-                    haptic={false}
                     scaleTo={0.97}
                     onPress={() =>
                       router.push({
@@ -156,7 +152,6 @@ export function Cart() {
                       <Stepper
                         value={item.quantity}
                         onChange={(q) => {
-                          select();
                           if (q === 0) removeWithUndo(item);
                           else cart.setQuantity(item.variantId, q);
                         }}
@@ -211,10 +206,7 @@ export function Cart() {
         <Button
           title="Checkout"
           accessory={fmt(cart.total)}
-          onPress={() => {
-            tap(Haptics.ImpactFeedbackStyle.Medium);
-            setScopeNote(true);
-          }}
+          onPress={() => setScopeNote(true)}
         />
       </View>
 
@@ -272,7 +264,7 @@ function Row({
 function Stepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <View style={styles.stepper}>
-      <Press haptic={false} onPress={() => onChange(value - 1)} hitSlop={8} style={styles.stepBtn}>
+      <Press onPress={() => onChange(value - 1)} hitSlop={8} style={styles.stepBtn}>
         <Txt variant="h3" c={colors.ink}>
           −
         </Txt>
@@ -280,7 +272,7 @@ function Stepper({ value, onChange }: { value: number; onChange: (v: number) => 
       <Txt variant="caption" style={styles.stepValue}>
         {value}
       </Txt>
-      <Press haptic={false} onPress={() => onChange(value + 1)} hitSlop={8} style={styles.stepBtn}>
+      <Press onPress={() => onChange(value + 1)} hitSlop={8} style={styles.stepBtn}>
         <Txt variant="h3" c={colors.ink}>
           +
         </Txt>
@@ -295,7 +287,7 @@ function DeleteAction({ drag, onPress }: { drag: SharedValue<number>; onPress: (
   }));
   return (
     <Animated.View style={[styles.deleteAction, style]}>
-      <Press haptic={false} onPress={onPress} style={styles.deletePress}>
+      <Press onPress={onPress} style={styles.deletePress}>
         <Txt variant="eyebrow" c={colors.surface} style={{ fontSize: 11 }}>
           Remove
         </Txt>
@@ -311,7 +303,7 @@ function UndoBar({ item, onUndo }: { item: CartItemView; onUndo: () => void }) {
       <Txt variant="caption" c={colors.surface} numberOfLines={1} style={{ flex: 1 }}>
         Removed {item.product.name}
       </Txt>
-      <Press haptic={false} onPress={onUndo} hitSlop={8}>
+      <Press onPress={onUndo} hitSlop={8}>
         <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 11 }}>
           Undo
         </Txt>

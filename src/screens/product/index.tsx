@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Link, router, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -25,7 +24,6 @@ import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
 import { UnderlineRail } from '@/components/underline-rail';
-import { notify, select } from '@/utils/haptics';
 import { catalog } from '@/data/catalog';
 import { heroImage } from '@/data/images';
 import { supportLabel } from '@/data/labels';
@@ -163,13 +161,11 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const onAdd = () => {
     if (!size) {
       setNeedsSize(true);
-      notify(Haptics.NotificationFeedbackType.Error);
       scrollRef.current?.scrollTo({ y: Math.max(0, sizesY.current - 140), animated: true });
       return;
     }
     const widthVal = width ?? colorway.widths.find((w) => w.available)?.value ?? '1D';
     cart.add({ productId: product.id, colorCode: colorway.code, size, width: widthVal });
-    notify(Haptics.NotificationFeedbackType.Success);
     setAdded({ image: heroImage(colorway.images), name: product.name });
   };
 
@@ -280,14 +276,10 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             {product.colors.map((c) => (
               <Press
                 key={c.code}
-                haptic={false}
                 scaleTo={0.92}
                 accessibilityRole="button"
                 accessibilityState={{ selected: c.code === colorway.code }}
-                onPress={() => {
-                  select();
-                  setColorCode(c.code);
-                }}
+                onPress={() => setColorCode(c.code)}
                 style={styles.swatch}
               >
                 <ShoeImage url={heroImage(c.images)} width={64} height={64} transition={0} />

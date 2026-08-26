@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useMemo } from 'react';
 import {
@@ -15,6 +15,7 @@ import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
 import { Txt } from '@/components/themed-text';
+import { ZoomSource } from '@/components/zoom-source';
 import { catalog } from '@/data/catalog';
 import { HERO, HOME_GEAR, LONGER_DAYS, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
@@ -27,8 +28,10 @@ const PAPER_WIDTH = 393;
 const PAPER_HERO_HEIGHT = 491;
 const GEAR_CARD_WIDTH = 172;
 const USE_CASE_WIDTH = 152;
+const USE_CASE_HEIGHT = 200;
 const PRODUCT_WIDTH = 244;
 const STORY_WIDTH = 240;
+const STORY_IMAGE_HEIGHT = 150;
 /**
  * How far the promise block's colour is carried below the last pixel of
  * content. Generous enough to outrun a hard fling's rubber band on the tallest
@@ -276,75 +279,92 @@ function LongerDays() {
   );
 }
 
+/**
+ * Each of these three cards is a photo that opens a shop screen, so each one
+ * zooms rather than slides. @ref LLP 0003#zoom-transitions — the label below
+ * the photo stays outside `ZoomSource`: it belongs to the card, not to the
+ * thing being carried across, and it cross-fades with the rest of Home.
+ *
+ * They also had to become `Link`s to get it. `Link.AppleZoom` reads the
+ * destination off the surrounding `Link`, which an imperative `router.push`
+ * cannot supply — and a `Link` is the better call site anyway, since it is the
+ * one that can be long-pressed for a preview later.
+ */
 function GearCard({ item }: { item: GearItem }) {
   return (
-    <Press
-      accessibilityRole="button"
-      accessibilityLabel={item.label}
-      scaleTo={0.97}
-      style={styles.gearCard}
-      onPress={() =>
-        router.push({
-          pathname: '/category/[id]',
-          params: { id: item.id, title: item.label },
-        })
-      }
+    <Link
+      href={{ pathname: '/category/[id]', params: { id: item.id, title: item.label } }}
+      asChild
     >
-      <Image source={item.image} style={styles.gearImage} contentFit="cover" />
-      <Txt variant="tiny" style={styles.gearLabel}>
-        {item.label}
-      </Txt>
-    </Press>
+      <Press
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        scaleTo={0.97}
+        style={styles.gearCard}
+      >
+        <ZoomSource width={GEAR_CARD_WIDTH} height={GEAR_CARD_WIDTH}>
+          <Image source={item.image} style={styles.fill} contentFit="cover" />
+        </ZoomSource>
+        <Txt variant="tiny" style={styles.gearLabel}>
+          {item.label}
+        </Txt>
+      </Press>
+    </Link>
   );
 }
 
 function UseCaseCard({ item }: { item: UseCaseItem }) {
   return (
-    <Press
-      accessibilityRole="button"
-      accessibilityLabel={item.label}
-      scaleTo={0.97}
-      style={styles.useCaseCard}
-      onPress={() =>
-        router.push({
-          pathname: '/category/[id]',
-          params: { id: item.id, title: item.label },
-        })
-      }
+    <Link
+      href={{ pathname: '/category/[id]', params: { id: item.id, title: item.label } }}
+      asChild
     >
-      <Image source={item.image} style={styles.useCaseImage} contentFit="cover" />
-      <Txt variant="eyebrow" style={styles.useCaseLabel}>
-        {item.label}
-      </Txt>
-    </Press>
+      <Press
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        scaleTo={0.97}
+        style={styles.useCaseCard}
+      >
+        <ZoomSource width={USE_CASE_WIDTH} height={USE_CASE_HEIGHT}>
+          <Image source={item.image} style={styles.fill} contentFit="cover" />
+        </ZoomSource>
+        <Txt variant="eyebrow" style={styles.useCaseLabel}>
+          {item.label}
+        </Txt>
+      </Press>
+    </Link>
   );
 }
 
 function StoryCard({ story }: { story: StoryItem }) {
   return (
-    <Press
-      accessibilityRole="button"
-      accessibilityLabel={story.title}
-      scaleTo={0.98}
-      style={styles.storyCard}
-      onPress={() =>
-        router.push({
-          pathname: '/category/[id]',
-          params: { id: story.shopCategory, title: story.shopLabel },
-        })
-      }
+    <Link
+      href={{
+        pathname: '/category/[id]',
+        params: { id: story.shopCategory, title: story.shopLabel },
+      }}
+      asChild
     >
-      <Image source={story.image} style={styles.storyImage} contentFit="cover" />
-      <View style={styles.storyMeta}>
-        <Txt variant="tiny" c={colors.blue} style={styles.storyEyebrow}>
-          {story.eyebrow}
-        </Txt>
-        <Txt variant="tiny" c={colors.inkMuted}>
-          {story.date}
-        </Txt>
-      </View>
-      <Txt style={styles.storyTitle}>{story.title}</Txt>
-    </Press>
+      <Press
+        accessibilityRole="button"
+        accessibilityLabel={story.title}
+        scaleTo={0.98}
+        style={styles.storyCard}
+      >
+        <ZoomSource width={STORY_WIDTH} height={STORY_IMAGE_HEIGHT}>
+          <Image source={story.image} style={styles.fill} contentFit="cover" />
+        </ZoomSource>
+        <View style={styles.storyMeta}>
+          <Txt variant="tiny" c={colors.blue} style={styles.storyEyebrow}>
+            {story.eyebrow}
+          </Txt>
+          <Txt variant="tiny" c={colors.inkMuted}>
+            {story.date}
+          </Txt>
+        </View>
+        <Txt style={styles.storyTitle}>{story.title}</Txt>
+      </Press>
+    </Link>
   );
 }
 
@@ -386,6 +406,8 @@ function UnderlinedAction({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
+  /** Fills the fixed frame `ZoomSource` establishes for a card's photo. */
+  fill: { width: '100%', height: '100%' },
   hero: { flex: 1, width: '100%', overflow: 'hidden', backgroundColor: colors.ink },
   heroContent: {
     position: 'absolute',
@@ -412,7 +434,6 @@ const styles = StyleSheet.create({
   gearSection: { paddingTop: 36, paddingBottom: 40, overflow: 'hidden' },
   gearRail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
   gearCard: { width: GEAR_CARD_WIDTH, gap: spacing.md, alignItems: 'center' },
-  gearImage: { width: GEAR_CARD_WIDTH, height: GEAR_CARD_WIDTH },
   gearLabel: {
     fontFamily: font.bold,
     letterSpacing: 0.88,
@@ -423,7 +444,6 @@ const styles = StyleSheet.create({
   useCaseSection: { paddingVertical: 36 },
   useCaseRail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
   useCaseCard: { width: USE_CASE_WIDTH, gap: spacing.md },
-  useCaseImage: { width: USE_CASE_WIDTH, height: 200 },
   useCaseLabel: { textAlign: 'center' },
 
   productSection: { paddingVertical: 40 },
@@ -442,7 +462,6 @@ const styles = StyleSheet.create({
   storySection: { paddingVertical: 40 },
   storyRail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
   storyCard: { width: STORY_WIDTH },
-  storyImage: { width: STORY_WIDTH, height: 150 },
   storyMeta: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, paddingTop: 14 },
   storyEyebrow: { fontFamily: font.bold, letterSpacing: 1.1, textTransform: 'uppercase' },
   storyTitle: {

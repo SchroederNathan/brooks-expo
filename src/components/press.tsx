@@ -1,31 +1,25 @@
 import React from 'react';
 import { Pressable, PressableProps, ViewStyle } from 'react-native';
 
-import { tap } from '../utils/haptics';
-
 /**
- * Tappable wrapper: haptic on press. Scale feedback is currently ignored
- * pending the motion overhaul; `scaleTo` stays in the API so call sites
- * keep their intended press values.
+ * Tappable wrapper. Scale feedback is currently ignored pending the motion
+ * overhaul; `scaleTo` stays in the API so call sites keep their intended press
+ * values.
+ *
+ * [observed 2026-08-26] This used to fire a light impact on every press, and
+ * the `haptic={false}` opt-out was threaded through roughly a dozen call sites
+ * to silence it. Both are gone: the tab bar is the only place the app still
+ * buzzes. See `utils/haptics`.
  */
 export function Press({
   children,
   style,
   scaleTo: _scaleTo = 0.97,
-  haptic = true,
-  onPress,
   ...rest
-}: PressableProps & { scaleTo?: number; haptic?: boolean; children: React.ReactNode }) {
+}: PressableProps & { scaleTo?: number; children: React.ReactNode }) {
   void _scaleTo;
   return (
-    <Pressable
-      {...rest}
-      style={style as ViewStyle}
-      onPress={(e) => {
-        if (haptic) tap();
-        onPress?.(e);
-      }}
-    >
+    <Pressable {...rest} style={style as ViewStyle}>
       {children}
     </Pressable>
   );

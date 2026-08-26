@@ -184,7 +184,7 @@ export function Search() {
               const imageUrl = local ? heroImage(local.colors[0]?.images ?? []) : hit.imageUrl;
               return (
                 <View key={hit.id}>
-                  <Press haptic={false} scaleTo={0.98} onPress={() => openHit(hit)} style={styles.hit}>
+                  <Press scaleTo={0.98} onPress={() => openHit(hit)} style={styles.hit}>
                     <View style={styles.hitImage}>
                       {imageUrl ? <ShoeImage url={imageUrl} width={64} height={64} /> : null}
                     </View>
@@ -228,7 +228,6 @@ export function Search() {
             {localHits.map((p) => (
               <Press
                 key={p.id}
-                haptic={false}
                 scaleTo={0.98}
                 onPress={() => router.push({ pathname: '/product/[id]', params: { id: p.id } })}
                 style={[styles.hit, { paddingHorizontal: 0 }]}

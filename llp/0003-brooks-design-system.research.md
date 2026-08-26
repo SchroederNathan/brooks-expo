@@ -477,7 +477,9 @@ are Brooks's own — the blue header, the tab bar, screen content.
 `theme/header.ts` holds two `Stack` option presets — `overlay` (transparent,
 over the PDP's full-bleed gallery, `headerBlurEffect: 'none'` because Brooks
 shoots product on near-white and a blur over `#F8F8F8` reads as a smudge) and
-`plain` (opaque white above the PLP grid, title set in Filson Heavy) — plus
+`plain` (white above the PLP grid, title set in Filson Heavy; [observed
+2026-08-26] the white is the screen's, not the bar's — see *Zoom transitions*)
+— plus
 `headerIcon`, the SF Symbol names keyed by what the app means. The
 expo-design-system rule is explicit that a platform component already carrying
 the design language must not be wrapped to route it through the system, so the
@@ -487,6 +489,84 @@ tokens are handed to `Stack`, and there is no `<BrooksNavBar>`.
 `useBrooksHeader` earns it — it is a verbatim port of the site's own sticky
 header, with a collapse no system bar performs. A square box holding a caret
 earns nothing.
+
+### Zoom transitions
+
+[observed 2026-08-26] Every card that is *a picture that opens a screen* now
+zooms into that screen on iOS 18+, using Apple's
+`UIViewController.Transition.zoom` through Expo Router's `Link.AppleZoom`. The
+picture lifts off the card and grows into the destination; the back gesture
+reverses it. Android, iOS 17 and older, and web fall through to the default
+push with no branching at the call site.
+
+[observed] Which cards. The rule is the picture, not the tap target:
+
+| Source | Destination |
+| --- | --- |
+| Home — "Summer's hottest new gear" (`GearCard`) | PLP |
+| Home — "Wherever the day takes you" (`UseCaseCard`: Run, Trail, Walk, …) | PLP |
+| Home — "Stories to transform your run" (`StoryCard`) | PLP |
+| Browse — franchise cards (Ghost, Glycerin, Hyperion, …) | PLP |
+| Catalog tile photo (`ProductTile`) | PDP gallery |
+
+[observed] And which deliberately do not:
+
+- **List rows** — Browse's `Women's Shoes` rows, search hits, cart lines. A
+  skinny row with a thumbnail is not a picture; Expo's own zoom docs call this
+  out, and a 64pt square ballooning to fill the screen reads as a glitch.
+- **The Shoe Finder card** and the hero action. These are typographic CTAs, not
+  photographs. The hero is a looping video behind a text link, and the
+  destination has nothing to receive it.
+- **The `Longer days. Longer runs.` banner.** It *is* a photograph, and it opens
+  a PLP, so it is the closest call on the page. It stays out for a reason the
+  rest of the list does not have: the banner carries **two** underlined actions
+  over **one** collage (`SHOP WOMEN`, `SHOP MEN` — see *The Longer days banner,
+  and two sections that left*). A zoom needs one source rect per destination, and
+  a single photo serving two destinations has no honest answer for which half
+  lifts. The banner reads as a second hero, and heroes here do not zoom.
+
+  [observed 2026-08-26] This bullet used to name the `Brooks Run Club` block,
+  which sat in this slot and was excluded on the same grammar — a photograph
+  whose tap target was a `Join now` underline into a modal text form. That block
+  is gone from the site and from the app; the reasoning survived the section it
+  was written about, which is a fair sign it was about the grammar rather than
+  the block.
+
+[observed] `components/zoom-source.tsx` holds the two constraints so no call
+site has to remember them: `Link.AppleZoom` takes exactly one child and slots
+native zoom props onto it, so the child must be a host `View` with
+`collapsable={false}` rather than an `expo-image` — and the frame must be known
+on first paint, so the size is passed in as numbers rather than left to `flex`.
+The label under a card stays *outside* `ZoomSource`; it belongs to the card, not
+to the thing being carried across.
+
+[observed] These cards also had to become `Link`s. `Link.AppleZoom` reads its
+destination from the surrounding `Link` through context, which an imperative
+`router.push` cannot supply. That is the better call site anyway — it is the one
+that can carry a long-press preview later.
+
+#### The header had to stop insetting the PLP
+
+[observed 2026-08-26] Expo's zoom docs recommend avoiding zoom into a screen
+that has a navigation bar, and the PLP showed exactly why. With an **opaque**
+bar, UIKit owns the content inset. Under a zoom transition that inset arrives a
+beat late: the pushed screen paints at full-window height first, so the
+filter/sort row spent ~0.35s hidden *behind* the bar and then popped in,
+shoving the large title down. Measured against a plain push into the same
+screen, which showed the row in its first frame, so the shift was the zoom's.
+
+[observed] The fix is to stop depending on the inset rather than to fight it.
+`header.plain` is now `headerTransparent: true`, and the PLP pads its own
+control row up behind the bar (`useHeaderHeight()` from
+`expo-router/react-navigation`). The bar's white surface is the control row's.
+Nothing is lost visually: the control row is sticky and opaque, so the grid
+never reaches the band the bar occupies either way — and the first painted frame
+is now the final one.
+
+[inferred] The general rule: **a zoom destination must not learn its geometry
+from the transition.** Anything the native side insets late will be visible as a
+jump, because a zoom shows the destination's first frame at full fidelity where
+a slide hides it off-screen.
 
 ## Voice
 
@@ -797,6 +877,8 @@ press-shift, PDP size-grid shake, and the filter-sheet fade stay stripped
 pending the motion overhaul. Stack pushes use the platform default again. On
 iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
 gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
+[observed 2026-08-26] That treatment now covers every picture-that-opens-a-screen
+on Home and Browse, not just the tile — see *Zoom transitions*.
 Home's stretchy parallax hero stays. Colorway selection is a second exception:
 the focused thumbnail uses a sliding ink underline (`UnderlineRail`) rather than
 a boxed blue/ink border, on both the catalog tile and the PDP color rail. Brand
@@ -874,8 +956,13 @@ continuous morph.
 2. **Add-to-cart flying shoe** arcing into the tab-bar bag, lime badge popping.
 3. **Colorway swatches on the tile** that swap the image in place.
 4. **Shoe Finder auto-advance quiz** with the "Take 'em off" checkpoint.
-5. **Haptics tuned per gesture** — selection ticks on chips, success on add, error
-   on missing size. Half an hour of work, disproportionate perceived quality.
+5. [superseded 2026-08-26] **Haptics tuned per gesture** — selection ticks on
+   chips, success on add, error on missing size. Built, then removed. Tuning
+   them per gesture was the wrong reading: `Press` fired an impact on *every*
+   tap, which spends the signal until it means nothing, and a buzz on a tap that
+   already opens a screen competes with the transition that confirms it. The tab
+   bar keeps its selection tick — the one move with no animation of its own to
+   feel — and `utils/haptics` exports nothing else.
 6. **Collapsing blurred headers.** Instantly reads as native rather than web.
 7. **Skeleton shimmer everywhere.** Never show a blank screen.
 8. **Hard-offset button press.** Brooks's own signature interaction.

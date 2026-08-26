@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -15,7 +14,6 @@ import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
-import { notify } from '@/utils/haptics';
 import { join } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
 import { colors, font, spacing } from '@/theme';
@@ -40,11 +38,9 @@ export function Login() {
   const onJoin = () => {
     setTouched(true);
     if (!nameOk || !emailOk) {
-      notify(Haptics.NotificationFeedbackType.Error);
       return;
     }
     join({ firstName: firstName.trim(), email: email.trim() });
-    notify(Haptics.NotificationFeedbackType.Success);
     router.back();
   };
 
@@ -61,7 +57,7 @@ export function Login() {
         }}
       >
         <View style={styles.head}>
-          <Press haptic={false} hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
+          <Press hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
             <BrooksIcon name="close" size={14} color={colors.inkMuted} />
           </Press>
         </View>
@@ -114,7 +110,7 @@ export function Login() {
 
           {/* The guest path is always visible — a commerce demo that forces
               auth dies on stage. */}
-          <Press haptic={false} onPress={() => router.back()} style={styles.guest}>
+          <Press onPress={() => router.back()} style={styles.guest}>
             <Txt variant="caption" c={colors.inkMuted}>
               Continue as guest
             </Txt>

@@ -103,7 +103,7 @@ export function Account() {
       </View>
 
       {member ? (
-        <Press haptic={false} onPress={leave} style={styles.signOut}>
+        <Press onPress={leave} style={styles.signOut}>
           <Txt variant="caption" c={colors.inkMuted}>
             Sign out
           </Txt>
@@ -126,7 +126,7 @@ export function Account() {
 
 function Row({ label, detail, onPress }: { label: string; detail?: string; onPress?: () => void }) {
   return (
-    <Press haptic={false} scaleTo={onPress ? 0.99 : 1} onPress={onPress} style={styles.row}>
+    <Press scaleTo={onPress ? 0.99 : 1} onPress={onPress} style={styles.row}>
       <View style={{ flex: 1 }}>
         <Txt variant="h3">{label}</Txt>
         {detail ? (

@@ -1,4 +1,5 @@
 import { router, Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useMemo, useState } from 'react';
 import {
   Dimensions,
@@ -50,6 +51,9 @@ export function Category({
   franchise?: string;
 }) {
   const insets = useSafeAreaInsets();
+  // The bar is transparent and this screen pays for its own top inset, so the
+  // layout does not move when a zoom transition paints it. @ref header.plain
+  const headerHeight = useHeaderHeight();
   const [showBarTitle, setShowBarTitle] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({});
@@ -105,9 +109,10 @@ export function Category({
         />
       </Stack.Toolbar>
 
-      {/* Control row — stays put while the grid scrolls, on white under the
-          native bar. */}
-      <View style={styles.controls}>
+      {/* Control row — stays put while the grid scrolls. Its white runs up
+          behind the transparent bar, which is where the bar's surface comes
+          from. */}
+      <View style={[styles.controls, { paddingTop: headerHeight + spacing.sm }]}>
         <Chip
           label={nFilters ? `Filter (${nFilters})` : 'Filter'}
           size="sm"
@@ -203,7 +208,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     zIndex: 10,
     paddingHorizontal: spacing.gutter,
-    paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.hairline,

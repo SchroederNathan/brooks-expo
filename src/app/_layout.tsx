@@ -47,14 +47,16 @@ export default function RootLayout() {
                 branded nested Stack header; this title still feeds web
                 document titles and accessibility. */}
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
-            {/* iOS 18+ zoom is opted in per Link.AppleZoom on the tile; this
-                screen keeps the stack default so Android / older iOS still
-                push. @ref LLP 0003#screen-patterns
+            {/* iOS 18+ zoom is opted in per Link.AppleZoom at the source —
+                the catalog tile into the PDP, and every editorial / franchise
+                card into the PLP. These screens keep the stack default so
+                Android and older iOS still push. @ref LLP 0003#zoom-transitions
 
-                Both pushed screens wear the native bar. The PDP's runs
-                transparent over its full-bleed gallery; the PLP's is opaque
-                white above the grid, and sets its own title as the in-content
-                one scrolls away. @ref LLP 0003#pushed-screens-wear-the-native-header */}
+                Both pushed screens wear the native bar, and both run it
+                transparent: the PDP's over its full-bleed gallery, the PLP's
+                over the white its own control row carries up behind it. The PLP
+                also sets its title as the in-content one scrolls away.
+                @ref LLP 0003#pushed-screens-wear-the-native-header */}
             <Stack.Screen
               name="product/[id]"
               options={{ title: 'Product', ...header.overlay }}

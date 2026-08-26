@@ -13,7 +13,7 @@ import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
 import { UnderlineRail } from '@/components/underline-rail';
-import { select } from '@/utils/haptics';
+import { ZoomSource } from '@/components/zoom-source';
 
 /**
  * The catalog tile.
@@ -60,22 +60,17 @@ function ProductTileImpl({
     >
       <Press style={StyleSheet.flatten([styles.card, { width }])} scaleTo={0.975}>
         <View style={{ width, height: width, marginBottom: spacing.xs }}>
-          {/* Host View, not ShoeImage: AppleZoom slots native zoom props onto
-              a single ref-capable child. @ref LLP 0003#tile */}
-          <Link.AppleZoom>
-            <View
-              collapsable={false}
-              style={StyleSheet.flatten([styles.imageWrap, { width, height: width }])}
-            >
-              <ShoeImage
-                url={heroImage(colorway.images)}
-                width={width}
-                height={width}
-                priority={index < 4 ? 'high' : 'normal'}
-                transition={0}
-              />
-            </View>
-          </Link.AppleZoom>
+          {/* @ref LLP 0003#tile — the tile photo zooms into the PDP gallery,
+              the same move the editorial cards make into a PLP. */}
+          <ZoomSource width={width} height={width} style={styles.imageWrap}>
+            <ShoeImage
+              url={heroImage(colorway.images)}
+              width={width}
+              height={width}
+              priority={index < 4 ? 'high' : 'normal'}
+              transition={0}
+            />
+          </ZoomSource>
           <View style={styles.badges} pointerEvents="none">
             {isNew ? <Badge label="New" variant="lime" /> : null}
             {product.onSale ? <Badge label="Sale" variant="sale" /> : null}
@@ -101,15 +96,11 @@ function ProductTileImpl({
             {product.colors.slice(0, SWATCHES_SHOWN).map((c, i) => (
               <Press
                 key={c.code}
-                haptic={false}
                 scaleTo={0.85}
                 hitSlop={slop}
                 accessibilityRole="button"
                 accessibilityState={{ selected: i === ci }}
-                onPress={() => {
-                  select();
-                  setCi(i);
-                }}
+                onPress={() => setCi(i)}
                 style={[styles.swatch, { width: slot, height: slot }]}
               >
                 <ShoeImage
@@ -155,10 +146,7 @@ export const ProductTile = memo(ProductTileImpl);
 
 const styles = StyleSheet.create({
   card: {},
-  imageWrap: {
-    backgroundColor: colors.surfaceAlt,
-    overflow: 'hidden',
-  },
+  imageWrap: { backgroundColor: colors.surfaceAlt },
   badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
   swatches: { marginBottom: spacing.lg },
   swatch: {

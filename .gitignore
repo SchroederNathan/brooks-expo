@@ -41,3 +41,7 @@ yarn-error.*
 /ios
 /android
 .baselines/
+
+# Argent screen recordings — writing these into the project root retriggers
+# Metro's file watcher and reloads the running app mid-QA.
+.argent/
