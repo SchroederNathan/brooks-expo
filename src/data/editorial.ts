@@ -42,6 +42,50 @@ export const HOME_GEAR = [
   },
 ] as const;
 
+/**
+ * The site's mid-page brand banner, in the slot it holds on brooksrunning.com:
+ * between the new-gear rail and the activity rail.
+ *
+ * @ref LLP 0003#the-home-feature — Brooks ships this banner as ONE mobile
+ * collage, `cms-content/…/2026/August/Updated-Images/F26-NA-BRcom-AUG-HP-03-S.jpg`
+ * (750×1450): a washed-out backdrop, then an action photo laid over it from
+ * y=557 down, inset 25px from the left so the backdrop shows through beside it.
+ *
+ * The app rebuilds that as two layers so each can move independently. `backdrop`
+ * is the WHOLE collage — its hidden region (right of the strip, below the seam)
+ * is smeared flat so it costs 14 KB instead of 100, but the 25px strip the app
+ * actually shows is untouched source. `photo` is the action crop alone, laid
+ * over it at the same inset and hung `photoOverhang` past the backdrop's bottom
+ * edge, which the flat web composite cannot do.
+ */
+export const LONGER_DAYS = {
+  title: 'Longer days.\nLonger runs.',
+  body: 'Build your mileage in gear designed to support your training.',
+  backdrop: require('../../assets/home/longer-days-backdrop.webp'),
+  photo: require('../../assets/home/longer-days-runner.webp'),
+  /** Natural size of the harvested photo crop; the app renders it to aspect. */
+  photoWidth: 725,
+  photoHeight: 893,
+  /** The photo's left inset in the source collage, as a fraction of its width. */
+  photoInset: 25 / 750,
+  /**
+   * How far the photo hangs below the backdrop's bottom edge. The web composite
+   * has no overhang — both halves end on the same line, because they are one
+   * JPEG. Separating the layers is what buys it, and a small drop reads as a
+   * photo resting on the panel rather than filling a slot in it.
+   */
+  photoOverhang: 32,
+  /**
+   * The site links these to `featured/training-gear/{gender}`, which is not a
+   * Constructor group the catalog harvest covers. Its members are training
+   * apparel, so the app sends each CTA to that gender's apparel category.
+   */
+  ctas: [
+    { id: 'women', label: 'Shop women', category: 'womens-apparel', title: "Women's Apparel" },
+    { id: 'men', label: 'Shop men', category: 'mens-apparel', title: "Men's Apparel" },
+  ],
+} as const;
+
 /** The four ways Brooks segments the activity rail on the current homepage. */
 export const USE_CASES = [
   {

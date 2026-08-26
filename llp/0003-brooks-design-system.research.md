@@ -555,7 +555,8 @@ label layer. Four elements is the budget: eyebrow, headline, blurb, action.
 [observed 2026-08-17] The Expo home screen now follows the Paper file's mobile
 `Home` artboard as its implementation source: hero proportions and typography,
 the two lifestyle rails, the centred New Arrivals rail, Run Club, stories, and
-the Run Happy Promise band. The existing system-rendered `NativeTabs` remain the
+the Run Happy Promise band. (`Superseded 2026-08-26` for Run Club — see *The
+Longer days banner, and two sections that left* below.) The existing system-rendered `NativeTabs` remain the
 app shell, so Paper's drawn tab-bar mockup is intentionally not ported.
 
 [observed] The hero uses the Brooks site's portrait Brightcove source, video id
@@ -604,6 +605,63 @@ wants its media to start below a floating bar; Home does not use it, because the
 half-speed drift then opens white space under the bar in too many scroll
 positions — the hero keeps running under the bar.
 
+#### The Longer days banner, and two sections that left
+
+[observed 2026-08-26] The Expo home screen now carries the site's
+`Longer days. Longer runs.` banner in the site's own slot — after the new-gear
+rail, before the activity rail — and has dropped two things the site does not
+have: the `Brooks Run Club` band (gone from brooksrunning.com's homepage) and
+the `Shop all new arrivals` link under the New Arrivals rail.
+
+[observed] The banner's artwork was **harvested from the live site rather than
+from Paper**, because it postdates the Paper capture. brooksrunning.com's page
+HTML is behind Akamai (LLP 0002), so the URL was read out of a real browser
+session via the same Playwright path `tools/harvest` already uses; the asset
+itself is on `demandware.static`, which answers a bare client, so only the
+*lookup* needed the browser. The mobile source is
+`F26-NA-BRcom-AUG-HP-03-S.jpg`, 750 × 1450.
+
+[observed] **Brooks ships this section as one image, not two.** The `-S` mobile
+asset is a collage: a washed-out near-white wash from y=0 to y=557, then an
+action photo from y=557 to the bottom, inset 25px from the left and bleeding off
+the right and bottom edges. The site lays its copy over the wash at the image's
+natural aspect, so the copy block's height is pinned to the artwork's geometry.
+
+[inferred] **The app cuts the collage at that seam and lays the halves out
+independently.** The wash becomes an `absoluteFill` behind a copy block that
+sizes to its own text, and the photo is a sibling rendered to its own aspect.
+This costs one extra asset and buys two things a single image cannot: the copy
+cannot collide with the photo at a large accessibility text size, and the section
+adapts to any screen width without letterboxing. Stretching the wash is safe
+precisely because it is a soft gradient with no subject in it.
+
+[observed 2026-08-26] **The 25/750 left inset only works if the backdrop runs
+behind the photo, and a flat tint cannot stand in for it.** The strip beside the
+photo samples `(222,209,193)` at one row and `(247,251,250)` at another — it is
+the backdrop photograph continuing, not a colour. A first cut rendered the two
+halves as plain siblings, so the strip painted the section's own white and read
+as misaligned padding rather than as layering.
+
+[observed] The backdrop layer is therefore **the whole collage**, absolutely
+positioned across the section rather than sized to the copy. Everything right of
+the strip and below the seam is hidden behind the real photo, so that region is
+smeared flat from the strip's edge pixel before encoding: the visible column
+stays untouched source, and the asset costs 14 KB instead of 100 KB. The
+backdrop is anchored `top/left/right/bottom` rather than given a height, so it
+tracks a copy block that still sizes to its own text.
+
+[observed] **The photo hangs `32pt` below the backdrop's bottom edge.** The web
+composite cannot do this — both halves end on the same line because they are one
+JPEG — and it is the one thing the app gains by separating the layers. Offset
+down from the panel as well as right of it, the photo reads as resting on the
+backdrop rather than filling a slot cut in it.
+
+[observed] The site's two links point at `featured/training-gear/{gender}`, which
+is not a Constructor group the catalog harvest covers. The app sends them to that
+gender's apparel category instead — the group's members are training apparel, and
+LLP 0002's rule stands: the app browses the harvested catalog, not a live SFCC
+path.
+
 [observed 2026-08-18] Every native tab now owns a native `Stack` through an
 Expo Router array group. A shared `Stack.Toolbar.View` places the Brooks SVG
 wordmark at the leading edge. `NativeTabs` remains entirely system-rendered
@@ -630,10 +688,22 @@ above the fold. This is the single biggest divergence the app had to close.
 | Section | Ground | Cards | Caption |
 |---|---|---|---|
 | *Summer's hottest new gear* | pale **sky gradient** | 4 × square lifestyle photos | centred caps |
+| *Longer days. Longer runs.* | washed-out photo | inset action photo | left-aligned copy, two underlined links |
 | *Wherever the day takes you* | white | 4 × tall lifestyle photos | centred caps |
-| *Brooks Run Club* | full-bleed photo | — | centred white text, `LEARN MORE` underlined |
 | *Stories to transform your run* | white | 4 × 3:2 photos | blue caps category + muted date, then a headline |
 | Run Happy Promise | `#003789` | — | round `RUN HAPPY PROMISE` seal + two lines, `90-day trial run.` underlined |
+
+[revised 2026-08-26 — fresh human screenshot of the mobile homepage] Two rows of
+that table changed since the 2026-08-17 capture. **`Brooks Run Club` is no longer
+a homepage section**, and a brand banner, **`Longer days. Longer runs.`**, now
+sits between the new-gear rail and the activity rail.
+
+[observed] **The banner is the one section that breaks the card grammar, and
+that is the point.** Its heading is left-aligned rather than centred, set at the
+hero's own size over two lines, and it carries body copy plus *two* underlined
+links (`SHOP WOMEN`, `SHOP MEN`) side by side — the only place on the page where
+an action pair appears. Everything above and below it is a centred heading over a
+photo rail, so the banner reads as a second hero rather than a sixth rail.
 
 [observed] The new-gear band is **not a flat tint** — it is a photographic sky,
 sampling `#A3C9E4` at the top through `#C0DAE8` to near-white `#E5EDF7`. The

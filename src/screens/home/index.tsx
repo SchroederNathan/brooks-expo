@@ -16,7 +16,7 @@ import { Press } from '@/components/press';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
-import { HERO, HOME_GEAR, STORIES, USE_CASES } from '@/data/editorial';
+import { HERO, HOME_GEAR, LONGER_DAYS, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
 import type { Product } from '@/data/types';
 import { colors, font, spacing } from '@/theme';
@@ -163,6 +163,8 @@ export function Home() {
           />
         </View>
 
+        <LongerDays />
+
         <View style={styles.useCaseSection}>
           <SectionTitle>Wherever the day takes you</SectionTitle>
           <FlatList
@@ -187,33 +189,6 @@ export function Home() {
             contentContainerStyle={styles.productRail}
             renderItem={renderProductItem}
           />
-          <UnderlinedAction
-            label="Shop all new arrivals"
-            style={styles.centeredAction}
-            onPress={() =>
-              router.push({
-                pathname: '/category/[id]',
-                params: { id: 'featured-new-arrivals', title: 'New Arrivals' },
-              })
-            }
-          />
-        </View>
-
-        <View style={styles.runClub}>
-          <Image
-            source={require('../../../assets/home/run-club.jpg')}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-          />
-          <View style={styles.runClubScrim}>
-            <Txt variant="h1" c={colors.surface} style={styles.centeredText}>
-              Brooks Run Club
-            </Txt>
-            <Txt variant="body" c="rgba(255,255,255,0.88)" style={styles.runClubBody}>
-              FREE shipping and early access to new gear.
-            </Txt>
-            <UnderlinedAction label="Join now" onPress={() => router.push('/login')} onDark />
-          </View>
         </View>
 
         <View style={styles.storySection}>
@@ -246,6 +221,57 @@ export function Home() {
         <View pointerEvents="none" style={styles.overscrollFill} />
       </StretchyParallaxScrollView>
       {header}
+    </View>
+  );
+}
+
+/**
+ * The site's "Longer days. Longer runs." banner.
+ *
+ * @ref LLP 0003#the-home-feature — The harvested collage, rebuilt as two layers.
+ * The backdrop runs the height of the section less `photoOverhang`, so the copy
+ * rides it, it shows through the photo's left inset the way the site's does, and
+ * the photo hangs past its bottom edge. The backdrop is `bottom`-anchored rather
+ * than given a height, so it tracks a copy block that sizes to its own text.
+ */
+function LongerDays() {
+  const { width } = useWindowDimensions();
+  const photoLeft = Math.round(width * LONGER_DAYS.photoInset);
+  const photoWidth = width - photoLeft;
+  const photoHeight = Math.round((photoWidth / LONGER_DAYS.photoWidth) * LONGER_DAYS.photoHeight);
+
+  return (
+    <View style={styles.longerDays}>
+      <Image
+        source={LONGER_DAYS.backdrop}
+        style={[styles.longerDaysBackdrop, { bottom: LONGER_DAYS.photoOverhang }]}
+        contentFit="cover"
+      />
+      <View style={styles.longerDaysCopy}>
+        <Txt variant="hero">{LONGER_DAYS.title}</Txt>
+        <Txt variant="body" style={styles.longerDaysBody}>
+          {LONGER_DAYS.body}
+        </Txt>
+        <View style={styles.longerDaysActions}>
+          {LONGER_DAYS.ctas.map((cta) => (
+            <UnderlinedAction
+              key={cta.id}
+              label={cta.label}
+              onPress={() =>
+                router.push({
+                  pathname: '/category/[id]',
+                  params: { id: cta.category, title: cta.title },
+                })
+              }
+            />
+          ))}
+        </View>
+      </View>
+      <Image
+        source={LONGER_DAYS.photo}
+        style={{ marginLeft: photoLeft, width: photoWidth, height: photoHeight }}
+        contentFit="cover"
+      />
     </View>
   );
 }
@@ -336,12 +362,10 @@ function UnderlinedAction({
   label,
   onPress,
   onDark = false,
-  style,
 }: {
   label: string;
   onPress: () => void;
   onDark?: boolean;
-  style?: object;
 }) {
   const color = onDark ? colors.surface : colors.ink;
   return (
@@ -349,7 +373,7 @@ function UnderlinedAction({
       accessibilityRole="button"
       accessibilityLabel={label}
       scaleTo={0.96}
-      style={[styles.underlinedAction, style]}
+      style={styles.underlinedAction}
       onPress={onPress}
     >
       <Txt variant="button" c={color}>
@@ -404,22 +428,16 @@ const styles = StyleSheet.create({
 
   productSection: { paddingVertical: 40 },
   productRail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
-  centeredAction: { alignSelf: 'center', marginTop: 28 },
 
-  runClub: { height: 240, overflow: 'hidden' },
-  runClubScrim: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-    backgroundColor: 'rgba(14,19,31,0.38)',
+  longerDays: { backgroundColor: colors.surface },
+  longerDaysBackdrop: { position: 'absolute', top: 0, right: 0, left: 0 },
+  longerDaysCopy: {
+    paddingTop: 56,
+    paddingBottom: spacing.xxxl,
+    paddingHorizontal: spacing.gutter,
   },
-  centeredText: { textAlign: 'center' },
-  runClubBody: { marginTop: spacing.md, marginBottom: spacing.xl, lineHeight: 22, textAlign: 'center' },
+  longerDaysBody: { marginTop: spacing.lg, maxWidth: 300 },
+  longerDaysActions: { flexDirection: 'row', gap: spacing.xl, marginTop: spacing.xl },
 
   storySection: { paddingVertical: 40 },
   storyRail: { paddingHorizontal: spacing.gutter, gap: spacing.lg },
