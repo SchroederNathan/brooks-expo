@@ -123,13 +123,26 @@ export function Shop() {
     }
   );
 
-  // Home's header glyph and the PLP's bar button land here asking for the
-  // keyboard. The field may be mounting on the same tick, hence the deferral.
+  /**
+   * Home's header glyph and the PLP's bar button land here asking for the
+   * keyboard, as a `focus` param.
+   *
+   * [observed 2026-08-26] The deferral is because the field can be mounting on
+   * this same tick — a `focus()` on an unattached native input is dropped. The
+   * timer is owned by a ref and torn down only on unmount, *not* in this
+   * effect's cleanup: consuming the param re-renders with `focus: ''` well
+   * inside the 60ms, so a cleanup would cancel the very focus it scheduled.
+   * That is why the glyph navigated to Browse but never opened the keyboard.
+   */
+  const focusTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(focusTimer.current), []);
+
   useEffect(() => {
     if (!focus) return;
-    const t = setTimeout(() => barRef.current?.focus(), 60);
+    clearTimeout(focusTimer.current);
+    focusTimer.current = setTimeout(() => barRef.current?.focus(), 60);
+    // Consume it, so a second press of the same glyph is a new value again.
     router.setParams({ focus: '' });
-    return () => clearTimeout(t);
   }, [focus]);
 
   const wrapStyle = useAnimatedStyle(() => ({
