@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Dimensions,
@@ -13,9 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FilterSheet, SORT_OPTIONS, countActiveFilters } from '@/screens/category/filter-sheet';
 import { ProductTile } from '@/components/product-tile';
-import { BrooksIcon } from '@/components/icons';
 import { Chip } from '@/components/chip';
-import { Press } from '@/components/press';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
@@ -27,7 +25,7 @@ import {
   type SortKey,
 } from '@/data/query';
 import type { Product } from '@/data/types';
-import { colors, spacing } from '@/theme';
+import { colors, headerIcon, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const GRID_GAP = spacing.lg;
@@ -94,55 +92,47 @@ export function Category({
 
   return (
     <View style={styles.root}>
-      {/* Bar: back, collapsed title, search. Sits on white above the grid. */}
-      <View style={[styles.bar, { paddingTop: insets.top }]}>
-        <View style={styles.barRow}>
-          <Press onPress={() => router.back()} scaleTo={0.9} hitSlop={10} style={styles.barBtn}>
-            <BrooksIcon name="caretLeft" size={16} />
-          </Press>
-          <View style={[styles.barTitle, { opacity: showBarTitle ? 1 : 0 }]}>
-            <Txt variant="productTitle" numberOfLines={1}>
-              {screenTitle}
-            </Txt>
-          </View>
-          <Press
-            onPress={() => router.push('/search')}
-            scaleTo={0.9}
-            hitSlop={10}
-            style={styles.barBtn}
-          >
-            <BrooksIcon name="search" size={16} />
-          </Press>
-        </View>
+      {/* The stack's own bar carries back and search now. Its title stays empty
+          until the in-content large title has scrolled away, which is the
+          collapse this screen always had — the row that used to draw it is
+          gone. @ref LLP 0003#pushed-screens-wear-the-native-header */}
+      <Stack.Screen options={{ headerTitle: showBarTitle ? screenTitle : '' }} />
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          icon={headerIcon.search}
+          accessibilityLabel="Search"
+          onPress={() => router.push('/search')}
+        />
+      </Stack.Toolbar>
 
-        {/* Control row — stays put while the grid scrolls. */}
-        <View style={styles.controls}>
-          <Chip
-            label={nFilters ? `Filter (${nFilters})` : 'Filter'}
-            size="sm"
-            selected={nFilters > 0}
-            onPress={() => setSheetOpen(true)}
-          />
-          <Chip label={`Sort · ${sortLabel}`} size="sm" onPress={() => setSheetOpen(true)} />
-          {franchises.length > 1 && <View style={styles.controlDivider} />}
-          {franchises.length > 1 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.gutter }}
-            >
-              {franchises.map((f) => (
-                <Chip
-                  key={f}
-                  label={f}
-                  size="sm"
-                  selected={activeFranchise === f}
-                  onPress={() => setActiveFranchise(activeFranchise === f ? null : f)}
-                />
-              ))}
-            </ScrollView>
-          )}
-        </View>
+      {/* Control row — stays put while the grid scrolls, on white under the
+          native bar. */}
+      <View style={styles.controls}>
+        <Chip
+          label={nFilters ? `Filter (${nFilters})` : 'Filter'}
+          size="sm"
+          selected={nFilters > 0}
+          onPress={() => setSheetOpen(true)}
+        />
+        <Chip label={`Sort · ${sortLabel}`} size="sm" onPress={() => setSheetOpen(true)} />
+        {franchises.length > 1 && <View style={styles.controlDivider} />}
+        {franchises.length > 1 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.gutter }}
+          >
+            {franchises.map((f) => (
+              <Chip
+                key={f}
+                label={f}
+                size="sm"
+                selected={activeFranchise === f}
+                onPress={() => setActiveFranchise(activeFranchise === f ? null : f)}
+              />
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       <FlatList
@@ -201,26 +191,22 @@ export function Category({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  bar: {
-    backgroundColor: colors.surface,
-    zIndex: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.hairline,
-  },
-  barRow: {
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  barBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  barTitle: { flex: 1, alignItems: 'center' },
+  /**
+   * The one bar this screen still draws. Back, title, and search moved to the
+   * native header; what is left is the filter/sort row, which is screen content
+   * a UINavigationBar has no slot for.
+   */
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    backgroundColor: colors.surface,
+    zIndex: 10,
     paddingHorizontal: spacing.gutter,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.hairline,
   },
   controlDivider: { width: 1, height: 22, backgroundColor: colors.hairline },
   head: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, paddingBottom: spacing.sm },

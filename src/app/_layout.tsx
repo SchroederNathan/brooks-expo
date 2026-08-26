@@ -10,7 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AnimatedSplash } from '@/components/animated-splash';
 import { CartProvider } from '@/store/cart';
-import { colors } from '@/theme';
+import { colors, header } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -49,9 +49,17 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
             {/* iOS 18+ zoom is opted in per Link.AppleZoom on the tile; this
                 screen keeps the stack default so Android / older iOS still
-                push. @ref LLP 0003#screen-patterns */}
-            <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
-            <Stack.Screen name="category/[id]" options={{ title: 'Shop' }} />
+                push. @ref LLP 0003#screen-patterns
+
+                Both pushed screens wear the native bar. The PDP's runs
+                transparent over its full-bleed gallery; the PLP's is opaque
+                white above the grid, and sets its own title as the in-content
+                one scrolls away. @ref LLP 0003#pushed-screens-wear-the-native-header */}
+            <Stack.Screen
+              name="product/[id]"
+              options={{ title: 'Product', ...header.overlay }}
+            />
+            <Stack.Screen name="category/[id]" options={{ title: 'Shop', ...header.plain }} />
             <Stack.Screen
               name="login"
               options={{

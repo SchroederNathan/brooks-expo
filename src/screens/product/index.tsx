@@ -1,9 +1,9 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { Link, router } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -32,7 +32,7 @@ import { supportLabel } from '@/data/labels';
 import { byId, colorwayOf, formatPrice } from '@/data/query';
 import { reviewsFor } from '@/data/reviews';
 import { useCart } from '@/store/cart';
-import { colors, shadows, spacing } from '@/theme';
+import { colors, headerIcon, shadows, spacing } from '@/theme';
 
 import { ReviewsPanel } from './reviews-panel';
 
@@ -123,6 +123,25 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
     galleryProgress.set(event.contentOffset.x / W);
   });
 
+  /**
+   * The share sheet gets the product's own brooksrunning.com URL — the catalog
+   * carries it (LLP 0002), and a real link is the only share worth offering: the
+   * app has no deep-link host of its own to hand someone instead.
+   *
+   * Declared above the missing-product early return so the hook order is stable.
+   */
+  const onShare = useCallback(() => {
+    if (!product) return;
+    // One item, not two: iOS adds `message` and `url` to the activity sheet
+    // *separately*, so setting both on the same link makes the sheet announce
+    // "2 Links". `url` is the iOS-only field, and Android has no `url` at all —
+    // so each platform gets the one field it reads.
+    Share.share(
+      Platform.OS === 'ios' ? { url: product.url } : { message: product.url },
+      { subject: product.name }
+    ).catch(() => {});
+  }, [product]);
+
   if (!product || !colorway) {
     return (
       <View style={[styles.root, styles.missing, { paddingTop: insets.top + 80 }]}>
@@ -156,9 +175,26 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
 
   return (
     <View style={styles.root}>
+      {/* The stack's own bar, transparent over the gallery: a native back
+          chevron on the left, share on the right. @ref LLP
+          0003#pushed-screens-wear-the-native-header — the cart lost its slot
+          here. It was a square box reading "Bag · 1" that duplicated the tab
+          bar's badge two inches below it; share is the thing a PDP actually
+          owes the reader, and it is the one action no other chrome offers. */}
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          icon={headerIcon.share}
+          accessibilityLabel={`Share ${product.name}`}
+          onPress={onShare}
+        />
+      </Stack.Toolbar>
+
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
+        // The header is transparent and the gallery runs under it, so UIKit must
+        // not inset the content past it.
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
       >
         {/* ------------------------------------------------------- GALLERY -- */}
@@ -404,20 +440,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         </View>
       </ScrollView>
 
-      {/* ------------------------------------------------------ TOP BUTTONS -- */}
-      <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
-        <Press onPress={() => router.back()} scaleTo={0.9} style={styles.circleBtn}>
-          <BrooksIcon name="caretLeft" size={16} />
-        </Press>
-        <Press
-          onPress={() => router.push('/cart')}
-          scaleTo={0.9}
-          style={styles.circleBtn}
-        >
-          <Txt variant="caption">Bag{cart.count ? ` · ${cart.count}` : ''}</Txt>
-        </Press>
-      </View>
-
       {/* ------------------------------------------------------ STICKY BAR -- */}
       <View style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }]}>
         <Button
@@ -651,24 +673,6 @@ const styles = StyleSheet.create({
   detailValueColumn: { flex: 1 },
   detailIcon: { marginTop: spacing.sm },
   detailSupportingText: { marginTop: spacing.sm },
-
-  topBar: {
-    position: 'absolute',
-    left: spacing.gutter,
-    right: spacing.gutter,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  circleBtn: {
-    minWidth: 40,
-    height: 40,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.hairline,
-  },
 
   stickyBar: {
     position: 'absolute',

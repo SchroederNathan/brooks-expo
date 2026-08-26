@@ -96,6 +96,10 @@ function resolve(action: HeaderAction): HeaderActionConfig {
 export function HeaderActions({ actions }: { actions: readonly HeaderAction[] }) {
   const { count } = useCart();
 
+  // A screen may want the wordmark alone, and an empty row would still take the
+  // gutter the `space-between` row gives it.
+  if (actions.length === 0) return null;
+
   return (
     <View style={styles.row}>
       {actions.map((action) => {

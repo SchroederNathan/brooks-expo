@@ -42,11 +42,13 @@ const SECTIONS = [
 const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', 'Launch'];
 
 export function Shop() {
-  // Browse *is* the site's mega menu, so the hamburger would only point at the
-  // screen the reader is already on.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({
-    actions: ['search', 'account', 'cart'],
-  });
+  // Logo only. Every control this header could carry already sits closer to the
+  // thumb: search is the field below, account is the tab bar's own last tab, and
+  // cart is a tab too. Browse *is* the site's mega menu, so the hamburger would
+  // only point at the screen the reader is already on.
+  // @ref LLP 0003#icons-and-the-logo — a header glyph earns its place by being
+  // the only way to reach something.
+  const { header, headerHeight, scrollProps } = useBrooksHeader({ actions: [] });
 
   return (
     <View style={styles.root}>

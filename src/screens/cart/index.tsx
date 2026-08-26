@@ -32,11 +32,12 @@ const FREE_SHIPPING_OVER = 100;
  */
 export function Cart() {
   const cart = useCart();
-  // No cart glyph on the cart, and no badge to double up on the count already
-  // in the title.
-  const { header, headerHeight, scrollProps } = useBrooksHeader({
-    actions: ['search', 'account', 'menu'],
-  });
+  // Logo only. No cart glyph on the cart, and search, account, and browse are
+  // all one tab-bar tap away — a duplicate at the top of the screen is the
+  // furthest reach, not the shortest.
+  // @ref LLP 0003#icons-and-the-logo — a header glyph earns its place by being
+  // the only way to reach something.
+  const { header, headerHeight, scrollProps } = useBrooksHeader({ actions: [] });
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const [scopeNote, setScopeNote] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

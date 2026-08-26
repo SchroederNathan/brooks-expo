@@ -11,3 +11,4 @@ export { font, type } from './typography';
 export { radius } from './radius';
 export { shadows } from './shadows';
 export { motion } from './motion';
+export { header, headerIcon } from './header';

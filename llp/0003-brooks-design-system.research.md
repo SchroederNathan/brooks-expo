@@ -5,7 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
-**Revised:** 2026-08-21
+**Revised:** 2026-08-26
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -358,9 +358,18 @@ that needs something else passes a config object instead. Today:
 | Screen | Controls | Why |
 |---|---|---|
 | Home | search | Nothing should compete with the hero, and every other control is a tab away. |
-| Browse | search · account · cart | Browse *is* the mega menu the hamburger opens. |
-| Cart | search · account · menu | No cart glyph on the cart, and no badge to double the count already in the title. |
+| Browse | *(none)* | Its own search field sits directly below the header, and account, cart, and browse are all tabs. Browse *is* the mega menu the hamburger opens. |
+| Cart | *(none)* | No cart glyph on the cart, and everything else the header could offer is a tab-bar tap away. |
 | Profile | search · cart · menu | No account glyph on the account screen. |
+
+[confirmed 2026-08-26] Browse and Cart carry the wordmark alone. A header glyph
+earns its place by being the *only* way to reach something: this app puts a
+persistent tab bar under the reader's thumb, and Browse additionally owns a
+search field in its first screenful, so the top-right copies were both the
+furthest reach and the redundant one. Home keeps its search glyph because the
+hero fills the screenful where Browse would show a field. `HeaderActions`
+renders nothing for an empty set, so the wordmark does not sit next to an empty
+row holding the gutter.
 
 The cart glyph takes its count from the store rather than from the caller, so a
 screen cannot show a stale badge; it keeps the lime-fill/blue-text treatment,
@@ -376,6 +385,66 @@ off, since the safe area is already inside that number.
 
 [observed] Reduced-motion readers get the header pinned open, not a faster
 collapse: chrome that vanishes is a layout change, not decoration.
+
+### Pushed screens wear the native header
+
+[observed 2026-08-26] The blue collapsing header above belongs to the five tab
+anchors. Everything those anchors *push* — the PDP and the PLP — wears the
+platform's own `UINavigationBar` through Expo Router's `Stack`, and draws no
+chrome of its own.
+
+Both screens used to hand-roll it, and both hand-rolled it badly:
+
+- The **PDP** floated two white boxes over the gallery: a 40pt square with a
+  1px `#E5E5E5` border holding a caret, and a second one holding the text
+  `Bag · 1`. Square, outlined, and text-labelled — three choices that read as a
+  web page's idea of a button sitting on a native screen.
+- The **PLP** drew a 48pt row above the grid holding the same caret box, a
+  title that faded in past 64pt of scroll, and a search box.
+
+[observed] Neither box inherited anything the system bar gives away: the
+interactive back chevron that tracks the edge-swipe, UIKit's own hit targets and
+pressed states, Dynamic Type, or — on iOS 26 — the glass capsule a bar button
+now wears. Both were re-implementations of a control the platform already ships.
+
+[observed] What replaced them:
+
+- A native back chevron on both, `headerBackButtonDisplayMode: 'minimal'`. A
+  Brooks push is one level deep from a grid or a tile, so the previous screen's
+  title adds nothing the chevron does not already say.
+- The PDP's trailing slot is **share** (`square.and.arrow.up`), not the cart.
+  The `Bag · 1` box duplicated the tab bar's own badge two inches below it;
+  share is the one action a PDP owes the reader that no other chrome offers. It
+  hands the share sheet the product's brooksrunning.com URL from the catalog
+  (LLP 0002) — the app has no deep-link host of its own to offer instead. iOS
+  gets `url` and Android `message`: setting both makes the iOS sheet announce
+  "2 Links" for one link.
+- The PLP's trailing slot is **search**, the same destination the old box had.
+  Its collapse survives as `headerTitle: showBarTitle ? title : ''` — the same
+  64pt threshold, now driving the system bar's title instead of an app-drawn
+  one. The filter/sort row stays, because it is screen content a navigation bar
+  has no slot for.
+
+[observed] The bar buttons are **SF Symbols**, not Brooks sprite glyphs, and
+that is deliberate. Bar chrome is the platform's: a symbol lines up optically
+with the back chevron beside it, scales with Dynamic Type, and inherits the
+pressed state. The sprite (LLP 0003#icons-and-the-logo) keeps the places that
+are Brooks's own — the blue header, the tab bar, screen content.
+
+[observed] The brand reaches the native bar as *values*, not as a wrapper:
+`theme/header.ts` holds two `Stack` option presets — `overlay` (transparent,
+over the PDP's full-bleed gallery, `headerBlurEffect: 'none'` because Brooks
+shoots product on near-white and a blur over `#F8F8F8` reads as a smudge) and
+`plain` (opaque white above the PLP grid, title set in Filson Heavy) — plus
+`headerIcon`, the SF Symbol names keyed by what the app means. The
+expo-design-system rule is explicit that a platform component already carrying
+the design language must not be wrapped to route it through the system, so the
+tokens are handed to `Stack`, and there is no `<BrooksNavBar>`.
+
+[inferred] The rule that falls out: **an app-drawn bar has to earn itself.**
+`useBrooksHeader` earns it — it is a verbatim port of the site's own sticky
+header, with a collapse no system bar performs. A square box holding a caret
+earns nothing.
 
 ## Voice
 
@@ -637,7 +706,10 @@ continuous morph.
   cards that land on merchandise.
 - **PLP** (Zappos utility, adidas rhythm): collapsing large title; sticky control
   row with `Filter (n)` and franchise quick-chips; 2-up grid; filter as a
-  full-height bottom sheet with a live "Apply · 23 results" count.
+  full-height bottom sheet with a live "Apply · 23 results" count. [observed
+  2026-08-26] Back, the collapsed title, and search moved into the native
+  `Stack` header — see *Pushed screens wear the native header*. The control row
+  is all this screen still draws above the grid.
 - **Tile** (Zappos/GOAT): colorway swatches **on the tile**, swapping its image in
   place. The highest-value borrow in the survey — Brooks products carry up to 11
   colorways, and making someone navigate to see them is the core failure to avoid.
@@ -655,7 +727,10 @@ continuous morph.
   container; a five-column size grid followed by a four-column width grid;
   unavailable choices crossed diagonally (`selectable: false` from LLP 0002);
   selected choices outlined rather than filled; sticky flat-blue
-  "Add to cart" action with the price split to the trailing edge.
+  "Add to cart" action with the price split to the trailing edge. [superseded
+  2026-08-26 → *Pushed screens wear the native header*] The gallery carried two
+  floating white square boxes — a caret and `Bag · 1`. It wears the native
+  transparent header now: back chevron leading, share trailing.
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
   progress bar, and Brooks's own empty-state copy.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
