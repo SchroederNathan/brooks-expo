@@ -192,13 +192,6 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
             Trending
           </Txt>
           <ChipRail terms={TRENDING} onTerm={onTerm} />
-          <Txt
-            variant="tiny"
-            c={colors.inkFaint}
-            style={{ paddingHorizontal: spacing.gutter, marginTop: spacing.xl }}
-          >
-            Search is live against the same index brooksrunning.com uses.
-          </Txt>
         </View>
       )}
 
