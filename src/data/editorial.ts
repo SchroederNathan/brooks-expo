@@ -142,6 +142,6 @@ export const VOICE = {
     "In 5 minutes or less, Brooks Shoe Finder will identify the right shoe for you. Whether you're training for a marathon, running for fun, or walking your way around town, we'll find you a great match.",
   finderCta: "Let's go",
   emptySearch: 'What are you looking for?',
-  emptySearchHint: 'Try a franchise — Ghost, Glycerin, Adrenaline — or an activity like trail.',
+  emptySearchHint: 'Try a franchise like Ghost, Glycerin, or Adrenaline. Or an activity like trail.',
   tagline: "Let's Run There",
 } as const;

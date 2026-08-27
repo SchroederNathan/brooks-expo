@@ -66,9 +66,9 @@ export function SearchResults({ query }: { query: string }) {
    *
    * [observed 2026-08-27] The tab bar's height comes off that reservation.
    * Keyboard Controller measures the frame from the bottom of the *window*,
-   * but this body's own bottom edge is the tab bar's top edge — the JS bar
-   * shortens the screen rather than covering it (@ref components/tab-bar) — so
-   * padding by the raw keyboard height double-counts the bar and parks the
+   * but this body's own bottom edge is the tab bar's top edge, because the JS
+   * bar shortens the screen rather than covering it (@ref components/tab-bar).
+   * So padding by the raw keyboard height double-counts the bar and parks the
    * copy a tab bar's height too high. Measured 334pt against a true centre of
    * 375pt on an iPhone 17 Pro Max before the subtraction.
    *

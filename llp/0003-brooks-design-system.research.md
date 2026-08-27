@@ -477,7 +477,7 @@ with the tab bar's indicator curve (`INDICATOR_TIMING_EASING`, the same
 [observed 2026-08-27] With nothing typed, the results body is **one centred
 empty state**, not a rail of chips. A horizontally scrolling `ChipRail` used to
 sit directly under the field carrying six trending terms, and the same rail
-carried the index's live term suggestions once typing started. `Superseded` —
+carried the index's live term suggestions once typing started. `Superseded`:
 both are gone. The rail was a row of taps offered before the reader had said
 anything, in the one place on the screen where the eye is already on the field;
 the empty state says what the screen is for instead, in the house pattern the
@@ -486,7 +486,7 @@ index's **term** suggestions went with it: product hits are what the reader is
 after, and the terms cost a row of chrome above them.
 
 That removal moves one condition. "No matches" used to require the index to
-return neither terms nor products; with the terms no longer drawn, products
+return neither terms nor products. With the terms no longer drawn, products
 alone decide it, or a query that matched a term but no shoe would explain
 nothing.
 
@@ -499,14 +499,15 @@ its foot makes the free space exactly that gap.
 The subtraction that makes it land is the tab bar's height
 (`useBottomTabBarHeight`). Keyboard Controller measures the keyboard frame from
 the bottom of the **window**, but this body's bottom edge is the **tab bar's top
-edge** — the JS bar shortens the screen rather than covering it (see *Icons and
-the logo*) — so padding by the raw keyboard height double-counts the bar. On an
-iPhone 17 Pro Max that put the copy at 334pt against a true centre of 375pt; with
-the bar's height taken off, the measured centre is 375.5pt against a free region
-of 142–608.3pt. The empty state keeps its own scroller, with nothing to scroll:
-`flexGrow: 1` gives the content the viewport's height so the centring works, and
-the drag it still accepts is what dismisses the keyboard — which, with an empty
-field, is also the way back to Browse.
+edge**, because the JS bar shortens the screen rather than covering it (see
+*Icons and the logo*). Padding by the raw keyboard height therefore
+double-counts the bar. On an iPhone 17 Pro Max that put the copy at 334pt
+against a true centre of 375pt; with the bar's height taken off, the measured
+centre is 375.5pt against a free region of 142 to 608.3pt. The empty state keeps
+its own scroller, with nothing to scroll: `flexGrow: 1` gives the content the
+viewport's height so the centring works, and the drag it still accepts is what
+dismisses the keyboard, which with an empty field is also the way back to
+Browse.
 
 [observed 2026-08-27] The two 48pt squares share `components/outline-icon-button`
 — the 1.5pt hairline rule, the square metric, and the ink-outline "active" state
