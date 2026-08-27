@@ -323,7 +323,7 @@ export function Shop() {
         <Animated.View
           style={[styles.results, { top: paddingTop + SEARCH_BAR_HEIGHT + spacing.sm }, resultsStyle]}
         >
-          <SearchResults query={query} onTerm={setQuery} />
+          <SearchResults query={query} />
         </Animated.View>
       ) : null}
 

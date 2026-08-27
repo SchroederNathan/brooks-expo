@@ -112,6 +112,12 @@ Workaround: an `after_install_node_modules` hook on the repack job writes
 source number comes from `get_ios_build.outputs.app_build_version`. Untested as of
 this entry. [inferred]
 
+**Superseded.** That workaround is wrong: `get_ios_build` is pinned to a
+fingerprint, so `SOURCE_BUILD_NUMBER` is the same constant on every repack of the
+same native layer and the expression returns an already-uploaded number. Replaced
+by reading the number back from EAS. See
+[2026-08-27-expo-repack-build-number.md](./2026-08-27-expo-repack-build-number.md).
+
 ## Follow-ups
 
 - Verify the build-number hook on the next repack run. Read `CFBundleVersion` out

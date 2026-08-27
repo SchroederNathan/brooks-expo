@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
@@ -10,9 +11,11 @@ import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
 import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
+import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
 import { autocomplete, type SearchHit, type Suggestions } from '@/data/constructor';
+import { VOICE } from '@/data/editorial';
 import { heroImage } from '@/data/images';
 import { byId } from '@/data/query';
 import {
@@ -40,48 +43,9 @@ import { colors, spacing } from '@/theme';
  * Filters and sort come from the `search-filters` form sheet through the store.
  */
 
-const TRENDING = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Trail', 'Sports bra'];
-
 type Row = { hit: SearchHit; local: Product | undefined };
 
-/**
- * Suggestion terms as one horizontally scrolling rail.
- *
- * A wrapping block grew to as many rows as the index returned terms, which
- * pushed the product hits off the screen just as the typist was narrowing in on
- * them. One row that scrolls costs a fixed 32pt no matter how many terms come
- * back. `paddingHorizontal` belongs to the content, not the scroller, so the
- * first chip lines up with the gutter and the last one can still scroll clear
- * of the edge.
- *
- * The rail carries no top margin and no heading of its own: the results body
- * already starts `spacing.sm` below the field, which is the same air the field
- * keeps between itself and the two outlined buttons that flank it, so the chips
- * read as one row with the search bar. Trending terms and live suggestions use
- * the identical slot, so the rail does not move when typing starts.
- */
-function ChipRail({
-  terms,
-  onTerm,
-}: {
-  terms: readonly string[];
-  onTerm: (term: string) => void;
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={styles.chips}
-    >
-      {terms.map((t) => (
-        <Chip key={t} label={t} size="sm" onPress={() => onTerm(t)} />
-      ))}
-    </ScrollView>
-  );
-}
-
-export function SearchResults({ query, onTerm }: { query: string; onTerm: (term: string) => void }) {
+export function SearchResults({ query }: { query: string }) {
   const [live, setLive] = useState<Suggestions | null>(null);
   const [loading, setLoading] = useState(false);
   const [offline, setOffline] = useState(false);
@@ -92,6 +56,29 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
   // than under them, and the spacer follows the keyboard's own curve.
   const keyboard = useReanimatedKeyboardAnimation();
   const keyboardSpacer = useAnimatedStyle(() => ({ height: -keyboard.height.get() }));
+  /**
+   * The empty state is centred in what is *left* of the screen, not in the
+   * screen: this body already starts at the field's bottom edge, so reserving
+   * the keyboard at the foot makes the free space exactly the gap between the
+   * field and the keys, and `justifyContent: 'center'` puts the copy in the
+   * middle of it. It follows the keyboard's own curve, so the copy glides down
+   * to the new centre when a drag dismisses the keys.
+   *
+   * [observed 2026-08-27] The tab bar's height comes off that reservation.
+   * Keyboard Controller measures the frame from the bottom of the *window*,
+   * but this body's own bottom edge is the tab bar's top edge — the JS bar
+   * shortens the screen rather than covering it (@ref components/tab-bar) — so
+   * padding by the raw keyboard height double-counts the bar and parks the
+   * copy a tab bar's height too high. Measured 334pt against a true centre of
+   * 375pt on an iPhone 17 Pro Max before the subtraction.
+   *
+   * `height` is negative while the keyboard is up (the library reports the
+   * frame as an offset), hence the negation.
+   */
+  const tabBarHeight = useBottomTabBarHeight();
+  const emptyPad = useAnimatedStyle(() => ({
+    paddingBottom: Math.max(0, -keyboard.height.get() - tabBarHeight),
+  }));
 
   /** Debounced live autocomplete; aborts the in-flight request on every keystroke. */
   useEffect(() => {
@@ -180,6 +167,37 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
   const sortLabel = SEARCH_SORTS.find((s) => s.key === sort)?.label ?? '';
   const active = query.trim().length >= 2;
 
+  /* ----------------------------------------------------------- EMPTY ---- */
+  // Nothing to search on yet. This used to be a rail of trending chips sitting
+  // under the field; it is one centred empty state now, in the house pattern
+  // the empty bag already uses (eyebrow, squiggle, a line of voice).
+  if (!active) {
+    return (
+      // A scroller with nothing to scroll: `flexGrow` gives the content the
+      // viewport's height so the centring works, and the drag it still accepts
+      // is what dismisses the keyboard, exactly as it does over the results.
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={styles.emptyContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View style={[styles.empty, emptyPad]}>
+          <Txt variant="eyebrow" c={colors.inkMuted}>
+            Search
+          </Txt>
+          <Squiggle />
+          <Txt variant="h2" style={styles.emptyLine}>
+            {VOICE.emptySearch}
+          </Txt>
+          <Txt variant="body" c={colors.inkMuted} style={[styles.emptyLine, styles.emptyHint]}>
+            {VOICE.emptySearchHint}
+          </Txt>
+        </Animated.View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -187,17 +205,11 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
       contentContainerStyle={{ paddingBottom: spacing.xxl }}
       showsVerticalScrollIndicator={false}
     >
-      {/* --------------------------------------------------------- EMPTY -- */}
-      {!active && <ChipRail terms={TRENDING} onTerm={onTerm} />}
-
       {loading && !live && (
-        <View style={[styles.block, { alignItems: 'center' }]}>
+        <View style={[styles.block, { alignItems: 'center', marginTop: spacing.xl }]}>
           <ActivityIndicator size="small" color={colors.inkMuted} />
         </View>
       )}
-
-      {/* --------------------------------------------------- SUGGESTIONS -- */}
-      {live && live.terms.length > 0 && <ChipRail terms={live.terms} onTerm={onTerm} />}
 
       {/* -------------------------------------------------- PRODUCT HITS -- */}
       {live && joined.length > 0 && (
@@ -294,7 +306,10 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
         </View>
       )}
 
-      {live && live.terms.length === 0 && live.products.length === 0 && (
+      {/* Products alone decide this, now that the index's term suggestions are
+          no longer drawn: a query that returns terms but no shoes has nothing
+          on screen to explain itself otherwise. */}
+      {live && live.products.length === 0 && (
         <View style={[styles.block, { alignItems: 'center', paddingTop: spacing.xxl }]}>
           <Txt variant="h3">No matches for “{query.trim()}”</Txt>
           <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm, textAlign: 'center' }}>
@@ -310,7 +325,15 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
 
 const styles = StyleSheet.create({
   block: { paddingHorizontal: spacing.gutter, marginTop: spacing.lg },
-  chips: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.gutter },
+  emptyContent: { flexGrow: 1 },
+  empty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxl,
+  },
+  emptyLine: { textAlign: 'center' },
+  emptyHint: { marginTop: spacing.sm },
   summary: {
     flexDirection: 'row',
     justifyContent: 'space-between',
