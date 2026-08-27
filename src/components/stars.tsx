@@ -13,14 +13,23 @@ export function Stars({
   count,
   size = 11,
   showSummary = true,
+  summary = 'rating',
 }: {
   value: number | null;
   count?: number;
   size?: number;
   showSummary?: boolean;
+  /**
+   * `rating` prints `4.5 (60)`; `count` prints `(60)` alone, which is what the
+   * site's catalog tile shows next to the glyphs.
+   */
+  summary?: 'rating' | 'count';
 }) {
   if (value == null) return null;
   const half = Math.round(value * 2) / 2;
+  const label = [summary === 'rating' ? value.toFixed(1) : null, count ? `(${count})` : null]
+    .filter(Boolean)
+    .join(' ');
   return (
     <View style={[styles.row, { gap: 5 }]}>
       <View style={styles.stars}>
@@ -33,10 +42,9 @@ export function Stars({
           />
         ))}
       </View>
-      {showSummary ? (
+      {showSummary && label ? (
         <Txt variant="tiny" c={colors.inkMuted}>
-          {value.toFixed(1)}
-          {count ? ` (${count})` : ''}
+          {label}
         </Txt>
       ) : null}
     </View>

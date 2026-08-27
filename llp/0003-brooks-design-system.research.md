@@ -953,6 +953,38 @@ centred on *"Find the perfect shoe for you. / Try Shoe Finder"* with
 price, and a category meta line (`Women's – Road Running, Walking`). Hover adds
 `Widths – Medium, Wide, Extra Wide` and the star rating.
 
+[confirmed 2026-08-27 — human-supplied crop of a live Ghost Amp tile] The full
+block, in order, is **title / price / `Men's - Road Running, Walking` / `Widths -
+Medium, Wide` / stars `(60)`**. Three details the earlier capture got wrong or
+left open:
+
+- The separator is a plain **hyphen** with spaces, not an en dash.
+- Prices print **cents** — `$180.00`, not `$180`. This matches the storefront
+  payloads in LLP 0002, so it holds for the PDP and the cart too.
+- The rating line shows the **review count alone**, `(60)`, with no numeric
+  average. The PDP still prints `4.4 (280)`.
+
+[observed 2026-08-27] `ProductTile` now renders that block. Two deliberate
+divergences, both forced by the phone:
+
+- A phone has no hover, so the widths line and the rating show **at rest**
+  rather than being withheld.
+- A two-up grid tile is ~175pt wide, where `Men's - Road Running, Treadmill,
+  Walking` truncates to nothing useful on one line, so both meta lines wrap to
+  **two lines**. Rows size to their tallest tile. On the 244pt home rail each
+  line still fits on one.
+
+[inferred] Brooks has **no activity field** on the product record — the activity
+*is* the shop category, so `activityLabels()` derives the line from the
+`{gender}-shoes-{activity}` Constructor group ids rather than from `bestFor`,
+which is marketing copy (`"Balanced support"`, `"Everyday running"`) and would
+not reproduce the site's wording. `widthLabels()` drops the size code from
+`Medium (1D)` and hides widths no colorway stocks. Every shoe in the snapshot
+resolves both lines; apparel resolves neither and keeps the gender alone.
+
+[observed] The tile lost its old `Balanced cushion · White/Black` line in the
+trade. The colorway name is still readable from the swatch rail's selection.
+
 ## Mega menu → the Shop tab
 
 [observed 2026-08-21] The tab is labelled **Browse** in the tab bar; the route

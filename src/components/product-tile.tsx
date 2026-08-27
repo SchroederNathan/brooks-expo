@@ -3,9 +3,11 @@ import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { heroImage } from '@/data/images';
+import { activityLabels, genderLabel, widthLabels } from '@/data/labels';
 import { priceRange } from '@/data/query';
 import type { Product } from '@/data/types';
 import { colors, radius, spacing } from '@/theme';
+import { fmt } from '@/utils/format-price';
 import { Badge } from '@/components/badge';
 import { Press } from '@/components/press';
 import { Price } from '@/components/price';
@@ -43,6 +45,13 @@ function ProductTileImpl({
 
   const isNew = product.badge === 'New Style';
   const soldOut = product.colors.every((c) => c.soldOut);
+
+  // `Men's - Road Running, Walking`: gender, then the shop categories the style
+  // sits in. Apparel has no activity groups, so it keeps the gender alone.
+  const meta = [genderLabel(product.gender), activityLabels(product).join(', ')]
+    .filter(Boolean)
+    .join(' - ');
+  const widths = widthLabels(product);
 
   // Four swatches plus the "+N" counter split the tile width into five slots,
   // so the swatch size scales with the tile instead of being fixed.
@@ -116,25 +125,37 @@ function ProductTileImpl({
           <View style={{ height: spacing.lg }} />
         )}
 
+        {/* @ref LLP 0003#plp-chrome — Title, price, category meta, widths,
+            rating, in that order. The site reveals the last two on hover; a
+            phone has no hover, so the tile shows the full block at rest. */}
         <Txt variant="productTitle" numberOfLines={1}>
           {product.name}
         </Txt>
-        <Txt variant="tiny" c={colors.inkMuted} numberOfLines={1} style={{ marginTop: 1 }}>
-          {[product.cushion && `${product.cushion} cushion`, colorway.name]
-            .filter(Boolean)
-            .join(' · ')}
-        </Txt>
 
-        <View style={{ marginTop: 5 }}>
+        <View style={{ marginTop: 2 }}>
           {min === max ? (
             <Price value={min} listValue={product.listPrice} />
           ) : (
-            <Txt variant="price">{`$${min} – $${max}`}</Txt>
+            <Txt variant="price">{`${fmt(min)} – ${fmt(max)}`}</Txt>
           )}
         </View>
+
+        {/* Two lines, not one: a grid tile is far narrower than the site's
+            card, and `Men's - Road Running, Treadmill, Walking` truncates to
+            uselessness on a single line. Rows size to their tallest tile. */}
+        {meta ? (
+          <Txt variant="tiny" c={colors.inkMuted} numberOfLines={2} style={styles.meta}>
+            {meta}
+          </Txt>
+        ) : null}
+        {widths.length ? (
+          <Txt variant="tiny" c={colors.inkMuted} numberOfLines={2} style={styles.meta}>
+            Widths - {widths.join(', ')}
+          </Txt>
+        ) : null}
         {product.rating ? (
-          <View style={{ marginTop: 3 }}>
-            <Stars value={product.rating} count={product.reviewCount} />
+          <View style={styles.meta}>
+            <Stars value={product.rating} count={product.reviewCount} summary="count" />
           </View>
         ) : null}
       </Press>
@@ -149,6 +170,7 @@ const styles = StyleSheet.create({
   imageWrap: { backgroundColor: colors.surfaceAlt },
   badges: { position: 'absolute', top: spacing.sm, left: spacing.sm, gap: 4, alignItems: 'flex-start' },
   swatches: { marginBottom: spacing.lg },
+  meta: { marginTop: 3 },
   swatch: {
     alignItems: 'center',
     justifyContent: 'center',

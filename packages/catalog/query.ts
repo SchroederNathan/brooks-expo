@@ -139,14 +139,19 @@ export function variantId(
   return `${productId}${width}${colorCode}${padded}`;
 }
 
-/** Price range across a product's colorways, for tiles that show "$120 – $140". */
+/** Price range across a product's colorways, for tiles that show "$120.00 – $140.00". */
 export function priceRange(p: Product): { min: number; max: number } {
   const prices = p.colors.map((c) => c.price).filter((x): x is number => x != null);
   if (!prices.length) return { min: p.price ?? 0, max: p.price ?? 0 };
   return { min: Math.min(...prices), max: Math.max(...prices) };
 }
 
+/**
+ * @ref LLP 0002#cart-addproduct — Brooks's storefront payloads carry money with
+ * cents (`"$200.00"`), and so does every price on the site, so the trailing
+ * zeros stay. Mirrors the app's `utils/format-price`.
+ */
 export function formatPrice(value: number | null | undefined): string {
   if (value == null) return '';
-  return `$${value.toFixed(2).replace(/\.00$/, '')}`;
+  return `$${value.toFixed(2)}`;
 }
