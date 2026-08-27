@@ -53,6 +53,12 @@ type Row = { hit: SearchHit; local: Product | undefined };
  * back. `paddingHorizontal` belongs to the content, not the scroller, so the
  * first chip lines up with the gutter and the last one can still scroll clear
  * of the edge.
+ *
+ * The rail carries no top margin and no heading of its own: the results body
+ * already starts `spacing.sm` below the field, which is the same air the field
+ * keeps between itself and the two outlined buttons that flank it, so the chips
+ * read as one row with the search bar. Trending terms and live suggestions use
+ * the identical slot, so the rail does not move when typing starts.
  */
 function ChipRail({
   terms,
@@ -182,18 +188,7 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
       showsVerticalScrollIndicator={false}
     >
       {/* --------------------------------------------------------- EMPTY -- */}
-      {!active && (
-        <View style={{ marginTop: spacing.lg }}>
-          <Txt
-            variant="eyebrow"
-            c={colors.inkMuted}
-            style={{ paddingHorizontal: spacing.gutter, marginBottom: spacing.md }}
-          >
-            Trending
-          </Txt>
-          <ChipRail terms={TRENDING} onTerm={onTerm} />
-        </View>
-      )}
+      {!active && <ChipRail terms={TRENDING} onTerm={onTerm} />}
 
       {loading && !live && (
         <View style={[styles.block, { alignItems: 'center' }]}>
@@ -202,11 +197,7 @@ export function SearchResults({ query, onTerm }: { query: string; onTerm: (term:
       )}
 
       {/* --------------------------------------------------- SUGGESTIONS -- */}
-      {live && live.terms.length > 0 && (
-        <View style={{ marginTop: spacing.lg }}>
-          <ChipRail terms={live.terms} onTerm={onTerm} />
-        </View>
-      )}
+      {live && live.terms.length > 0 && <ChipRail terms={live.terms} onTerm={onTerm} />}
 
       {/* -------------------------------------------------- PRODUCT HITS -- */}
       {live && joined.length > 0 && (

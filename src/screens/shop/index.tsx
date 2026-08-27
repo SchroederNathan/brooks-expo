@@ -87,8 +87,7 @@ const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', '
  * opposite sides of the screen — `Filter & sort` on the right, a dismiss cross
  * on the left — and the browse content cross-fades to the results. The dismiss
  * cross is always there while searching, so the way out never depends on there
- * being text; the cross *inside* the field is the clear, and appears only once
- * there is something to clear.
+ * being text — and it is the only clear, the field drawing no cross of its own.
  *
  * All of that motion is one progress value on the UI thread, eased with the
  * tab bar's own curve so the two feel like one system.

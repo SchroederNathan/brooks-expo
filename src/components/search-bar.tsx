@@ -9,22 +9,27 @@ import {
 } from 'react-native';
 
 import { BrooksIcon } from './icons';
-import { Press } from './press';
 import { colors, font, spacing } from '../theme';
 
 /**
  * The search field: a square, `#F8F8F8` box with the site's own search glyph
- * leading and a clear cross trailing once there is something to clear.
+ * leading, and nothing trailing.
  *
  * @ref LLP 0003#brand — Square, no border, on the product-shot gray. The site's
  * header search opens a field of exactly this shape; the box is the one the
  * Browse screen drew for years as a fake (a `Press` that pushed a separate
  * screen). It is a real input now, and the one search input in the app.
  *
- * Contract per the expo-design-system rule: `size` maps to spacing steps, the
- * clear button is the only state the field draws itself (focus is the
- * keyboard's job, not a border's), and caller `style` merges last so a screen
- * can animate the box's frame without forking it.
+ * The field draws no state of its own: focus is the keyboard's job rather than
+ * a border's, and clearing is the caller's. Browse already flanks the focused
+ * field with an outlined cross that resets it, so a second cross inside the box
+ * was two controls a thumb's width apart doing nearly the same thing. The
+ * routine behind that cross survives as `reset()` on the ref — the exit is the
+ * same, only its button moved outside.
+ *
+ * Contract per the expo-design-system rule: `size` maps to spacing steps, and
+ * caller `style` merges last so a screen can animate the box's frame without
+ * forking it.
  */
 
 export const SEARCH_BAR_HEIGHT = 48;
@@ -36,10 +41,10 @@ const sizes = {
 
 export type SearchBarHandle = Pick<TextInput, 'focus' | 'blur' | 'clear' | 'isFocused'> & {
   /**
-   * The trailing cross's own routine, for a caller that wants the same exit:
-   * blur, empty, notify, and hold the resign-time guard. `clear` is the bare
-   * `TextInput` method and does none of that, so an outside dismiss must use
-   * this one or the stale change slips through.
+   * The full exit: blur, empty, notify, and hold the resign-time guard. `clear`
+   * is the bare `TextInput` method and does none of that, so a dismiss control
+   * must use this one or the stale change slips through. Since the field draws
+   * no cross of its own, this is the only way the box gets emptied.
    */
   reset: () => void;
 };
@@ -47,7 +52,7 @@ export type SearchBarHandle = Pick<TextInput, 'focus' | 'blur' | 'clear' | 'isFo
 type Props = Omit<TextInputProps, 'style'> & {
   value: string;
   onChangeText: (text: string) => void;
-  /** Fired after the cross empties the field. The field also blurs itself. */
+  /** Fired after `reset()` empties the field. The field also blurs itself. */
   onClear?: () => void;
   size?: keyof typeof sizes;
   style?: StyleProp<ViewStyle>;
@@ -59,7 +64,7 @@ export const SearchBar = forwardRef<SearchBarHandle, Props>(function SearchBar(
 ) {
   const inputRef = useRef<TextInput>(null);
   /**
-   * True from the cross being pressed until the field has settled. iOS emits a
+   * True from `reset()` being called until the field has settled. iOS emits a
    * change carrying the *old* text as the field resigns (keyboard state being
    * committed), and that event arrives after the empty string — so while
    * clearing, any non-empty change is the field talking to itself, not the user.
@@ -108,17 +113,6 @@ export const SearchBar = forwardRef<SearchBarHandle, Props>(function SearchBar(
         {...input}
         style={styles.input}
       />
-      {value.length > 0 ? (
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Clear search"
-          hitSlop={10}
-          onPress={clear}
-          style={styles.clear}
-        >
-          <BrooksIcon name="close" size={12} color={colors.ink} />
-        </Press>
-      ) : null}
     </View>
   );
 });
@@ -138,12 +132,5 @@ const styles = StyleSheet.create({
     color: colors.ink,
     // RN pads inputs on Android; zero it so the text sits on the icon's axis.
     paddingVertical: 0,
-  },
-  clear: {
-    width: 28,
-    height: 28,
-    marginRight: -spacing.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

@@ -480,21 +480,26 @@ live there once. `FilterButton` composes it and passes its count badge as
 children; the `label` variant keeps its own `Press`, being a text button rather
 than a square.
 
-[observed 2026-08-27] There are now two crosses while searching, and they are
-different jobs:
+[observed 2026-08-27] There was briefly a second cross *inside* the field, drawn
+once there was something to clear. `Superseded` — it is gone. With the left
+square already present for the whole of search mode, the two sat a thumb's width
+apart running the same routine, and only one of them was reliably there.
 
-- The **left square** is the way out. It is present for the whole of search mode,
-  so dismissing never depends on there being text to clear — before this, an
-  empty focused field could only be escaped by blurring it.
-- The **cross inside the field** appears only once there is something to clear.
+- The **left square** is the way out, and now the only clear. It is present for
+  the whole of search mode, so dismissing never depends on there being text to
+  clear — before this, an empty focused field could only be escaped by blurring
+  it.
+- The **field draws no state of its own**: focus is the keyboard's job rather
+  than a border's, and `clearButtonMode` stays `never`, so iOS does not put its
+  own cross back where the drawn one was.
 
-Both run the field's one exit routine — clear the text, blur the input, hand the
-screen back to Browse — so the collapse formula resumes control of the field the
-moment the progress value returns to zero. That routine holds a 150ms guard
-against iOS's resign-time change event (which carries the *old* text and lands
-*after* the empty string), so it is exposed on `SearchBarHandle` as `reset`
-rather than being re-implemented by the outside caller; the bare `TextInput.clear`
-on the same handle does none of that guarding.
+That single exit routine — clear the text, blur the input, hand the screen back
+to Browse — lets the collapse formula resume control of the field the moment the
+progress value returns to zero. It holds a 150ms guard against iOS's resign-time
+change event (which carries the *old* text and lands *after* the empty string),
+so it is exposed on `SearchBarHandle` as `reset` rather than being
+re-implemented by the outside caller; the bare `TextInput.clear` on the same
+handle does none of that guarding.
 
 [observed] `Filter & sort` is a native **form sheet** (`/search-filters`,
 `presentation: 'formSheet'`, one 92% detent, grabber shown), presented by the
