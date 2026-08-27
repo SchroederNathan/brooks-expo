@@ -1053,7 +1053,25 @@ press-shift, PDP size-grid shake, and the filter-sheet fade stay stripped
 pending the motion overhaul. [observed 2026-08-26] The button press-shift is
 back, as the one press feedback in the app: on press-in the shadowed button's
 face travels the shadow's 4pt offset so the two flatten into a single block, on
-a native CSS transition over `motion.press` (70ms) — pushed, not animated. Stack pushes use the platform default again. On
+a native CSS transition over `motion.press` (70ms) — pushed, not animated.
+[observed 2026-08-27] The shadow is part of the button's shape, not its enabled
+state: a disabled button still draws the layered block and simply never travels
+onto it. Hiding it while disabled made the search `Filter & sort` footer read as
+two different components, `Clear all` flat beside a layered `Apply`, and shifted
+the button's visual weight on a state change the user did not cause. Disabled is
+carried by one pairing for every in-sheet button, whatever its variant:
+`surfaceAlt` under the site's `#707070` secondary gray, 4.7:1. `surfaceSunken`
+is the better-named token for an inactive fill but lands at 4.4:1 against that
+gray, and the gray is the brand value, so the fill is what gives. The pair this
+replaced, `inkFaint` on `surfaceSunken`, was 2.2:1 and read as an empty slot
+rather than a button. A disabled fill is too pale to be a shape on its own, so
+a disabled button also borrows the outlined variant's 3pt ink edge; the shadow
+plus that edge is what keeps it legible as a button while it is inert. Filling
+the disabled primary dark instead was tried first and rejected as too heavy —
+it drew more attention inert than the live `Clear all` beside it. The blue PDP
+purchase CTA is the exception at both ends: unshadowed in every state, as it is
+on the site, and dark when disabled, because it sits alone on a sticky bar with
+no sibling to read against. Stack pushes use the platform default again. On
 iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
 gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
 [observed 2026-08-26] That treatment now covers every picture-that-opens-a-screen

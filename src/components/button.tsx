@@ -18,14 +18,20 @@ import { Txt } from './themed-text';
  * every platform.
  *
  * @ref LLP 0003#pdp-purchase-controls — The purchase CTA is the deliberate
- * exception: blue fill, sentence-case action at left, price at right. Its
- * disabled state keeps white copy on the site's `#707070` secondary gray.
+ * exception: blue fill, sentence-case action at left, price at right, and it
+ * is the one button whose disabled state goes dark — white copy on the site's
+ * `#707070` secondary gray — because it sits alone on a white sticky bar with
+ * no sibling to read against.
  *
  * @ref LLP 0003#screen-patterns — Pressing a shadowed button pushes its face
  * down onto the shadow, so the two flatten into one block: the site's own
  * hover/active treatment, which on touch is press-in. It runs as a native CSS
  * transition over `motion.press` so it never touches the JS thread per frame,
  * and it is off under reduced motion (the face simply sits flat while pressed).
+ * Every non-purchase button keeps the shadow in all states: dropping it while
+ * disabled made a footer's two buttons read as different components, and it
+ * moved the button's visual weight on a state change the user did not cause.
+ * Disabled is carried by fill and label colour alone.
  */
 
 /** The hard shadow's offset, and how far the face travels to meet it. */
@@ -49,26 +55,36 @@ export function Button({
   accessory?: string;
 }) {
   const isPurchase = variant === 'purchase';
+  const isFilled = variant === 'primary' || isPurchase;
+  // Disabled is one pairing for every in-sheet button: `surfaceAlt` under the
+  // site's secondary gray, 4.7:1. `surfaceSunken` is the better-named token but
+  // lands at 4.4:1 with that same gray, and the gray is the brand value, so the
+  // fill is what gives. The purchase CTA keeps its own darker treatment below.
   const bg =
-    disabled ? (isPurchase ? colors.inkMuted : colors.surfaceSunken)
+    disabled ? (isPurchase ? colors.inkMuted : colors.surfaceAlt)
     : isPurchase ? colors.blue
     : variant === 'primary' ? colors.ink
     : variant === 'onDark' ? colors.surface
     : colors.surface;
   const fg =
-    disabled ? (isPurchase ? colors.surface : colors.inkFaint)
-    : variant === 'primary' || isPurchase ? colors.surface
+    disabled ? (isPurchase ? colors.surface : colors.inkMuted)
+    : isFilled ? colors.surface
     : colors.ink;
+  // A disabled fill is too pale to be a shape on its own, so every disabled
+  // button borrows the outlined variant's rule and draws the ink edge.
+  const outlined = variant === 'secondary' || (disabled && !isPurchase);
 
   const inert = disabled || loading;
-  const shadowed = !inert && !isPurchase;
+  // The shadow is the button's shape, not its enabled state: a disabled button
+  // keeps the layered block and simply never travels onto it.
+  const shadowed = !isPurchase;
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState(false);
 
   const face = {
     transform: [
-      { translateX: shadowed && pressed ? SHADOW_OFFSET : 0 },
-      { translateY: shadowed && pressed ? SHADOW_OFFSET : 0 },
+      { translateX: shadowed && !inert && pressed ? SHADOW_OFFSET : 0 },
+      { translateY: shadowed && !inert && pressed ? SHADOW_OFFSET : 0 },
     ],
     transitionProperty: ['transform'] as const,
     transitionDuration: reduced ? 0 : motion.press,
@@ -92,7 +108,7 @@ export function Button({
         style={[
           styles.button,
           { backgroundColor: bg },
-          variant === 'secondary' && { borderWidth: 3, borderColor: colors.ink },
+          outlined && { borderWidth: 3, borderColor: colors.ink },
           isPurchase && styles.purchaseButton,
         ]}
       >
