@@ -63,8 +63,31 @@ Not observed.
   build numbers, so this decides whether the repack path works at all, and the
   docs do not say.
 
+## First run results
+
+Manual run `01a0407a-547e-7295-8925-98de75d1d105` (2026-08-26 23:49 UTC) succeeded
+end to end: `fingerprint` -> `get-build` -> `build_ios` -> `testflight`.
+Build 5 (`aafe9d76`) reached TestFlight. [observed]
+
+Two things that run established:
+
+- `get_ios_build` returned empty outputs, so the run took the full-build branch.
+  Builds made before this workflow existed carry no fingerprint hash EAS can match
+  against. Build 5 records `079e5844...`, so the repack branch only becomes
+  reachable from the second run onward. [observed]
+- The `build` path increments correctly under `appVersionSource: remote` +
+  `autoIncrement: true` — it issued build number 5. The repack path is still
+  untested. [observed]
+
+Pushes to `main` do not trigger the workflow. `app.githubRepository` is `null` for
+this project, so EAS never sees the push. `on: push` is inert until the repository
+is connected in project settings. Commits `515bd08` and `6b60d79` both landed on
+`origin/main` and produced no run. [observed]
+
 ## Follow-ups
 
+- Connect the GitHub repository to the EAS project. Until then only
+  `eas workflow:run` works.
 - Verify on the first repack run that the build number increments. If it does not,
   the fix is to bump it in a `repack` hook or drop the repack branch.
 - Repack docs warn it is unsuitable "for production builds that require the
