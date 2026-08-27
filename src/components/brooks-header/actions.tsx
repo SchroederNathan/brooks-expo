@@ -5,6 +5,7 @@ import { BrooksIcon, type BrooksIconName } from '@/components/icons';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { useCart } from '@/store/cart';
+import { requestSearchFocus } from '@/store/search-focus';
 import { colors, radius, spacing } from '@/theme';
 
 /**
@@ -53,9 +54,14 @@ const BUILT_INS: Record<HeaderActionName, Omit<HeaderActionConfig, 'key' | 'badg
     label: 'Search',
     size: 20,
     thicken: 0,
-    // Search lives in the Browse tab's own field now; `focus` asks it to open
-    // the keyboard on arrival. @ref LLP 0003#browse-is-the-search-screen
-    onPress: () => router.navigate({ pathname: '/(tabs)/(shop)/shop', params: { focus: '1' } }),
+    // Search lives in the Browse tab's own field now, so the glyph navigates
+    // there and asks it for the keyboard. The request is left *before* the
+    // navigation, so it is already waiting if this is what mounts the screen.
+    // @ref LLP 0003#browse-is-the-search-screen
+    onPress: () => {
+      requestSearchFocus();
+      router.navigate('/(tabs)/(shop)/shop');
+    },
   },
   account: {
     icon: 'account',

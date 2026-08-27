@@ -120,12 +120,10 @@ through `debugger-log-registry`: the param arrives as `"1"`, then immediately as
 cancels the focus it had just scheduled — every time, because the setParams
 round trip is far shorter than 60ms.
 
-[confirmed] Fix: move the timer into a ref and tear it down only on unmount, so
-consuming the param cannot cancel the pending focus. Verified twice on the
-iPhone 17 Pro Max simulator — once with Browse already mounted, and once from a
-cold app start where the glyph is the first thing that mounts it. Both land with
-the field risen into the title line, the filter button slid in, and the keyboard
-up.
+[confirmed] First fix: move the timer into a ref and tear it down only on
+unmount, so consuming the param cannot cancel the pending focus. This made the
+first press work reliably from both a cold start and a warm one — **and it was
+not the bug the user was hitting.** See the correction below.
 
 ## Improvement ideas (addendum)
 
@@ -133,3 +131,68 @@ up.
   shape: the clear re-runs the effect that owns the pending work. A monotonic
   token (`focus: String(counter)`) would need no clearing at all. Worth
   considering if a third caller appears.
+
+## Correction — the param clear is a no-op, and repeat presses never worked
+
+[confirmed] The `clearTimeout`-in-cleanup race above is real, but it was not why
+the glyph failed. The user reported it still only navigating. It did.
+
+What I got wrong was **stopping at the first green test.** I verified press one
+from a warm start and press one from a cold start, saw the keyboard both times,
+and reported the fix as done. I never pressed the glyph *twice*. That is the only
+sequence that fails, and it is the ordinary one — a runner searches, browses,
+searches again.
+
+[observed] Evidence, from a render-body `console.log` read back through Metro's
+CDP log registry across a two-press run:
+
+```
+render, focus = "1"     <- press 1
+effect, focus = "1"
+render, focus = "1"     <- AFTER router.setParams({ focus: '' })
+timer fired, ref = true
+isFocused after = true  <- press 1 works
+render, focus = "1"     <- press 2: unchanged, so no effect, no focus
+```
+
+Two findings in one trace. `router.setParams({ focus: '' })` never reaches
+`useLocalSearchParams` — the very next render still reads `"1"`. And because the
+param therefore stays `"1"` forever, a second `navigate` carrying `focus: '1'` is
+not a change, the effect never re-runs, and the glyph navigates in silence. The
+first press worked because the param genuinely changed then (undefined → `"1"`),
+which is exactly what made this look like a timing bug rather than a state bug.
+
+[confirmed] Real fix: drop the param. `store/search-focus` is a one-shot signal —
+`requestSearchFocus()` before navigating, `consumeSearchFocus()` on the other
+side. Nothing to clear, nothing to go stale, nothing in the URL. Same shape as
+`store/search-filters`, which already exists here for the same reason: handing
+state to a screen you cannot parent.
+
+[observed] Then a second, genuinely-timing failure surfaced — one I only found
+because I tested the *other* caller. The PLP's toolbar button pops a screen off
+Browse's own stack rather than switching tabs, so Browse was already mounted and
+the request fired 60ms before the pop had settled; iOS resigned first responder
+on the way out and the keyboard never appeared. Fixed by hanging the read on
+`useFocusEffect` (gaining navigation focus is the one event a tab switch and a
+stack pop share) plus a short retry ladder that stops as soon as `isFocused()`
+is true, instead of one guessed delay sized for the worst case.
+
+Verified on the iPhone 17 Pro Max simulator, all five cases: glyph from a cold
+start; glyph pressed a second and a third time; the PLP toolbar button; and the
+negative case — an ordinary back-navigation onto Browse must *not* open the
+keyboard, and does not, because the signal was already consumed.
+
+## What was hard (correction addendum)
+
+- Nothing about the code was hard. The failure was in how I tested: one happy
+  path, once, and a confident report. A state bug that only bites on the second
+  identical action is invisible to a single-pass check.
+
+## Improvement ideas (correction addendum)
+
+- `router.setParams` silently doing nothing is the sharp edge here. It has no
+  return value and logs no warning, so "consume a one-shot param" reads as
+  correct and fails quietly. Expo Router could warn when `setParams` is called
+  on a route whose params are not what the caller then observes.
+- Repeat the action. For anything reached by a button that a user will press
+  more than once, the second press is part of the test, not a nicety.

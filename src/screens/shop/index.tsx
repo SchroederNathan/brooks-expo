@@ -1,5 +1,5 @@
-import { Link, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { Link, router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedReaction,
@@ -25,6 +25,7 @@ import { VOICE } from '@/data/editorial';
 import { heroImage } from '@/data/images';
 import { productsIn } from '@/data/query';
 import { countSearchFilters } from '@/data/search-query';
+import { consumeSearchFocus } from '@/store/search-focus';
 import { useSearchFilterState } from '@/store/search-filters';
 import { colors, motion, spacing, type } from '@/theme';
 
@@ -89,7 +90,6 @@ const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', '
 export function Shop() {
   const paddingTop = useScreenTopPadding();
   const reduceMotion = useReducedMotion();
-  const { focus } = useLocalSearchParams<{ focus?: string }>();
   const { filters } = useSearchFilterState();
   const nFilters = countSearchFilters(filters);
 
@@ -124,26 +124,41 @@ export function Shop() {
   );
 
   /**
-   * Home's header glyph and the PLP's bar button land here asking for the
-   * keyboard, as a `focus` param.
+   * Home's header glyph and the PLP's search button land here asking for the
+   * keyboard. @ref store/search-focus — why the ask is a signal, not a param.
    *
-   * [observed 2026-08-26] The deferral is because the field can be mounting on
-   * this same tick — a `focus()` on an unattached native input is dropped. The
-   * timer is owned by a ref and torn down only on unmount, *not* in this
-   * effect's cleanup: consuming the param re-renders with `focus: ''` well
-   * inside the 60ms, so a cleanup would cancel the very focus it scheduled.
-   * That is why the glyph navigated to Browse but never opened the keyboard.
+   * Hung on navigation focus rather than on mount, because the two callers
+   * arrive differently: the glyph is a tab switch that may be what mounts this
+   * screen, while the PLP button pops a screen off this tab's own stack, so
+   * Browse was already mounted and only *becomes* focused. Gaining focus is the
+   * one event both share. A pending request that nobody sent is a no-op here,
+   * so an ordinary back-navigation onto Browse costs one `consume` and stops.
+   *
+   * [observed 2026-08-26] Focusing once is not enough on the pop: the field can
+   * still be attaching, and settling the transition resigns first responder
+   * again. So the focus is re-attempted on a short ladder and stops as soon as
+   * it sticks — cheaper and steadier than one guessed delay long enough for the
+   * slowest case.
    */
   const focusTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(focusTimer.current), []);
-
-  useEffect(() => {
-    if (!focus) return;
-    clearTimeout(focusTimer.current);
-    focusTimer.current = setTimeout(() => barRef.current?.focus(), 60);
-    // Consume it, so a second press of the same glyph is a new value again.
-    router.setParams({ focus: '' });
-  }, [focus]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!consumeSearchFocus()) return;
+      let cancelled = false;
+      const attempt = ([delay, ...rest]: number[]) => {
+        focusTimer.current = setTimeout(() => {
+          if (cancelled || barRef.current?.isFocused()) return;
+          barRef.current?.focus();
+          if (rest.length) attempt(rest);
+        }, delay);
+      };
+      attempt([60, 180, 360, 600]);
+      return () => {
+        cancelled = true;
+        clearTimeout(focusTimer.current);
+      };
+    }, [])
+  );
 
   const wrapStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: -TITLE_ROW * progress.get() }],

@@ -26,6 +26,7 @@ import {
   type SortKey,
 } from '@/data/query';
 import type { Product } from '@/data/types';
+import { requestSearchFocus } from '@/store/search-focus';
 import { colors, headerIcon, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -105,9 +106,10 @@ export function Category({
         <Stack.Toolbar.Button
           icon={headerIcon.search}
           accessibilityLabel="Search"
-          onPress={() =>
-            router.navigate({ pathname: '/(tabs)/(shop)/shop', params: { focus: '1' } })
-          }
+          onPress={() => {
+            requestSearchFocus();
+            router.navigate('/(tabs)/(shop)/shop');
+          }}
         />
       </Stack.Toolbar>
 

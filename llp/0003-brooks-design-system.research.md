@@ -436,7 +436,18 @@ collapse: chrome that vanishes is a layout change, not decoration.
 native `Stack.SearchBar`. Browse opens on a real input — `components/search-bar`,
 the square `#F8F8F8` box with the site's search glyph that the screen had drawn
 for years as a fake `Press` — and the Home header's search glyph and the PLP's bar
-button both `navigate` to Browse with `focus=1` instead of pushing a screen.
+button both `navigate` to Browse instead of pushing a screen, asking it for the
+keyboard on arrival.
+
+[confirmed 2026-08-26] That ask is a one-shot signal (`store/search-focus`), not
+a route param. It was a `focus=1` param that Browse cleared once consumed, and
+the clear is a no-op — the render straight after `router.setParams({ focus: '' })`
+still reads `"1"`. So the param never changed again and only the *first* press of
+the glyph ever opened the keyboard. Browse reads the signal when it gains
+navigation focus rather than on mount, because the two callers arrive
+differently: the glyph is a tab switch that may be what mounts Browse, while the
+PLP button pops a screen off Browse's own stack. Gaining focus is the one event
+both share, and it is also late enough that the field is attached.
 
 [observed] Above Browse's content sit two bands, and they move differently:
 
