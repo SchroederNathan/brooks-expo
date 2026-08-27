@@ -52,10 +52,24 @@ jobs:
     type: repack
     needs: [get_ios_build]
     if: ${{ needs.get_ios_build.outputs.build_id }}
+    env:
+      SOURCE_BUILD_NUMBER: ${{ needs.get_ios_build.outputs.app_build_version }}
     params:
       build_id: ${{ needs.get_ios_build.outputs.build_id }}
       profile: production
       message: ${{ github.commit_message }}
+    hooks:
+      # `repack` regenerates Info.plist from the app config and ignores EAS
+      # remote versioning. app.json carries no ios.buildNumber, so it wrote the
+      # Expo default of 1 and App Store Connect rejected the upload — even
+      # though the EAS build record claimed the correct number. Derive the next
+      # number from the build being repacked and write it where repack looks.
+      after_install_node_modules:
+        - name: Pin the repacked build number
+          run: |
+            export NEXT=$((SOURCE_BUILD_NUMBER + 1))
+            node -e 'const fs=require("fs");const c=JSON.parse(fs.readFileSync("app.json","utf8"));c.expo.ios.buildNumber=process.env.NEXT;fs.writeFileSync("app.json",JSON.stringify(c,null,2)+"\n");'
+            echo "Repacking $SOURCE_BUILD_NUMBER as build number $NEXT"
 
   testflight:
     name: Upload to TestFlight

@@ -84,12 +84,39 @@ this project, so EAS never sees the push. `on: push` is inert until the reposito
 is connected in project settings. Commits `515bd08` and `6b60d79` both landed on
 `origin/main` and produced no run. [observed]
 
+## Repack ships the wrong build number
+
+Run `01a0409c` (2026-08-27 00:26 UTC, first `GITHUB_PUSH` trigger) took the repack
+branch and failed at upload. App Store Connect returned
+`ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE` with `previousBundleVersion: 5`.
+
+Pulled both artifacts and read `CFBundleVersion` out of each `Info.plist`: [observed]
+
+| Artifact | EAS build record | `CFBundleVersion` in the IPA |
+| --- | --- | --- |
+| `aafe9d76` source build | 5 | 5 |
+| `5485a9ff` repacked | 6 | **1** |
+
+So the `repack` job regenerates `Info.plist` from the app config and does not apply
+EAS remote versioning. `app.json` carries no `ios.buildNumber`, so repack wrote the
+Expo default of `1`. EAS still labelled the build record `6` and still consumed a
+remote increment, so the record and the artifact disagree. `eas build:version:get`
+reports 6 while the shipped binary says 1. [observed]
+
+This is the failure mode the earlier follow-up warned about, but the mechanism is
+worse than expected: not "the number does not increment" but "the number resets to
+the default and the EAS record lies about it".
+
+Workaround: an `after_install_node_modules` hook on the repack job writes
+`SOURCE_BUILD_NUMBER + 1` into `app.json` before repack reads the config. The
+source number comes from `get_ios_build.outputs.app_build_version`. Untested as of
+this entry. [inferred]
+
 ## Follow-ups
 
-- Connect the GitHub repository to the EAS project. Until then only
-  `eas workflow:run` works.
-- Verify on the first repack run that the build number increments. If it does not,
-  the fix is to bump it in a `repack` hook or drop the repack branch.
+- Verify the build-number hook on the next repack run. Read `CFBundleVersion` out
+  of the artifact, not the EAS build record — the record was wrong last time.
+- Report the repack versioning defect to Expo.
 - Repack docs warn it is unsuitable "for production builds that require the
   complete pipeline for correct symbolication". Confirm crash reports from
   repacked TestFlight builds symbolicate acceptably before reusing this shape for

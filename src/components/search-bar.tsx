@@ -34,7 +34,15 @@ const sizes = {
   sm: { height: 40, paddingHorizontal: spacing.md },
 } as const;
 
-export type SearchBarHandle = Pick<TextInput, 'focus' | 'blur' | 'clear' | 'isFocused'>;
+export type SearchBarHandle = Pick<TextInput, 'focus' | 'blur' | 'clear' | 'isFocused'> & {
+  /**
+   * The trailing cross's own routine, for a caller that wants the same exit:
+   * blur, empty, notify, and hold the resign-time guard. `clear` is the bare
+   * `TextInput` method and does none of that, so an outside dismiss must use
+   * this one or the stale change slips through.
+   */
+  reset: () => void;
+};
 
 type Props = Omit<TextInputProps, 'style'> & {
   value: string;
@@ -62,6 +70,7 @@ export const SearchBar = forwardRef<SearchBarHandle, Props>(function SearchBar(
     blur: () => inputRef.current?.blur(),
     clear: () => inputRef.current?.clear(),
     isFocused: () => inputRef.current?.isFocused() ?? false,
+    reset: () => clear(),
   }));
 
   const handleChange = (text: string) => {

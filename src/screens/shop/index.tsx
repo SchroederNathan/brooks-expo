@@ -13,6 +13,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { useCollapse, useHeaderScroll } from '@/components/brooks-header';
 import { FILTER_BUTTON_SIZE, FilterButton } from '@/components/filter-button';
 import { BrooksIcon } from '@/components/icons';
+import { OUTLINE_BUTTON_SIZE, OutlineIconButton } from '@/components/outline-icon-button';
 import { Photo } from '@/components/photo';
 import { Press } from '@/components/press';
 import { ScreenHeading, useScreenTopPadding } from '@/components/screen';
@@ -45,6 +46,8 @@ const TITLE_ROW = type.h1.lineHeight + spacing.lg;
 const SEARCH_ROW = SEARCH_BAR_HEIGHT + spacing.xl;
 /** Room the field gives up on the right for the filter button. */
 const FILTER_SLOT = FILTER_BUTTON_SIZE + spacing.sm;
+/** And on the left for the dismiss button. Same square, mirrored. */
+const DISMISS_SLOT = OUTLINE_BUTTON_SIZE + spacing.sm;
 
 /** The shape of the Brooks site's own shop navigation. */
 const SECTIONS = [
@@ -80,9 +83,12 @@ const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', '
  * two-regime rules as Home's blue header (`useCollapse`, with the field's own
  * height as the travel) and comes back on an upward flick — the title never
  * moves. On focus the field rises into the title's line (the title fades under
- * it), gives up its right edge to a `Filter & sort` button that slides in from
- * off-screen, and the browse content cross-fades to the results. The cross
- * inside the field clears it and hands the screen back.
+ * it), gives up both edges to a pair of outlined squares that slide in from
+ * opposite sides of the screen — `Filter & sort` on the right, a dismiss cross
+ * on the left — and the browse content cross-fades to the results. The dismiss
+ * cross is always there while searching, so the way out never depends on there
+ * being text; the cross *inside* the field is the clear, and appears only once
+ * there is something to clear.
  *
  * All of that motion is one progress value on the UI thread, eased with the
  * tab bar's own curve so the two feel like one system.
@@ -170,13 +176,26 @@ export function Shop() {
       // into view as it rises, whatever the scroll offset says.
       transform: [{ translateY: translateY.get() * (1 - p) }],
       opacity: opacity.get() + (1 - opacity.get()) * p,
+      marginLeft: DISMISS_SLOT * p,
       marginRight: FILTER_SLOT * p,
     };
   });
+  /**
+   * The two flanking buttons ride the same progress value out of opposite edges,
+   * each starting a full square plus the gutter away so it is genuinely off
+   * screen (the band clips) rather than parked under the field.
+   */
   const filterStyle = useAnimatedStyle(() => {
     const p = progress.get();
     return {
       transform: [{ translateX: (FILTER_BUTTON_SIZE + spacing.gutter) * (1 - p) }],
+      opacity: p,
+    };
+  });
+  const dismissStyle = useAnimatedStyle(() => {
+    const p = progress.get();
+    return {
+      transform: [{ translateX: -(OUTLINE_BUTTON_SIZE + spacing.gutter) * (1 - p) }],
       opacity: p,
     };
   });
@@ -318,6 +337,14 @@ export function Shop() {
 
       {/* ------------------------------------------------------ FIELD ---- */}
       <Animated.View style={[styles.searchBand, { top: paddingTop + TITLE_ROW }, wrapStyle]}>
+        <Animated.View style={[styles.dismiss, dismissStyle]}>
+          <OutlineIconButton
+            icon="close"
+            iconSize={14}
+            accessibilityLabel="Close search"
+            onPress={() => barRef.current?.reset()}
+          />
+        </Animated.View>
         <Animated.View style={barStyle}>
           <SearchBar
             ref={barRef}
@@ -362,6 +389,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.gutter,
   },
   filter: { position: 'absolute', top: 0, right: spacing.gutter },
+  dismiss: { position: 'absolute', top: 0, left: spacing.gutter },
   results: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },
   rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },

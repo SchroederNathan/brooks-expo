@@ -464,17 +464,37 @@ with the tab bar's indicator curve (`INDICATOR_TIMING_EASING`, the same
 
 - the field rises one title row so it sits where `Shop` was, and the title fades
   under it;
-- its right edge gives up a 48pt slot, into which the `Filter & sort` button
-  slides from off the right of the screen (`components/filter-button`: the
-  site's `#icon-filters` glyph in an ink-outlined square, wearing the applied
-  count once there is one);
+- *both* its edges give up a 48pt slot, and one outlined square slides into each
+  from off its own side of the screen: `Filter & sort` from the right
+  (`components/filter-button`: the site's `#icon-filters` glyph, wearing the
+  applied count once there is one) and a dismiss cross from the left. Same
+  progress value, same curve, mirrored sign — they read as one control row
+  opening, not two buttons arriving;
 - the browse content cross-fades to the results (`screens/shop/search-results`,
   the old screen's body without its chrome), which still run the live
   Constructor.io type-ahead (LLP 0002).
 
-Once there is text, a cross appears inside the field. It clears the text, blurs
-the input, and hands the screen back to Browse — the collapse formula resumes
-control of the field the moment the progress value returns to zero.
+[observed 2026-08-27] The two 48pt squares share `components/outline-icon-button`
+— the 1.5pt hairline rule, the square metric, and the ink-outline "active" state
+live there once. `FilterButton` composes it and passes its count badge as
+children; the `label` variant keeps its own `Press`, being a text button rather
+than a square.
+
+[observed 2026-08-27] There are now two crosses while searching, and they are
+different jobs:
+
+- The **left square** is the way out. It is present for the whole of search mode,
+  so dismissing never depends on there being text to clear — before this, an
+  empty focused field could only be escaped by blurring it.
+- The **cross inside the field** appears only once there is something to clear.
+
+Both run the field's one exit routine — clear the text, blur the input, hand the
+screen back to Browse — so the collapse formula resumes control of the field the
+moment the progress value returns to zero. That routine holds a 150ms guard
+against iOS's resign-time change event (which carries the *old* text and lands
+*after* the empty string), so it is exposed on `SearchBarHandle` as `reset`
+rather than being re-implemented by the outside caller; the bare `TextInput.clear`
+on the same handle does none of that guarding.
 
 [observed] `Filter & sort` is a native **form sheet** (`/search-filters`,
 `presentation: 'formSheet'`, one 92% detent, grabber shown), presented by the
