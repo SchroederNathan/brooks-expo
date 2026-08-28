@@ -1,8 +1,8 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import {
+  Pressable,
   StyleSheet,
   TextInput,
-  View,
   type StyleProp,
   type TextInputProps,
   type ViewStyle,
@@ -34,9 +34,12 @@ import { colors, font, spacing } from '../theme';
 
 export const SEARCH_BAR_HEIGHT = 48;
 
+// The icon-to-text gap is the edge padding less one step. The glyph's handle
+// fills only the bottom-right of its box, so an equal gap reads as wider on the
+// right; trimming 4pt makes the whitespace on both sides of the icon look even.
 const sizes = {
-  md: { height: SEARCH_BAR_HEIGHT, paddingHorizontal: spacing.lg },
-  sm: { height: 40, paddingHorizontal: spacing.md },
+  md: { height: SEARCH_BAR_HEIGHT, paddingHorizontal: spacing.lg, gap: spacing.md },
+  sm: { height: 40, paddingHorizontal: spacing.md, gap: spacing.sm },
 } as const;
 
 export type SearchBarHandle = Pick<TextInput, 'focus' | 'blur' | 'clear' | 'isFocused'> & {
@@ -96,7 +99,13 @@ export const SearchBar = forwardRef<SearchBarHandle, Props>(function SearchBar(
   };
 
   return (
-    <View style={[styles.box, sizes[size], style]}>
+    // The whole box is the hit target: the icon and padding focus the input too,
+    // rather than only the text run inside it.
+    <Pressable
+      style={[styles.box, sizes[size], style]}
+      onPress={() => inputRef.current?.focus()}
+      accessible={false}
+    >
       <BrooksIcon name="search" size={15} color={colors.inkMuted} />
       <TextInput
         ref={inputRef}
@@ -113,7 +122,7 @@ export const SearchBar = forwardRef<SearchBarHandle, Props>(function SearchBar(
         {...input}
         style={styles.input}
       />
-    </View>
+    </Pressable>
   );
 });
 
@@ -121,7 +130,6 @@ const styles = StyleSheet.create({
   box: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
     backgroundColor: colors.surfaceAlt,
   },
   input: {
