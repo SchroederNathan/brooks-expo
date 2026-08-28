@@ -30,7 +30,7 @@ import { supportLabel } from '@/data/labels';
 import { byId, colorwayOf, formatPrice } from '@/data/query';
 import { reviewsFor } from '@/data/reviews';
 import { useCart } from '@/store/cart';
-import { colors, headerIcon, shadows, spacing } from '@/theme';
+import { border, colors, headerIcon, shadows, spacing } from '@/theme';
 
 import { ReviewsPanel } from './reviews-panel';
 
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   detailsSection: {
     marginHorizontal: spacing.gutter,
     marginTop: spacing.xxl,
-    borderTopWidth: 1,
+    borderTopWidth: border.rule,
     borderTopColor: colors.inkMuted,
   },
   accordionHeader: {
@@ -644,14 +644,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.inkMuted,
   },
   accordionAccessory: { marginLeft: 'auto' },
   detailsPanel: {
     paddingTop: spacing.xl,
     paddingBottom: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.inkMuted,
   },
   detailsDescription: { marginBottom: spacing.xxl },
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.gutter,
     paddingTop: spacing.md,
     backgroundColor: colors.surface,
-    borderTopWidth: 1,
+    borderTopWidth: border.rule,
     borderTopColor: colors.hairline,
     boxShadow: shadows.bar,
   },

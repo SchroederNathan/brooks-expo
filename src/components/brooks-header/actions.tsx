@@ -6,7 +6,7 @@ import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { useCart } from '@/store/cart';
 import { requestSearchFocus } from '@/store/search-focus';
-import { colors, radius, spacing } from '@/theme';
+import { border, colors, radius, spacing } from '@/theme';
 
 /**
  * The header's trailing controls.
@@ -173,8 +173,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     // A ring in the bar's own blue, so the badge reads as sitting on top of the
-    // glyph rather than merging with it.
-    borderWidth: 1.5,
+    // glyph rather than merging with it. One rule does that; it is a knockout,
+    // not a control edge.
+    borderWidth: border.rule,
     borderColor: colors.blue,
   },
   badgeText: { fontSize: 10, lineHeight: 13 },

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, ViewProps } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
-import { colors, motion, radius, spacing } from '../theme';
+import { border, colors, motion, radius, spacing } from '../theme';
 import { Txt } from './themed-text';
 
 /**
@@ -108,7 +108,7 @@ export function Button({
         style={[
           styles.button,
           { backgroundColor: bg },
-          outlined && { borderWidth: 3, borderColor: colors.ink },
+          outlined && { borderWidth: border.heavy, borderColor: colors.ink },
           isPurchase && styles.purchaseButton,
         ]}
       >

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { applyFilters, facetsFor, type Filters, type SortKey } from '@/data/query';
 import { genderLabel, supportLabel } from '@/data/labels';
 import type { Product } from '@/data/types';
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { Divider } from '@/components/divider';
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.surface,
     maxHeight: '88%',
-    borderTopWidth: 3,
+    borderTopWidth: border.heavy,
     borderTopColor: colors.ink,
   },
   grabberRow: { alignItems: 'center', paddingVertical: spacing.sm },

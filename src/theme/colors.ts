@@ -21,9 +21,17 @@ export const colors = {
   /** Section/page alt background. Brooks shoots product on this exact value. */
   surfaceAlt: '#F8F8F8',
   surfaceSunken: '#F2F2F2',
-  /** The site's default border color. */
+  /**
+   * The site's default border color. Dividers, ruled rows, and neutral card
+   * edges — anything whose job is to separate rather than to be aimed at.
+   */
   hairline: '#E5E5E5',
-  /** Stronger rule used by outlined commerce choices and their sold-out slash. */
+  /**
+   * The resting rule on every outlined control — sizes, widths, filter
+   * buttons, steppers, text fields — and their sold-out slash. Darker than
+   * `hairline` because a control's edge has to be findable, where a divider
+   * only has to separate. See `border` for the width that pairs with it.
+   */
   controlBorder: '#C9CBCD',
 
   /** Brooks blue — the default theme accent: links, selected states, focus. */

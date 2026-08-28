@@ -2,11 +2,11 @@ import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BrooksIcon, type BrooksIconName } from './icons';
 import { Press } from './press';
-import { colors } from '../theme';
+import { border, colors } from '../theme';
 
 /**
  * The 48pt outlined square that flanks Browse's search field: one sprite glyph
- * centred on white, inside the chips' hairline rule.
+ * centred on white, inside the resting control rule.
  *
  * @ref LLP 0003#browse-is-the-search-screen — Two controls wear this shape, one
  * on each side of the field (`Filter & sort` right, dismiss left), so the rule
@@ -27,7 +27,7 @@ export function OutlineIconButton({
 }: {
   icon: BrooksIconName;
   iconSize?: number;
-  /** Trades the hairline for the ink rule. */
+  /** Doubles the rule and turns it ink — the app's selected-control state. */
   active?: boolean;
   accessibilityLabel: string;
   onPress?: () => void;
@@ -52,12 +52,13 @@ const styles = StyleSheet.create({
   button: {
     width: OUTLINE_BUTTON_SIZE,
     height: OUTLINE_BUTTON_SIZE,
-    // Idle it matches the chips' hairline; the ink outline is the applied state.
-    borderWidth: 1.5,
-    borderColor: colors.hairline,
+    // Idle it wears the resting control rule; applied doubles it in ink, the
+    // same move the PDP size grid makes (see `border`).
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surface,
   },
-  active: { borderColor: colors.ink },
+  active: { borderWidth: border.emphasis, borderColor: colors.ink },
 });

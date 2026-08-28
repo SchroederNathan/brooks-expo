@@ -3,7 +3,7 @@ import Svg, { Path, Rect } from 'react-native-svg';
 
 import { BrooksIcon, type BrooksIconName } from '@/components/icons';
 import { Txt } from '@/components/themed-text';
-import { colors, radius } from '@/theme';
+import { border, colors, radius } from '@/theme';
 
 /**
  * Icons for the app-owned bottom tab bar.
@@ -138,7 +138,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
+    // A knockout ring, not a control edge, but it still comes off the same
+    // scale — one rule is enough to keep the badge off the glyph.
+    borderWidth: border.rule,
     borderColor: colors.surface,
   },
   badgeText: { fontSize: 10, lineHeight: 13 },

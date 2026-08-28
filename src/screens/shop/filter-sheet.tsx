@@ -22,7 +22,7 @@ import {
   type SearchSort,
 } from '@/data/search-query';
 import { getSearchFilterState, patchSearchFilterState, useSearchFilterState } from '@/store/search-filters';
-import { colors, radius, spacing } from '@/theme';
+import { border, colors, radius, spacing } from '@/theme';
 
 /**
  * `Filter & sort` for search results, presented as a native form sheet.
@@ -264,7 +264,7 @@ function Swatch({ value }: { value: string }) {
       style={[
         styles.swatch,
         { backgroundColor: value },
-        value.toUpperCase() === '#FFFFFF' && { borderWidth: 1, borderColor: colors.hairline },
+        value.toUpperCase() === '#FFFFFF' && styles.swatchOutline,
       ]}
     />
   );
@@ -309,17 +309,19 @@ const styles = StyleSheet.create({
     width: CONTROL,
     height: CONTROL,
     borderRadius: radius.pill,
-    borderWidth: 1.5,
+    borderWidth: border.rule,
     borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOn: { borderColor: colors.blue },
+  // Form indicators rest in ink, not `controlBorder`: at 24pt they are the
+  // control, not its frame. Choosing still doubles the rule (see `border`).
+  radioOn: { borderWidth: border.emphasis, borderColor: colors.blue },
   radioDot: { width: 14, height: 14, borderRadius: radius.pill, backgroundColor: colors.blue },
   checkbox: {
     width: CONTROL,
     height: CONTROL,
-    borderWidth: 1.5,
+    borderWidth: border.rule,
     borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
@@ -337,13 +339,15 @@ const styles = StyleSheet.create({
     width: SWATCH + 8,
     height: SWATCH + 8,
     borderRadius: radius.pill,
-    borderWidth: 2,
+    borderWidth: border.emphasis,
     borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   swatchRingOn: { borderColor: colors.ink },
   swatch: { width: SWATCH, height: SWATCH, borderRadius: radius.pill, overflow: 'hidden' },
+  /** A white swatch has to draw its own edge, so it borrows the control rule. */
+  swatchOutline: { borderWidth: border.rule, borderColor: colors.controlBorder },
   footer: {
     backgroundColor: colors.surface,
     flexDirection: 'row',

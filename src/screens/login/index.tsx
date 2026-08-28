@@ -10,7 +10,7 @@ import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { join } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
-import { colors, font, spacing } from '@/theme';
+import { border, colors, font, spacing } from '@/theme';
 
 /**
  * Join Brooks Run Club.
@@ -145,7 +145,7 @@ function Field({
         keyboardType={keyboardType}
         autoCapitalize={keyboardType === 'email-address' ? 'none' : 'words'}
         autoCorrect={false}
-        style={[styles.input, error ? { borderColor: colors.sale } : null]}
+        style={[styles.input, error ? styles.inputError : null]}
       />
       {error ? (
         <Txt variant="tiny" c={colors.sale} style={{ marginTop: 4 }}>
@@ -175,14 +175,16 @@ const styles = StyleSheet.create({
   form: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
   input: {
     height: 50,
-    borderWidth: 1.5,
-    borderColor: colors.hairline,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
     paddingHorizontal: spacing.md,
     fontFamily: font.regular,
     fontSize: 16,
     color: colors.ink,
     backgroundColor: colors.surface,
   },
+  /** Error is the field's emphasis state, same doubling as a selection. */
+  inputError: { borderWidth: border.emphasis, borderColor: colors.sale },
   guest: { alignSelf: 'center', marginTop: spacing.lg, alignItems: 'center', gap: 3 },
   guestUnderline: { height: 2, alignSelf: 'stretch', backgroundColor: colors.hairline },
 });

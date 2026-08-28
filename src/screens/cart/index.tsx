@@ -15,7 +15,7 @@ import { fmt } from '@/utils/format-price';
 import { heroImage } from '@/data/images';
 import { VOICE } from '@/data/editorial';
 import { useCart, type CartItemView } from '@/store/cart';
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 
 const FREE_SHIPPING_OVER = 100;
 
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   track: { height: 8, backgroundColor: colors.surface, overflow: 'hidden' },
-  fill: { height: 8, backgroundColor: colors.lime, borderWidth: 1, borderColor: colors.ink },
+  fill: { height: 8, backgroundColor: colors.lime, borderWidth: border.rule, borderColor: colors.ink },
 
   line: {
     flexDirection: 'row',
@@ -347,8 +347,8 @@ const styles = StyleSheet.create({
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: colors.hairline,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
   },
   stepBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   stepValue: { minWidth: 26, textAlign: 'center' },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.gutter,
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderWidth: 1,
+    borderWidth: border.rule,
     borderColor: colors.hairline,
   },
 
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     // sibling, not an overlay), so this clears nothing but itself.
     paddingBottom: spacing.md,
     backgroundColor: colors.surface,
-    borderTopWidth: 1,
+    borderTopWidth: border.rule,
     borderTopColor: colors.hairline,
   },
 

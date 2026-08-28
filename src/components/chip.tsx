@@ -1,7 +1,7 @@
 import { StyleSheet, ViewProps } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
-import { colors, radius, spacing } from '../theme';
+import { border, colors, radius, spacing } from '../theme';
 import { Press } from './press';
 import { Txt } from './themed-text';
 
@@ -70,6 +70,8 @@ export function Chip({
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
         >
+          {/* `strokeWidth` is not a `border` token: it is viewBox units in a
+              100x100 box stretched over the chip, so it renders sub-point. */}
           <Line
             x1="0"
             y1="100"
@@ -90,25 +92,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     height: 44,
     borderRadius: radius.none,
-    borderWidth: 1.5,
-    borderColor: colors.hairline,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surface,
   },
+  /**
+   * The filled variant keeps the resting width: its selection is the ink fill,
+   * so widening the rule would move the label without showing anything. The
+   * border only follows the fill so no pale edge survives around it.
+   */
   filledSelected: { backgroundColor: colors.ink, borderColor: colors.ink },
-  filledDisabled: { borderColor: colors.hairline, backgroundColor: colors.surface },
+  filledDisabled: { borderColor: colors.controlBorder, backgroundColor: colors.surface },
   productOption: {
     minWidth: 0,
     height: 48,
     paddingHorizontal: spacing.xs,
-    borderWidth: 1,
+    borderWidth: border.rule,
     borderColor: colors.controlBorder,
   },
   productOptionSelected: {
     backgroundColor: colors.surface,
     borderColor: colors.ink,
-    borderWidth: 2,
+    borderWidth: border.emphasis,
   },
   productOptionDisabled: {
     backgroundColor: colors.surface,

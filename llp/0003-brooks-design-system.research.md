@@ -85,6 +85,41 @@ element (`.o-hero-home--pre-animation-state`). Sitewide transitions run 0.3–0.
 [observed] The brand's most ownable graphic gesture is a hand-drawn **squiggle**
 underline used on hover CTAs and annotations.
 
+### Border widths
+
+[observed — `style.css`, `:root` theme block] The site's own border is 1px.
+Nothing on brooksrunning.com draws a 1.5px rule; that weight was an app
+invention.
+
+[confirmed — human review of the PDP fit grid, 2026-08-27] The PDP size/width
+treatment described under **PDP purchase controls** is the app's reference
+outlined control, and every other outlined control now matches it. `border`
+(`src/theme/border.ts`) holds the three widths and `border.ts` documents which
+`colors` value each pairs with:
+
+| width | value | color | role |
+|---|---|---|---|
+| `border.rule` | 1 | `colors.controlBorder` | outlined control at rest |
+| `border.emphasis` | 2 | `colors.ink` | the same control selected or active |
+| `border.emphasis` | 2 | `colors.sale` | a control in error |
+| `border.rule` | 1 | `colors.hairline` | dividers, ruled rows, card outlines |
+| `border.heavy` | 3 | `colors.ink` | the outlined button, the sheet's ink cap |
+
+[observed] What this replaced: resting rules were 1.5pt `hairline` on the chip,
+the filter button, the outline icon button, the quantity stepper and the login
+field; 2pt `hairline` on the finder answer row; and 1pt `controlBorder` only on
+the PDP. Selection variously changed the color alone (filter button), the fill
+alone (chip), both (finder), or the color and width (PDP). The visible effect of
+unifying them is that a resting control edge is now *thinner but darker*, so it
+reads as a control rather than as a pale box, and "chosen" is one gesture —
+double the rule, turn it ink — everywhere.
+
+[inferred] Two roles keep a width that the outlined-control rule would get
+wrong, each commented at its use site: the finder's 14pt tick stays at
+`emphasis` because a single rule vanishes at that size, and the PDP's sold-out
+slash keeps a literal `strokeWidth` because it is viewBox units inside a
+stretched 100×100 box, not points.
+
 ### PDP purchase controls
 
 [observed — Brooks mobile PDP reference `IMG_4196.png`, 2026-08-21] Size and
@@ -101,7 +136,8 @@ controls rather than the app's roomier filter-chip spacing.
 hard-shadow primary button: a flat Brooks-blue rectangle with sentence-case
 action copy aligned left and the price aligned right. The shared `Chip`
 `productOption` appearance and `Button` `purchase` variant own these treatments;
-the PDP owns only the five/four-column composition.
+the PDP owns only the five/four-column composition. This 1pt-to-2pt pair is now
+the app-wide outlined-control rule — see **Border widths** above.
 
 [observed — live Ghost 18 PDP, 2026-08-21] Until size and width form a ready
 variant, the purchase action keeps the same split `Add to cart` / price layout

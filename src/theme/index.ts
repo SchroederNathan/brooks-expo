@@ -9,6 +9,7 @@ export { colors } from './colors';
 export { spacing } from './spacing';
 export { font, type } from './typography';
 export { radius } from './radius';
+export { border } from './border';
 export { shadows } from './shadows';
 export { motion } from './motion';
 export { header, headerIcon } from './header';

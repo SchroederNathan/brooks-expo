@@ -27,7 +27,7 @@ import {
 } from '@/data/query';
 import type { Product } from '@/data/types';
 import { requestSearchFocus } from '@/store/search-focus';
-import { colors, headerIcon, spacing } from '@/theme';
+import { border, colors, headerIcon, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const GRID_GAP = spacing.lg;
@@ -213,10 +213,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
     paddingHorizontal: spacing.gutter,
     paddingBottom: spacing.md,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.hairline,
   },
-  controlDivider: { width: 1, height: 22, backgroundColor: colors.hairline },
+  controlDivider: { width: border.rule, height: 22, backgroundColor: colors.hairline },
   head: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, paddingBottom: spacing.sm },
   empty: {
     alignItems: 'center',

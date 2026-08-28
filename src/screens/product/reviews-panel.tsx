@@ -5,7 +5,7 @@ import { Press } from '@/components/press';
 import { Stars } from '@/components/stars';
 import { Txt } from '@/components/themed-text';
 import type { ProductReviews, ReviewDimension } from '@/data/types';
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 
 /**
  * The expanded Brooks review summary, fit rails, and newest TurnTo reviews.
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   panel: {
     paddingTop: spacing.xxl,
     paddingBottom: spacing.xxxl,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.inkMuted,
   },
   summary: { alignItems: 'center' },
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: border.emphasis,
     borderColor: colors.ink,
   },
   fallback: { marginTop: spacing.xl, textAlign: 'center' },

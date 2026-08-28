@@ -28,7 +28,7 @@ import { productsIn } from '@/data/query';
 import { countSearchFilters } from '@/data/search-query';
 import { consumeSearchFocus } from '@/store/search-focus';
 import { useSearchFilterState } from '@/store/search-filters';
-import { colors, motion, spacing, type } from '@/theme';
+import { border, colors, motion, spacing, type } from '@/theme';
 
 import { SearchResults } from './search-results';
 
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   results: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },
   rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
-  franchise: { width: FRANCHISE_WIDTH, borderWidth: 1, borderColor: colors.hairline },
+  franchise: { width: FRANCHISE_WIDTH, borderWidth: border.rule, borderColor: colors.hairline },
   franchiseArt: { backgroundColor: colors.surfaceAlt },
   finderCard: {
     flexDirection: 'row',
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.gutter,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.hairline,
   },
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

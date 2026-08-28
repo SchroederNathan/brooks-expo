@@ -11,7 +11,7 @@ import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import type { Product } from '@/data/types';
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
@@ -503,12 +503,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.hairline,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
     backgroundColor: colors.surface,
   },
+  // An answer selects by filling, like the filled chip, so the rule follows the
+  // fill instead of doubling — the row would otherwise reflow its label.
   optionOn: { backgroundColor: colors.ink, borderColor: colors.ink },
-  optionTick: { width: 14, height: 14, borderWidth: 2, borderColor: colors.hairline },
+  // @ref LLP 0003#border-widths — The tick keeps the emphasis weight: at 14pt a
+  // single rule disappears, and this is a mark inside the control rather than
+  // the control's own edge.
+  optionTick: {
+    width: 14,
+    height: 14,
+    borderWidth: border.emphasis,
+    borderColor: colors.controlBorder,
+  },
   optionTickOn: { backgroundColor: colors.lime, borderColor: colors.lime },
 
   // Lime is a spark, never a surface (LLP 0003) — the checkpoint gets the

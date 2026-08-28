@@ -13,7 +13,7 @@ import { VOICE } from '@/data/editorial';
 import { useCart } from '@/store/cart';
 import { leave, useMember } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 
 /**
  * Account.
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.gutter,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: border.rule,
     borderBottomColor: colors.hairline,
   },
   signOut: { alignSelf: 'center', marginTop: spacing.xl, padding: spacing.sm },

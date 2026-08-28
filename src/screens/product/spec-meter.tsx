@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '@/theme';
+import { border, colors, spacing } from '@/theme';
 import { Txt } from '@/components/themed-text';
 
 /**
@@ -60,6 +60,6 @@ const styles = StyleSheet.create({
   root: { gap: spacing.sm },
   track: { flexDirection: 'row', gap: 4, height: 8 },
   segment: { flex: 1, backgroundColor: colors.surfaceSunken },
-  segmentOn: { backgroundColor: colors.lime, borderWidth: 1, borderColor: colors.ink },
+  segmentOn: { backgroundColor: colors.lime, borderWidth: border.rule, borderColor: colors.ink },
   labels: { flexDirection: 'row' },
 });

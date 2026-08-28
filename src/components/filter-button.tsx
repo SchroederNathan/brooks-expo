@@ -4,7 +4,7 @@ import { BrooksIcon } from './icons';
 import { OUTLINE_BUTTON_SIZE, OutlineIconButton } from './outline-icon-button';
 import { Press } from './press';
 import { Txt } from './themed-text';
-import { colors, spacing } from '../theme';
+import { border, colors, spacing } from '../theme';
 
 /**
  * The site's `Filter & sort` control, as a square outlined button carrying the
@@ -15,7 +15,7 @@ import { colors, spacing } from '../theme';
  * button whose label is `Filter & sort`; the glyph is the one the site ships in
  * its own sprite. Two sizes: `icon` is the 48pt square that sits beside the
  * search field, `label` carries the words for a control row with room. Idle it
- * wears the chips' hairline rule; applied filters turn the rule ink and add the
+ * wears the resting control rule; applied filters double it in ink and add the
  * count.
  *
  * The `icon` variant is `OutlineIconButton` — the shape it shares with the
@@ -81,15 +81,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    borderWidth: 1.5,
-    borderColor: colors.hairline,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
     backgroundColor: colors.surface,
   },
-  active: { borderColor: colors.ink },
+  active: { borderWidth: border.emphasis, borderColor: colors.ink },
   badge: {
     position: 'absolute',
-    top: -1.5,
-    right: -1.5,
+    // Pulled out over the rule so the badge sits on the corner rather than
+    // inside it. The badge only draws when filters are applied, so the rule it
+    // has to clear is always the emphasis one.
+    top: -border.emphasis,
+    right: -border.emphasis,
     minWidth: 18,
     height: 18,
     paddingHorizontal: 4,
