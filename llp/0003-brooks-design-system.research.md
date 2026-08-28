@@ -1127,7 +1127,16 @@ iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
 gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
 [observed 2026-08-26] That treatment now covers every picture-that-opens-a-screen
 on Home and Browse, not just the tile — see *Zoom transitions*.
-Home's stretchy parallax hero stays. Colorway selection is a second exception:
+Home's stretchy parallax hero stays. [observed 2026-08-28] The PDP gallery now
+rides the same `StretchyParallaxScrollView`: the photo drifts at half the
+content's speed under the title block and stretches on a top-edge pull, while
+the page dots sit in the primitive's foreground layer so they stay pinned to the
+title rather than drifting with the photo. The horizontal `FlatList` is the
+`header`; it keeps its own swipes because the foreground layer is `box-none`
+(`foreground` became optional on the primitive for consumers with nothing to
+pin). `Link.AppleZoomTarget` moved inside `header` around the gallery bounds —
+at push time the scroll offset is 0, so the target rect equals the frame rect
+the tile photo zooms into. Colorway selection is a second exception:
 the focused thumbnail uses a sliding ink underline (`UnderlineRail`) rather than
 a boxed blue/ink border, on both the catalog tile and the PDP color rail. Brand
 observations below still describe the site and the intended native patterns;

@@ -2,8 +2,9 @@ import { Image } from 'expo-image';
 import { Link, router, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Dimensions, Platform, Share, StyleSheet, View } from 'react-native';
 import Animated, {
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
@@ -22,6 +23,7 @@ import { Press } from '@/components/press';
 import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
+import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
 import { Txt } from '@/components/themed-text';
 import { UnderlineRail } from '@/components/underline-rail';
 import { catalog } from '@/data/catalog';
@@ -76,7 +78,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [reviewsOpen, setReviewsOpen] = useState(false);
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const sizesY = useRef(0);
   const galleryProgress = useSharedValue(0);
 
@@ -185,51 +187,60 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         />
       </Stack.Toolbar>
 
-      <ScrollView
-        ref={scrollRef}
+      {/* @ref LLP 0003#pdp — The gallery rides the same stretchy parallax
+          primitive as Home's hero: it drifts at half speed under the title and
+          stretches on a top-edge pull. The dots sit in the foreground layer so
+          they stay pinned to the title block rather than drifting with the
+          photo; the layer is `box-none`, so the horizontal FlatList under it
+          still owns its swipes. */}
+      <StretchyParallaxScrollView
+        scrollRef={scrollRef}
+        headerHeight={GALLERY_H}
         showsVerticalScrollIndicator={false}
         // The header is transparent and the gallery runs under it, so UIKit must
         // not inset the content past it.
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
+        header={
+          /* @ref LLP 0003#pdp — AppleZoomTarget is the gallery bounds so the
+             tile photo lands on the hero, not the full screen. Size is known
+             on first paint (window width), which the zoom transition needs. */
+          <Link.AppleZoomTarget>
+            <View
+              collapsable={false}
+              style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}
+            >
+              <Animated.FlatList
+                data={images}
+                key={colorway.code}
+                keyExtractor={(i) => i.url}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={handleGalleryScroll}
+                scrollEventThrottle={16}
+                renderItem={({ item, index }) => (
+                  <ShoeImage
+                    url={item.url}
+                    width={W}
+                    height={GALLERY_H}
+                    contentFit="cover"
+                    priority={index === 0 ? 'high' : 'normal'}
+                  />
+                )}
+              />
+            </View>
+          </Link.AppleZoomTarget>
+        }
+        foreground={
+          /* Page dots — squares, of course. */
+          <AnimatedPaginationDots
+            count={images.length}
+            progress={galleryProgress}
+            style={styles.dots}
+          />
+        }
       >
-        {/* ------------------------------------------------------- GALLERY -- */}
-        {/* @ref LLP 0003#pdp — AppleZoomTarget is the gallery bounds so the
-            tile photo lands on the hero, not the full screen. Size is known
-            on first paint (window width), which the zoom transition needs. */}
-        <Link.AppleZoomTarget>
-          <View
-            collapsable={false}
-            style={{ height: GALLERY_H, width: W, backgroundColor: colors.surfaceAlt }}
-          >
-            <Animated.FlatList
-              data={images}
-              key={colorway.code}
-              keyExtractor={(i) => i.url}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleGalleryScroll}
-              scrollEventThrottle={16}
-              renderItem={({ item, index }) => (
-                <ShoeImage
-                  url={item.url}
-                  width={W}
-                  height={GALLERY_H}
-                  contentFit="cover"
-                  priority={index === 0 ? 'high' : 'normal'}
-                />
-              )}
-            />
-            {/* Page dots — squares, of course. */}
-            <AnimatedPaginationDots
-              count={images.length}
-              progress={galleryProgress}
-              style={styles.dots}
-            />
-          </View>
-        </Link.AppleZoomTarget>
-
         {/* --------------------------------------------------------- TITLE -- */}
         <View style={styles.block}>
           <View style={styles.titleRow}>
@@ -430,7 +441,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             </>
           ) : null}
         </View>
-      </ScrollView>
+      </StretchyParallaxScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
       <View style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }]}>

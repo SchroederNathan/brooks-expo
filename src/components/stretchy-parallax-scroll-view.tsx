@@ -15,7 +15,11 @@ type Props = Omit<
   'children' | 'onScroll' | 'ref'
 > & {
   children: ReactNode;
-  foreground: ReactNode;
+  /**
+   * Content locked to the following section over the media (Home's hero copy,
+   * the PDP's page dots). Omit it when the media has nothing riding on it.
+   */
+  foreground?: ReactNode;
   header: ReactNode;
   headerHeight: number;
   /**
@@ -44,7 +48,9 @@ const PARALLAX_RATE = 0.5;
  * boundary, so it cannot bleed into later sections.
  *
  * @ref LLP 0003#screen-patterns — Home's planned parallax is implemented as a
- * reusable scroll primitive rather than hero-specific event state.
+ * reusable scroll primitive rather than hero-specific event state. The PDP
+ * gallery is the second consumer: a horizontal `FlatList` as `header` keeps its
+ * own touches because the foreground layer is `box-none` and only holds the dots.
  *
  * @ref LLP 0003#screen-patterns — Every per-frame style here is a transform.
  * An earlier version animated `height` on the clip, media, and foreground; each
@@ -147,9 +153,11 @@ export function StretchyParallaxScrollView({
           following section during both pull and scroll, so it needs no
           per-frame style at all.
         */}
-        <View pointerEvents="box-none" style={styles.foreground}>
-          {foreground}
-        </View>
+        {foreground ? (
+          <View pointerEvents="box-none" style={styles.foreground}>
+            {foreground}
+          </View>
+        ) : null}
       </View>
       {children}
     </Animated.ScrollView>
