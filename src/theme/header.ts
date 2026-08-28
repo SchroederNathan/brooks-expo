@@ -22,15 +22,19 @@ import { font } from './typography';
  * The blue collapsing `useBrooksHeader` is a separate thing and stays: it is a
  * verbatim port of brooksrunning.com's own sticky header. [observed 2026-08-26]
  * It belongs to Home alone now — the other anchors draw no chrome at all and
- * take their safe area from `components/screen`. Native chrome is still for
- * what any anchor pushes.
+ * take their safe area from `components/screen`.
+ *
+ * [superseded 2026-08-28] The PLP no longer wears the native bar. It hides it
+ * and draws back and search as Browse's `OutlineIconButton` squares, so the
+ * `plain` preset that used to sit here is gone. Native chrome is now the PDP's
+ * alone. @ref LLP 0003#pushed-screens-wear-the-native-header
  */
 
 /** The bar's own tint: back chevron and every toolbar button. */
 const tint = colors.ink;
 
 /**
- * Shared across both presets. The back button is `minimal` because a Brooks
+ * The back button is `minimal` because a Brooks
  * push is always one level deep from a grid or a tile — the previous screen's
  * title adds nothing the chevron does not already say.
  */
@@ -58,33 +62,6 @@ export const header = {
     headerBlurEffect: 'none',
     headerTitle: '',
   } satisfies NativeStackNavigationOptions,
-
-  /**
-   * A white bar above a scrolling grid (the PLP). The title is set per screen; a
-   * screen that carries its own large title in-content passes `''` until that
-   * title scrolls away.
-   *
-   * [observed 2026-08-26] The white is the *screen's*, not the bar's — the bar
-   * is transparent and the PLP pads its own opaque control row up behind it.
-   * The bar used to be opaque, and UIKit inset the content below it. That inset
-   * is applied a beat late under a zoom transition: the pushed screen paints at
-   * full-window height first, so the control row spent ~0.35s hidden behind the
-   * bar and then popped in, shoving the large title down. Owning the geometry in
-   * JS makes the first painted frame the final one. This is the known
-   * zoom-with-a-header issue Expo's own docs warn about.
-   * @ref LLP 0003#zoom-transitions
-   *
-   * Nothing scrolls behind the bar either way: the control row is sticky and
-   * opaque, so the grid never reaches the band the bar occupies.
-   */
-  plain: {
-    ...base,
-    headerTransparent: true,
-    headerBlurEffect: 'none',
-    // Filson, not the system face — the one piece of brand the native bar takes.
-    // 17/-0.2 matches the `bodyStrong` step rather than inventing a size.
-    headerTitleStyle: { fontFamily: font.extraBold, fontSize: 17, color: colors.ink },
-  } satisfies NativeStackNavigationOptions,
 } as const;
 
 /**
@@ -99,7 +76,6 @@ export const header = {
  */
 export const headerIcon = {
   share: 'square.and.arrow.up',
-  search: 'magnifyingglass',
   cart: 'bag',
   filters: 'line.3.horizontal.decrease',
   account: 'person',

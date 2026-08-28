@@ -1,33 +1,43 @@
-import { router, Stack } from 'expo-router';
-import { useHeaderHeight } from 'expo-router/react-navigation';
-import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  ScrollView,
   StyleSheet,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { FilterSheet, SORT_OPTIONS, countActiveFilters } from '@/screens/category/filter-sheet';
-import { ProductTile } from '@/components/product-tile';
 import { Chip } from '@/components/chip';
+import { FilterButton } from '@/components/filter-button';
+import { OUTLINE_BUTTON_SIZE, OutlineIconButton } from '@/components/outline-icon-button';
+import { ProductTile } from '@/components/product-tile';
+import { useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
+import { productsIn } from '@/data/query';
 import {
-  applyFilters,
-  productsIn,
-  sortProducts,
-  type Filters,
-  type SortKey,
-} from '@/data/query';
+  applySearchFilters,
+  countSearchFilters,
+  SEARCH_SORTS,
+  sortSearchResults,
+} from '@/data/search-query';
 import type { Product } from '@/data/types';
-import { requestSearchFocus } from '@/store/search-focus';
-import { border, colors, headerIcon, spacing } from '@/theme';
+import {
+  clearSearchFilterState,
+  patchSearchFilterState,
+  useSearchFilterState,
+} from '@/store/search-filters';
+import { colors, motion, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const GRID_GAP = spacing.lg;
@@ -39,8 +49,10 @@ const TITLE_ZONE = 64;
  * The PLP.
  *
  * @ref LLP 0003#plp — Zappos's utility with adidas's rhythm: a collapsing large
- * title, a control row with `Filter (n)` and franchise quick-chips, a 2-up grid
- * of ProductTiles, and a full-height filter sheet with a live result count.
+ * title over a 2-up grid of ProductTiles. [observed 2026-08-28] The chrome
+ * above the grid is one row of Browse's outlined squares — back on the left,
+ * `Filter & sort` on the right — and the filter panel is the same form sheet
+ * Search opens (`/search-filters`), fed through `store/search-filters`.
  */
 export function Category({
   id,
@@ -52,96 +64,70 @@ export function Category({
   franchise?: string;
 }) {
   const insets = useSafeAreaInsets();
-  // The bar is transparent and this screen pays for its own top inset, so the
-  // layout does not move when a zoom transition paints it. @ref header.plain
-  const headerHeight = useHeaderHeight();
+  // No native bar: this screen draws its own, so it takes the same safe-area
+  // rhythm as the headerless anchors and owns every pixel of its top band.
+  // @ref LLP 0003#pushed-screens-wear-the-native-header
+  const paddingTop = useScreenTopPadding();
+  const reduceMotion = useReducedMotion();
   const [showBarTitle, setShowBarTitle] = useState(false);
+  const barTitle = useSharedValue(0);
+  useEffect(() => {
+    barTitle.set(withTiming(showBarTitle ? 1 : 0, { duration: reduceMotion ? 0 : motion.base }));
+  }, [showBarTitle, barTitle, reduceMotion]);
+  const barTitleStyle = useAnimatedStyle(() => ({ opacity: barTitle.get() }));
 
-  const [filters, setFilters] = useState<Filters>({});
-  const [sort, setSort] = useState<SortKey>('featured');
-  const [activeFranchise, setActiveFranchise] = useState<string | null>(
-    franchise ? String(franchise) : null
-  );
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const { filters, sort } = useSearchFilterState();
+  const nFilters = countSearchFilters(filters);
 
-  const base = useMemo(() => productsIn(catalog, String(id)), [id]);
-
-  /** Franchise chips: the franchises actually present here, biggest first. */
-  const franchises = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const p of base) if (p.franchise) m.set(p.franchise, (m.get(p.franchise) ?? 0) + 1);
-    return [...m.entries()]
-      .filter(([, n]) => n >= 2)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([f]) => f);
-  }, [base]);
-
-  const inFranchise = useMemo(
-    () => (activeFranchise ? base.filter((p) => p.franchise === activeFranchise) : base),
-    [base, activeFranchise]
-  );
+  /** The category, narrowed to one franchise when a franchise tile opened it. */
+  const base = useMemo(() => {
+    const all = productsIn(catalog, String(id));
+    return franchise ? all.filter((p) => p.franchise === franchise) : all;
+  }, [id, franchise]);
   const products = useMemo(
-    () => sortProducts(applyFilters(inFranchise, filters), sort),
-    [inFranchise, filters, sort]
+    () => sortSearchResults(applySearchFilters(base, filters), sort),
+    [base, filters, sort]
   );
 
-  const nFilters = countActiveFilters(filters);
-  const sortLabel = SORT_OPTIONS.find((o) => o.key === sort)?.label ?? 'Featured';
-  const screenTitle = title ? String(title) : 'Shop';
+  const sortLabel = SEARCH_SORTS.find((o) => o.key === sort)?.label ?? '';
+  const screenTitle = franchise ?? (title ? String(title) : 'Shop');
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = e.nativeEvent.contentOffset.y > TITLE_ZONE;
     if (next !== showBarTitle) setShowBarTitle(next);
   };
 
+  /**
+   * The sheet counts and facets whatever `candidates` holds, so this screen
+   * hands it the category just before presenting. Set on press rather than on
+   * mount because Browse's results, still mounted under this push, own the
+   * same slot while they are on screen.
+   */
+  const openFilters = () => {
+    patchSearchFilterState({ candidates: base });
+    router.push('/search-filters');
+  };
+
   return (
     <View style={styles.root}>
-      {/* The stack's own bar carries back and search now. Its title stays empty
-          until the in-content large title has scrolled away, which is the
-          collapse this screen always had — the row that used to draw it is
-          gone. @ref LLP 0003#pushed-screens-wear-the-native-header */}
-      <Stack.Screen options={{ headerTitle: showBarTitle ? screenTitle : '' }} />
-      <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button
-          icon={headerIcon.search}
-          accessibilityLabel="Search"
-          onPress={() => {
-            requestSearchFocus();
-            router.navigate('/(tabs)/(shop)/shop');
-          }}
+      {/* The app's own bar: back and `Filter & sort` as the outlined squares
+          that flank Browse's search field, so a push out of Browse keeps the
+          controls it left. The title fades in between them once the in-content
+          large title has scrolled away — the same 64pt collapse this screen
+          always had. @ref LLP 0003#pushed-screens-wear-the-native-header */}
+      <View style={[styles.bar, { paddingTop }]}>
+        <OutlineIconButton
+          icon="caretLeft"
+          iconSize={18}
+          accessibilityLabel="Back"
+          onPress={() => router.back()}
         />
-      </Stack.Toolbar>
-
-      {/* Control row — stays put while the grid scrolls. Its white runs up
-          behind the transparent bar, which is where the bar's surface comes
-          from. */}
-      <View style={[styles.controls, { paddingTop: headerHeight + spacing.sm }]}>
-        <Chip
-          label={nFilters ? `Filter (${nFilters})` : 'Filter'}
-          size="sm"
-          selected={nFilters > 0}
-          onPress={() => setSheetOpen(true)}
-        />
-        <Chip label={`Sort · ${sortLabel}`} size="sm" onPress={() => setSheetOpen(true)} />
-        {franchises.length > 1 && <View style={styles.controlDivider} />}
-        {franchises.length > 1 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: spacing.sm, paddingRight: spacing.gutter }}
-          >
-            {franchises.map((f) => (
-              <Chip
-                key={f}
-                label={f}
-                size="sm"
-                selected={activeFranchise === f}
-                onPress={() => setActiveFranchise(activeFranchise === f ? null : f)}
-              />
-            ))}
-          </ScrollView>
-        )}
+        <Animated.View style={[styles.barTitle, barTitleStyle]} pointerEvents="none">
+          <Txt variant="barTitle" numberOfLines={1}>
+            {screenTitle}
+          </Txt>
+        </Animated.View>
+        <FilterButton count={nFilters} onPress={openFilters} />
       </View>
 
       <FlatList
@@ -155,9 +141,10 @@ export function Category({
         contentContainerStyle={{ paddingBottom: insets.bottom + 40, gap: spacing.xl }}
         ListHeaderComponent={
           <View style={styles.head}>
-            <Txt variant="h1">{activeFranchise ?? screenTitle}</Txt>
+            <Txt variant="h1">{screenTitle}</Txt>
             <Txt variant="caption" c={colors.inkMuted} style={{ marginTop: 4 }}>
               {products.length} {products.length === 1 ? 'style' : 'styles'}
+              {sort !== 'recommended' ? ` · ${sortLabel}` : ''}
             </Txt>
           </View>
         }
@@ -168,31 +155,16 @@ export function Category({
             </Txt>
             <Squiggle />
             <Txt variant="body" c={colors.inkMuted} style={{ textAlign: 'center' }}>
-              No styles match that combination. Try clearing a filter.
+              No styles match those filters. Try clearing one.
             </Txt>
             <Chip
               label="Clear filters"
               style={{ marginTop: spacing.lg }}
-              onPress={() => {
-                setFilters({});
-                setActiveFranchise(null);
-              }}
+              onPress={clearSearchFilterState}
             />
           </View>
         }
         renderItem={({ item, index }) => <ProductTile product={item} width={TILE_W} index={index} />}
-      />
-
-      <FilterSheet
-        visible={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        products={inFranchise}
-        filters={filters}
-        sort={sort}
-        onApply={(f, s) => {
-          setFilters(f);
-          setSort(s);
-        }}
       />
     </View>
   );
@@ -201,22 +173,25 @@ export function Category({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
   /**
-   * The one bar this screen still draws. Back, title, and search moved to the
-   * native header; what is left is the filter/sort row, which is screen content
-   * a UINavigationBar has no slot for.
+   * Back, collapsing title, `Filter & sort` — one row of Browse's outlined
+   * squares, on the screen's white. The only chrome above the grid.
    */
-  controls: {
+  bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.surface,
-    zIndex: 10,
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.gutter,
     paddingBottom: spacing.md,
-    borderBottomWidth: border.rule,
-    borderBottomColor: colors.hairline,
+    backgroundColor: colors.surface,
+    zIndex: 10,
   },
-  controlDivider: { width: border.rule, height: 22, backgroundColor: colors.hairline },
+  barTitle: {
+    flex: 1,
+    height: OUTLINE_BUTTON_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
   head: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, paddingBottom: spacing.sm },
   empty: {
     alignItems: 'center',

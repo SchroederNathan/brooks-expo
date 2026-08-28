@@ -32,6 +32,12 @@ export const type = {
   h3: { fontFamily: font.extraBold, fontSize: 20, lineHeight: 24, letterSpacing: -0.2 },
   pdpTitle: { fontFamily: font.extraBold, fontSize: 24, lineHeight: 28, letterSpacing: -0.3 },
   /**
+   * The PLP's collapsed bar title, between its back and search squares. 17pt
+   * Heavy is the size the native bar's Filson title used before the PLP drew
+   * its own bar. @ref LLP 0003#pushed-screens-wear-the-native-header
+   */
+  barTitle: { fontFamily: font.extraBold, fontSize: 17, lineHeight: 22, letterSpacing: -0.2 },
+  /**
    * A navigation list row (Shop menu, Account). Medium, not Heavy: the site's
    * shop menu is a dense list of links, and a screen of 20pt Heavy rows reads
    * as a stack of headlines. @ref LLP 0003#mega-menu-the-shop-tab — 16 medium.

@@ -648,6 +648,34 @@ now wears. Both were re-implementations of a control the platform already ships.
   one. The filter/sort row stays, because it is screen content a navigation bar
   has no slot for.
 
+[superseded 2026-08-28] **The PLP left the native bar again.** With the bar
+transparent and the screen paying for its own inset (see *Zoom transitions*),
+the bar contributed only two glyphs — a system chevron and a system
+magnifying-glass — sitting one band above a screen otherwise drawn entirely in
+Brooks's own controls. Browse, the screen the PLP is pushed from, flanks its
+search field with 48pt outlined squares (`OutlineIconButton`: the `Filter &
+sort` glyph on the right, a dismiss cross on the left). The PLP now hides the
+native header (`headerShown: false` on `category/[id]`) and draws that same
+pair: the sprite's `caretLeft` on the left for back, and `FilterButton` — the
+very control Browse shows beside its field — on the right. The collapsing title
+fades in between them at the same 64pt threshold, set in `type.barTitle` — the
+17pt Filson Heavy the native bar's title used. The native back gesture survives
+with the bar hidden; only the bar's own chevron is gone. Everything below about
+SF Symbols and `header.plain` now describes the PDP alone.
+
+[observed 2026-08-28] The same change **removed the PLP's own control row and
+filter sheet.** The `Filter (n)` / `Sort ·` chips, the franchise quick-chips and
+the full-height `FilterSheet` were a second filter vocabulary next to the one
+Search already ported from the site's panel. The PLP now opens the same
+`/search-filters` form sheet and reads the same `store/search-filters`, handing
+the sheet its category as `candidates` on press (Browse's results, still
+mounted under the push, own that slot while they are on screen). One panel,
+one store, one applied state: filters set on a PLP are the filters Search shows
+and vice versa, which is also how the site behaves — its panel is one component
+wherever it opens. A franchise tile still narrows the PLP, as a fixed scope
+rather than a toggled chip; the search button is gone, since Browse — one pop
+away — *is* the search screen.
+
 [observed] The bar buttons are **SF Symbols**, not Brooks sprite glyphs, and
 that is deliberate. Bar chrome is the platform's: a symbol lines up optically
 with the back chevron beside it, scales with Dynamic Type, and inherits the
@@ -737,9 +765,13 @@ shoving the large title down. Measured against a plain push into the same
 screen, which showed the row in its first frame, so the shift was the zoom's.
 
 [observed] The fix is to stop depending on the inset rather than to fight it.
-`header.plain` is now `headerTransparent: true`, and the PLP pads its own
+`header.plain` became `headerTransparent: true`, and the PLP padded its own
 control row up behind the bar (`useHeaderHeight()` from
-`expo-router/react-navigation`). The bar's white surface is the control row's.
+`expo-router/react-navigation`). The bar's white surface was the control row's.
+[superseded 2026-08-28] The PLP now hides the native bar entirely and draws its
+own (see *Pushed screens wear the native header*), taking its top inset from
+`useScreenTopPadding()`. The rule below still holds — the screen owns its
+geometry — and `header.plain` is removed.
 Nothing is lost visually: the control row is sticky and opaque, so the grid
 never reaches the band the bar occupies either way — and the first painted frame
 is now the final one.
@@ -1155,12 +1187,11 @@ continuous morph.
   rather than cross-fades. Parallax hero; staggered entrance matching
   the site's own; horizontal rails for new arrivals and best sellers; editorial
   cards that land on merchandise.
-- **PLP** (Zappos utility, adidas rhythm): collapsing large title; sticky control
-  row with `Filter (n)` and franchise quick-chips; 2-up grid; filter as a
-  full-height bottom sheet with a live "Apply · 23 results" count. [observed
-  2026-08-26] Back, the collapsed title, and search moved into the native
-  `Stack` header — see *Pushed screens wear the native header*. The control row
-  is all this screen still draws above the grid.
+- **PLP** (Zappos utility, adidas rhythm): collapsing large title; 2-up grid.
+  [superseded 2026-08-28] The sticky `Filter (n)` / franchise chip row and the
+  full-height bottom sheet are gone: above the grid is one row of Browse's
+  outlined squares (back, `Filter & sort`), and filtering is Search's own form
+  sheet and store — see *Pushed screens wear the native header*.
 - **Tile** (Zappos/GOAT): colorway swatches **on the tile**, swapping its image in
   place. The highest-value borrow in the survey — Brooks products carry up to 11
   colorways, and making someone navigate to see them is the core failure to avoid.

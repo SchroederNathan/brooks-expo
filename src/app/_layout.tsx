@@ -58,16 +58,16 @@ export default function RootLayout() {
                   card into the PLP. These screens keep the stack default so
                   Android and older iOS still push. @ref LLP 0003#zoom-transitions
 
-                  Both pushed screens wear the native bar, and both run it
-                  transparent: the PDP's over its full-bleed gallery, the PLP's
-                  over the white its own control row carries up behind it. The PLP
-                  also sets its title as the in-content one scrolls away.
+                  The PDP wears the native bar, transparent over its full-bleed
+                  gallery. The PLP hides it and draws its own row of Browse's
+                  outlined squares (back, search) — the native back gesture
+                  still works with the bar hidden.
                   @ref LLP 0003#pushed-screens-wear-the-native-header */}
               <Stack.Screen
                 name="product/[id]"
                 options={{ title: 'Product', ...header.overlay }}
               />
-              <Stack.Screen name="category/[id]" options={{ title: 'Shop', ...header.plain }} />
+              <Stack.Screen name="category/[id]" options={{ title: 'Shop', headerShown: false }} />
               {/* Search's `Filter & sort`, the site's panel as a native form
                   sheet. Presented here, by the root stack, because a sheet is
                   not a child of the tab screen that opens it; state crosses
