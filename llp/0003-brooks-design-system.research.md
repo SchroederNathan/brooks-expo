@@ -64,6 +64,7 @@ the design system routes both families through tokens.
 | Hero display | 40 | 900 | −0.5 |
 | Section header | 26 | 800 | −0.3 |
 | PDP title | 24 | 800 | −0.3 |
+| Nav list row (Shop menu, Account) | 16 | 500 | 0 |
 | Product title (tile) | 15 | 700 | 0 |
 | Price | 16 | 700 | 0 (tabular) |
 | Body | 15 | 400 | 0 |
@@ -1043,6 +1044,11 @@ card. These are the exact labels the Shop tab should carry:
 [inferred] A hover menu cannot exist on touch, so the Shop tab *is* this menu.
 Rendered as `h3`-scale rows the four groups run past 1800px, so the ported rows
 are 46px at 16px medium — the menu's own density, not a settings-list density.
+
+[observed 2026-08-28] The rows had drifted to `h3` (20 Heavy) in code, so the
+Shop screen read as a stack of headlines. The ramp now carries a `navRow` step
+(Filson Medium 16/22) that the Shop and Account rows use; `h3` stays for real
+headings.
 
 ## Product taxonomy
 

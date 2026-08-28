@@ -85,7 +85,8 @@ export function Account() {
       )}
 
       {/* ----------------------------------------------------------- ROWS -- */}
-      <View style={{ marginTop: spacing.xxl }}>
+      {/* The rows' rules stop at the gutter, not the screen edge. */}
+      <View style={{ marginTop: spacing.xxl, marginHorizontal: spacing.gutter }}>
         <Row
           label="Your bag"
           detail={cart.count ? `${cart.count} ${cart.count === 1 ? 'item' : 'items'}` : 'Empty'}
@@ -128,7 +129,7 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
   return (
     <Press scaleTo={onPress ? 0.99 : 1} onPress={onPress} style={styles.row}>
       <View style={{ flex: 1 }}>
-        <Txt variant="h3">{label}</Txt>
+        <Txt variant="navRow">{label}</Txt>
         {detail ? (
           <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: 2 }}>
             {detail}
@@ -157,7 +158,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.gutter,
     paddingVertical: spacing.lg,
     borderBottomWidth: border.rule,
     borderBottomColor: colors.hairline,

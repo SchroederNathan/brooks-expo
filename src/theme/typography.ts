@@ -31,6 +31,12 @@ export const type = {
   h2: { fontFamily: font.extraBold, fontSize: 26, lineHeight: 30, letterSpacing: -0.3 },
   h3: { fontFamily: font.extraBold, fontSize: 20, lineHeight: 24, letterSpacing: -0.2 },
   pdpTitle: { fontFamily: font.extraBold, fontSize: 24, lineHeight: 28, letterSpacing: -0.3 },
+  /**
+   * A navigation list row (Shop menu, Account). Medium, not Heavy: the site's
+   * shop menu is a dense list of links, and a screen of 20pt Heavy rows reads
+   * as a stack of headlines. @ref LLP 0003#mega-menu-the-shop-tab — 16 medium.
+   */
+  navRow: { fontFamily: font.medium, fontSize: 16, lineHeight: 22 },
 
   eyebrow: {
     fontFamily: font.bold,

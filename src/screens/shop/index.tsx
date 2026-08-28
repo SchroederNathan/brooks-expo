@@ -24,7 +24,6 @@ import { ZoomSource } from '@/components/zoom-source';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import { heroImage } from '@/data/images';
-import { productsIn } from '@/data/query';
 import { countSearchFilters } from '@/data/search-query';
 import { consumeSearchFocus } from '@/store/search-focus';
 import { useSearchFilterState } from '@/store/search-filters';
@@ -288,9 +287,9 @@ export function Shop() {
             <Txt variant="eyebrow" c={colors.inkMuted} style={{ paddingHorizontal: spacing.gutter }}>
               {s.title}
             </Txt>
-            <View style={{ marginTop: spacing.md }}>
+            {/* The rows' rules stop at the gutter, not the screen edge. */}
+            <View style={{ marginTop: spacing.md, marginHorizontal: spacing.gutter }}>
               {s.rows.map((r) => {
-                const n = productsIn(catalog, r.id).length;
                 return (
                   <Press
                     key={r.id}
@@ -303,13 +302,8 @@ export function Shop() {
                       })
                     }
                   >
-                    <Txt variant="h3">{r.label}</Txt>
-                    <View style={styles.rowRight}>
-                      <Txt variant="tiny" c={colors.inkMuted}>
-                        {n}
-                      </Txt>
-                      <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
-                    </View>
+                    <Txt variant="navRow">{r.label}</Txt>
+                    <BrooksIcon name="caretRight" size={14} color={colors.inkFaint} />
                   </Press>
                 );
               })}
@@ -408,10 +402,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.gutter,
     paddingVertical: spacing.lg,
     borderBottomWidth: border.rule,
     borderBottomColor: colors.hairline,
   },
-  rowRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
 });
