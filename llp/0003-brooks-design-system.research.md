@@ -1096,6 +1096,13 @@ pending the motion overhaul. [observed 2026-08-26] The button press-shift is
 back, as the one press feedback in the app: on press-in the shadowed button's
 face travels the shadow's 4pt offset so the two flatten into a single block, on
 a native CSS transition over `motion.press` (70ms) — pushed, not animated.
+[observed 2026-08-28] The offset layer is no longer a filled ink block. It is a
+`border.heavy` (3pt) outline in the button's own colour — ink for primary and
+secondary, blue for the purchase CTA, white for `onDark`, the disabled fill for
+a disabled purchase — the same frame the secondary button draws, so
+a primary and a secondary stacked together (Account's guest state) read as one
+family rather than a solid slab beside a hollow one. The press-in travel is
+unchanged: the face lands on the outline and covers it.
 [observed 2026-08-27] The shadow is part of the button's shape, not its enabled
 state: a disabled button still draws the layered block and simply never travels
 onto it. Hiding it while disabled made the search `Filter & sort` footer read as
@@ -1111,9 +1118,11 @@ a disabled button also borrows the outlined variant's 3pt ink edge; the shadow
 plus that edge is what keeps it legible as a button while it is inert. Filling
 the disabled primary dark instead was tried first and rejected as too heavy —
 it drew more attention inert than the live `Clear all` beside it. The blue PDP
-purchase CTA is the exception at both ends: unshadowed in every state, as it is
-on the site, and dark when disabled, because it sits alone on a sticky bar with
-no sibling to read against. Stack pushes use the platform default again. On
+purchase CTA was the exception at both ends: unshadowed in every state, as it
+is on the site, and dark when disabled, because it sits alone on a sticky bar
+with no sibling to read against. [observed 2026-08-28] It now wears the same
+offset outline as every other button, so the app has one button shape; it
+keeps its blue fill, split label, and dark disabled state. Stack pushes use the platform default again. On
 iOS 18+, a product tile photo uses Expo Router's `Link.AppleZoom` into the PDP
 gallery (`Link.AppleZoomTarget`); older iOS and Android keep the default push.
 [observed 2026-08-26] That treatment now covers every picture-that-opens-a-screen
@@ -1169,7 +1178,25 @@ continuous morph.
   on a `Bag (n)` heading rather than the blue bar — see *Only Home wears the
   header*.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
-  gate. Guest path always visible.
+  gate. Guest path always visible. [observed 2026-08-28] The Account tab's
+  guest state dropped its navy pitch card, heading, rows and footer for the
+  storefront-app convention, centred alone on the screen: an illustration built from the brand's own sprite glyphs (`account`
+  on a navy block, `cart` / `clock` / `pin` in outlined squares), one line of
+  body copy on what signing in unlocks, then `Log in` (primary) over `Create
+  an account` (secondary) as a full-width stack, both the app's own shadowed
+  square buttons. Both push the same on-device form; `?mode=login|create`
+  only relabels its heading and button. The perk copy (`RUN_CLUB_PERKS`) now
+  repeats only what Brooks states itself. [observed via search snippets of
+  support.brooksrunning.com article 360016635851, "Why should I create a
+  Brooks Run Club account?"; the page itself is behind Cloudflare and
+  brooksrunning.com behind Akamai, so neither could be fetched directly]:
+  order history saved in one place for easy returns, free standard shipping,
+  free express shipping on $160+, a gift with purchase during the birthday
+  month, member-exclusive promotions and games; the account-login page
+  description adds saved payment methods and billing / shipping addresses.
+  Dropped as unverified: "Early access to new shoes and sales" and "Fun games
+  and prizes". No wishlist claim is made — `/wishlist/view` exists on the
+  site but no fetched source ties it to an account.
 - **Tab bar & search** (Nike). [superseded 2026-08-17→2026-08-21] The bar was the
   system native tab bar (liquid glass on iOS 26) with a `role="search"` tab that
   iOS detached into the standalone trailing button — Home · Shop · Bag · Account

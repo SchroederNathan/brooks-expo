@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -22,6 +22,11 @@ import { border, colors, font, spacing } from '@/theme';
  */
 export function Login() {
   const insets = useSafeAreaInsets();
+  // Account's guest screen offers `Log in` and `Create an account` as two
+  // actions, as the site does. The prototype has one on-device form behind
+  // both, so the mode only changes what the sheet calls itself.
+  const { mode } = useLocalSearchParams<{ mode?: 'login' | 'create' }>();
+  const isLogin = mode === 'login';
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [touched, setTouched] = useState(false);
@@ -64,7 +69,7 @@ export function Login() {
           Brooks Run Club
         </Txt>
         <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.sm }}>
-          Join the club.{'\n'}Run happier.
+          {isLogin ? 'Welcome back.' : 'Join the club.'}{'\n'}Run happier.
         </Txt>
         <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
           {RUN_CLUB_PERKS.map((perk) => (
@@ -102,7 +107,11 @@ export function Login() {
           Prototype: membership lives on this device only. Nothing is sent anywhere.
         </Txt>
 
-        <Button title="Join the club" style={{ marginTop: spacing.lg }} onPress={onJoin} />
+        <Button
+          title={isLogin ? 'Log in' : 'Create an account'}
+          style={{ marginTop: spacing.lg }}
+          onPress={onJoin}
+        />
 
         {/* The guest path is always visible — a commerce demo that forces
             auth dies on stage. */}

@@ -7,15 +7,16 @@ import { Txt } from './themed-text';
 
 /**
  * Brooks buttons: 50pt tall and square. Primary actions use the brand's
- * uppercase label and hard offset shadow; the PDP purchase variant follows
- * the storefront's blue, sentence-case, split-label treatment without a
- * shadow.
+ * uppercase label and hard offset outline; the PDP purchase variant follows
+ * the storefront's blue, sentence-case, split-label treatment on the same
+ * stacked block.
  *
  * @ref LLP 0003#brand — Square corners and the hard offset press shadow are not
  * stylistic preferences; they are what Brooks's own buttons do. Rounding these
  * would make the app read as a generic commerce template. The shadow is an
  * absolutely positioned view, not a shadow prop, so it renders identically on
- * every platform.
+ * every platform. [observed 2026-08-28] It is drawn as a `border.heavy` ink
+ * outline rather than a filled block, matching the secondary button's frame.
  *
  * @ref LLP 0003#pdp-purchase-controls — The purchase CTA is the deliberate
  * exception: blue fill, sentence-case action at left, price at right, and it
@@ -28,7 +29,7 @@ import { Txt } from './themed-text';
  * hover/active treatment, which on touch is press-in. It runs as a native CSS
  * transition over `motion.press` so it never touches the JS thread per frame,
  * and it is off under reduced motion (the face simply sits flat while pressed).
- * Every non-purchase button keeps the shadow in all states: dropping it while
+ * Every button keeps the shadow in all states: dropping it while
  * disabled made a footer's two buttons read as different components, and it
  * moved the button's visual weight on a state change the user did not cause.
  * Disabled is carried by fill and label colour alone.
@@ -75,9 +76,15 @@ export function Button({
   const outlined = variant === 'secondary' || (disabled && !isPurchase);
 
   const inert = disabled || loading;
-  // The shadow is the button's shape, not its enabled state: a disabled button
-  // keeps the layered block and simply never travels onto it.
-  const shadowed = !isPurchase;
+  // The offset outline is the button's shape, not its enabled state: a disabled
+  // button keeps the layer and simply never travels onto it. [observed
+  // 2026-08-28] The purchase CTA wears it too now, so every button in the app
+  // is the same stacked block; blue fill and the split label stay its own.
+  const shadowed = true;
+  // The outline takes the button's own colour: the fill of a filled button, the
+  // ink frame of an outlined one. A blue purchase CTA gets a blue layer, a
+  // white `onDark` button a white one, so the stack always reads as one object.
+  const shadowColor = outlined ? colors.ink : bg;
   const reduced = useReducedMotion();
   const [pressed, setPressed] = useState(false);
 
@@ -93,7 +100,7 @@ export function Button({
 
   return (
     <View style={[styles.buttonWrap, style]}>
-      {shadowed ? <View style={styles.buttonShadow} /> : null}
+      {shadowed ? <View style={[styles.buttonShadow, { borderColor: shadowColor }]} /> : null}
       <Animated.View style={face}>
       <Pressable
         accessibilityRole="button"
@@ -138,13 +145,19 @@ export function Button({
 
 const styles = StyleSheet.create({
   buttonWrap: { position: 'relative' },
+  /**
+   * The offset layer is an outline, not a filled block: the same `heavy` frame
+   * the secondary button wears, in the button's own colour, so a primary and a
+   * secondary button stacked together read as one family. The face covers all
+   * but a 4pt L of it.
+   */
   buttonShadow: {
     position: 'absolute',
     left: SHADOW_OFFSET,
     top: SHADOW_OFFSET,
     right: -SHADOW_OFFSET,
     bottom: -SHADOW_OFFSET,
-    backgroundColor: colors.ink,
+    borderWidth: border.heavy,
   },
   button: {
     height: 50,
