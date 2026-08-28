@@ -31,10 +31,9 @@ import { border, colors, motion, spacing, type } from '@/theme';
 
 import { SearchResults } from './search-results';
 
-const FRANCHISE_WIDTH = 120;
-/** Inside the card's 1pt rule, which the art sits within rather than under. */
-const FRANCHISE_ART_WIDTH = FRANCHISE_WIDTH - 2;
-const FRANCHISE_ART_HEIGHT = 80;
+const FRANCHISE_WIDTH = 140;
+const FRANCHISE_ART_WIDTH = FRANCHISE_WIDTH;
+const FRANCHISE_ART_HEIGHT = FRANCHISE_ART_WIDTH;
 
 /**
  * The fixed title band: the `h1` line plus `ScreenHeading`'s own bottom margin,
@@ -255,9 +254,7 @@ export function Shop() {
                       />
                     ) : null}
                   </ZoomSource>
-                  <Txt variant="caption" style={{ padding: spacing.sm }}>
-                    {f}
-                  </Txt>
+                  <Txt variant="caption">{f}</Txt>
                 </Press>
               </Link>
             );
@@ -386,7 +383,8 @@ const styles = StyleSheet.create({
   results: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   railLabel: { paddingHorizontal: spacing.gutter, marginBottom: spacing.md },
   rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
-  franchise: { width: FRANCHISE_WIDTH, borderWidth: border.rule, borderColor: colors.hairline },
+  /* No card chrome: the art and its name, a gap apart. */
+  franchise: { width: FRANCHISE_WIDTH, gap: spacing.sm },
   franchiseArt: { backgroundColor: colors.surfaceAlt },
   finderCard: {
     flexDirection: 'row',
