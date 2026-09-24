@@ -28,6 +28,7 @@ import { countSearchFilters } from '@/data/search-query';
 import { consumeSearchFocus } from '@/store/search-focus';
 import { useSearchFilterState } from '@/store/search-filters';
 import { border, colors, motion, spacing, type } from '@/theme';
+import { useTabBarOverlap } from '@/utils/native-tabs';
 
 import { SearchResults } from './search-results';
 
@@ -92,6 +93,7 @@ const FRANCHISES = ['Ghost', 'Glycerin', 'Adrenaline', 'Hyperion', 'Cascadia', '
  */
 export function Shop() {
   const paddingTop = useScreenTopPadding();
+  const tabBarOverlap = useTabBarOverlap();
   const reduceMotion = useReducedMotion();
   const { filters } = useSearchFilterState();
   const nFilters = countSearchFilters(filters);
@@ -212,6 +214,7 @@ export function Shop() {
       <Animated.ScrollView
         {...scrollProps}
         showsVerticalScrollIndicator={false}
+        contentInset={{ bottom: tabBarOverlap }}
         style={browseStyle}
         contentContainerStyle={{
           paddingTop: paddingTop + TITLE_ROW + SEARCH_ROW,

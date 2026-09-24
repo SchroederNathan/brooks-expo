@@ -12,7 +12,9 @@ import { colors } from '@/theme';
 import { select } from '@/utils/haptics';
 
 /**
- * The app-owned bottom tab bar, replacing `NativeTabs`.
+ * The app-owned bottom tab bar, for every device without Liquid Glass. Liquid
+ * Glass devices get `NativeTabs` instead — see `app/(tabs)/_layout.tsx` and
+ * @ref LLP 0003#liquid-glass-devices-get-the-system-tab-bar.
  *
  * @ref LLP 0003#icons-and-the-logo — The system bar accepted only SF Symbols /
  * Material Symbols, so no tab could wear a Brooks sprite glyph and the cart

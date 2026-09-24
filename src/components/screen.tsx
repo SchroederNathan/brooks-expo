@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Txt } from '@/components/themed-text';
 import { colors, spacing } from '@/theme';
+import { useTabBarOverlap } from '@/utils/native-tabs';
 
 /**
  * The root of a tab screen that draws no chrome of its own.
@@ -50,11 +51,24 @@ export function useScreenTopPadding() {
 /**
  * A non-scrolling screen root. Caller style merges last, so a screen can change
  * its fill or centre its content without forking the safe-area contract.
+ *
+ * The one exception is the bottom: under the glass tab bar the caller's
+ * `paddingBottom` is measured from the bar's top edge, not the window's, so the
+ * bar's overlap is added on top of it rather than overridden by it.
  */
 export function Screen({ style, ...rest }: ViewProps) {
   const paddingTop = useScreenTopPadding();
+  const overlap = useTabBarOverlap();
+  // Resolved the way the style would resolve it, so a `padding` or
+  // `paddingVertical` shorthand still counts as the caller's bottom.
+  const flat = StyleSheet.flatten(style) ?? {};
+  const callerBottom = flat.paddingBottom ?? flat.paddingVertical ?? flat.padding;
+  const bottom =
+    overlap > 0
+      ? { paddingBottom: (typeof callerBottom === 'number' ? callerBottom : 0) + overlap }
+      : null;
 
-  return <View {...rest} style={[styles.root, { paddingTop }, style]} />;
+  return <View {...rest} style={[styles.root, { paddingTop }, style, bottom]} />;
 }
 
 /**
@@ -64,14 +78,21 @@ export function Screen({ style, ...rest }: ViewProps) {
  * `contentInsetAdjustmentBehavior` stays `never` for the reason the header's own
  * scroll props set it — the safe area is accounted for exactly once, here, and
  * letting UIKit add it again would pad the content twice.
+ *
+ * The glass tab bar's overlap goes on `contentInset`, not the content padding:
+ * content still scrolls under the glass, it just comes to rest above it, and
+ * the caller's `paddingBottom` keeps meaning what it meant under the JS bar.
  */
 export function ScreenScrollView({ contentContainerStyle, style, ...rest }: ScrollViewProps) {
   const paddingTop = useScreenTopPadding();
+  const overlap = useTabBarOverlap();
 
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="never"
       showsVerticalScrollIndicator={false}
+      contentInset={{ bottom: overlap }}
+      scrollIndicatorInsets={{ bottom: overlap }}
       {...rest}
       style={[styles.root, style]}
       contentContainerStyle={[

@@ -12,6 +12,7 @@ import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import type { Product } from '@/data/types';
 import { border, colors, spacing } from '@/theme';
+import { useTabBarOverlap } from '@/utils/native-tabs';
 
 const { width: W } = Dimensions.get('window');
 const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
@@ -254,6 +255,7 @@ export function Finder() {
   // other headerless screen does.
   // @ref LLP 0003#the-header-collapses-on-scroll
   const screenTop = useScreenTopPadding();
+  const tabBarOverlap = useTabBarOverlap();
   const [phase, setPhase] = useState<Phase>('intro');
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0);
@@ -384,7 +386,7 @@ export function Finder() {
     // Extra air above the shared screen top: the checkpoint is a full-screen
     // beat, and its headline wants more room than a normal screen's first line.
     return (
-      <View style={[styles.checkpoint, { paddingTop: screenTop + 46, paddingBottom: spacing.xl }]}>
+      <View style={[styles.checkpoint, { paddingTop: screenTop + 46, paddingBottom: spacing.xl + tabBarOverlap }]}>
         <Txt variant="eyebrow" c={colors.blue}>
           Quick checkpoint
         </Txt>

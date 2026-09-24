@@ -5,7 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
-**Revised:** 2026-08-26
+**Revised:** 2026-09-24
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -243,6 +243,9 @@ Ported verbatim into [`src/components/icons.tsx`](../src/components/icons.tsx)
 
 ### The tab bar is app-drawn again
 
+[superseded in part 2026-09-24 → *Liquid Glass devices get the system tab
+bar*: this section now describes the bar on devices without Liquid Glass only.]
+
 [observed 2026-08-21] `NativeTabs` is gone; the bar is drawn in JS
 (`components/tab-bar.tsx` + `components/tab-icon.tsx`) over React Navigation's
 JS tabs (`expo-router/js-tabs`). Three things drove the reversal, in order of
@@ -319,6 +322,64 @@ removing it, and the ruling was not re-tested at the new spacing. Shoe Finder
 wears `#icon-search` instead; its ring cannot be confused with the rule, and
 Search itself is a pushed screen, so the tab bar is the only place that glyph is
 a destination.
+
+### Liquid Glass devices get the system tab bar
+
+[observed 2026-09-24] The tab layout (`app/(tabs)/_layout.tsx`) now picks its
+bar once at launch. Where `isLiquidGlassAvailable()` (from `expo-glass-effect`)
+is true — iOS 26 and later, unless the app opts out of the new design — it
+mounts `NativeTabs`. Everywhere else (Android, web, iOS 18 and earlier) it keeps
+the app-drawn `BrooksTabBar` described above. The choice is the module constant
+`NATIVE_TABS` in `utils/native-tabs.ts`, not state: a `NativeTabs` whose shape
+changes at runtime remounts its navigator. [confirmed — human request,
+2026-09-24] Liquid Glass devices use the system bar. [inferred] On those
+devices the glass bar is what every other app wears, so an app-drawn bar stands
+out as not native; elsewhere the brand bar has no system look to compete with.
+
+What the glass bar gives up and keeps:
+
+- [observed] **Icons are SF Symbols**: `house`, `square.grid.2x2`, `shoe`,
+  `cart`, `person`, each with its `.fill` form when selected. The sprite glyphs
+  and the focus dash stay on the app-drawn bar only. [confirmed — human
+  request, 2026-09-24] Icons only, no titles, as on the app-drawn bar. A
+  `hidden` label blanks the item title, so each trigger carries its name as
+  `accessibilityLabel` instead.
+- [observed] **Five tabs fit.** The August "More" tab came from five regular
+  triggers *plus* the detached `role="search"` trigger. Browse is the search
+  screen now, so there is no search trigger and Shoe Finder keeps its tab.
+- [observed] **The badge is blue with white text**, as in August; iOS fixes the
+  badge text to white. `NativeTabs.Trigger.Badge` ignores `hidden` when it has
+  text, and shows "0" for an empty cart unless the text is left out.
+- [observed] **The selected tint is dynamic**: ink on light glass, white on
+  dark glass. Glass flips to its dark appearance over Shoe Finder's navy panel
+  and Home's blue footer, where a fixed ink tint was nearly invisible.
+- [observed] **Pop-to-top and scroll-to-top on re-tap are the system's.** The
+  JS bar's reimplementation does not run here. Scroll-to-top worked on Home and
+  did not on Browse; the JS bar never had it, so this is not a regression.
+
+[observed] The two bars have opposite layout models, and that is most of the
+work. The JS bar is a flex sibling that shortens the screen. The glass bar
+floats over the screen, which runs to the bottom of the window. Two things
+follow:
+
+- Every tab trigger sets `disableAutomaticContentInsets`. Without it,
+  react-native-screens flips each tab's first scroll view from
+  `contentInsetAdjustmentBehavior="never"` to `automatic`
+  (`RNSScrollViewHelper`), and every screen here already pads for the top safe
+  area itself, so the top inset would count twice.
+- Screens clear the bar through `useTabBarOverlap()`: 0 under the JS bar, and
+  under the glass bar the bottom inset of the `SafeAreaProvider` that
+  `NativeTabs` puts around each tab. [inferred] That inset is the bar plus the
+  home indicator; on the iPhone 17 Pro (iOS 26.5) every scroll end came to rest
+  above the bar. Scroll roots take it as `contentInset.bottom`, so content still
+  scrolls under the glass and the caller's own `paddingBottom` keeps its meaning.
+  `Screen` adds it to the caller's bottom padding. The cart's checkout bar grows
+  by it and keeps running to the window's edge, so the glass sits on its white
+  fill rather than on rows scrolling behind it. The hook reads an
+  `InTabContext` from the shared array-group layout, so a root-stack screen
+  (Login, the PDP) gets 0.
+- Browse's empty search state reserves the larger of the keyboard and the glass
+  bar, instead of the keyboard minus the JS bar's height.
 
 ### The header collapses on scroll
 
