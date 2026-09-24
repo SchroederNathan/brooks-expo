@@ -11,7 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AnimatedSplash } from '@/components/animated-splash';
 import { CartProvider } from '@/store/cart';
-import { colors, header } from '@/theme';
+import { colors, header, nativeSheetHeader } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -58,21 +58,25 @@ export default function RootLayout() {
                   card into the PLP. These screens keep the stack default so
                   Android and older iOS still push. @ref LLP 0003#zoom-transitions
 
-                  The PDP wears the native bar, transparent over its full-bleed
-                  gallery. The PLP hides it and draws its own row of Browse's
-                  outlined squares (back, search) — the native back gesture
-                  still works with the bar hidden.
+                  Both pushed screens wear the native bar, transparent: the
+                  PDP's over its full-bleed gallery, the PLP's over its grid.
+                  Their buttons are `Stack.Toolbar` items the screens declare.
                   @ref LLP 0003#pushed-screens-wear-the-native-header */}
               <Stack.Screen
                 name="product/[id]"
                 options={{ title: 'Product', ...header.overlay }}
               />
-              <Stack.Screen name="category/[id]" options={{ title: 'Shop', headerShown: false }} />
+              <Stack.Screen name="category/[id]" options={{ title: 'Shop', ...header.plain }} />
               {/* Search's `Filter & sort`, the site's panel as a native form
                   sheet. Presented here, by the root stack, because a sheet is
                   not a child of the tab screen that opens it; state crosses
                   through `store/search-filters`.
-                  @ref LLP 0003#browse-is-the-search-screen */}
+                  @ref LLP 0003#browse-is-the-search-screen
+
+                  Both sheets wear the native bar on iOS, with the system close
+                  button in its trailing slot. Android's form sheet has no
+                  header, so there each sheet draws its own title and close.
+                  @ref LLP 0003#pushed-screens-wear-the-native-header */}
               <Stack.Screen
                 name="search-filters"
                 options={{
@@ -81,6 +85,7 @@ export default function RootLayout() {
                   sheetAllowedDetents: [0.92],
                   sheetGrabberVisible: true,
                   contentStyle: { backgroundColor: colors.surface },
+                  ...(nativeSheetHeader && header.sheet),
                 }}
               />
               <Stack.Screen
@@ -88,6 +93,8 @@ export default function RootLayout() {
                 options={{
                   title: 'Brooks Run Club',
                   presentation: 'modal',
+                  // The card below already says "Brooks Run Club".
+                  ...(nativeSheetHeader && { ...header.sheet, headerTitle: '' }),
                 }}
               />
             </Stack>

@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +22,7 @@ import {
   type SearchSort,
 } from '@/data/search-query';
 import { getSearchFilterState, patchSearchFilterState, useSearchFilterState } from '@/store/search-filters';
-import { border, colors, radius, spacing } from '@/theme';
+import { border, colors, headerIcon, nativeSheetHeader, radius, spacing } from '@/theme';
 
 /**
  * `Filter & sort` for search results, presented as a native form sheet.
@@ -38,6 +38,12 @@ import { border, colors, radius, spacing } from '@/theme';
  * Draft state is local; Apply writes the store, so a dismissed sheet changes
  * nothing. The sheet is a route (`/search-filters`) rather than a child of
  * Browse because a native form sheet is presented by the root stack.
+ *
+ * [observed 2026-09-24] On iOS the title and the close cross are the sheet's
+ * native bar: the title comes from the route's options, the cross is the
+ * system `xmark` as a `Stack.Toolbar.Button`. Android's form sheet has no
+ * header, so there the sheet still draws both itself.
+ * @ref LLP 0003#pushed-screens-wear-the-native-header
  */
 
 const RATINGS = [
@@ -76,12 +82,28 @@ export function SearchFilterSheet() {
   // warns about and lays out wrongly.
   return (
     <View collapsable={false} style={styles.root}>
-      <View style={styles.head}>
-        <Txt variant="h2">Filter & sort</Txt>
-        <Press accessibilityRole="button" accessibilityLabel="Close" hitSlop={12} onPress={() => router.back()}>
-          <BrooksIcon name="closeThin" size={22} color={colors.ink} />
-        </Press>
-      </View>
+      {nativeSheetHeader ? (
+        <>
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button
+              icon={headerIcon.close}
+              accessibilityLabel="Close"
+              onPress={() => router.back()}
+            />
+          </Stack.Toolbar>
+          {/* With the head in the native bar, the list would become the first
+              native subview — see the note on the list's wrapper below. This
+              empty view takes the head's place in that chain. */}
+          <View collapsable={false} />
+        </>
+      ) : (
+        <View style={styles.head}>
+          <Txt variant="h2">Filter & sort</Txt>
+          <Press accessibilityRole="button" accessibilityLabel="Close" hitSlop={12} onPress={() => router.back()}>
+            <BrooksIcon name="closeThin" size={22} color={colors.ink} />
+          </Press>
+        </View>
+      )}
 
       {/* The scroll view sits inside a plain view on purpose, and nothing here
           carries a zIndex: react-native-screens walks first subviews looking
@@ -89,7 +111,10 @@ export function SearchFilterSheet() {
           list, foot — must not be found by it. */}
       <View collapsable={false} style={styles.scroll}>
       <ScrollView
-        contentInsetAdjustmentBehavior="never"
+        // Under the native bar the sheet's content starts at the sheet's top
+        // edge, so UIKit insets the list below the bar and lets it scroll
+        // under it. With no bar there is nothing to inset for.
+        contentInsetAdjustmentBehavior={nativeSheetHeader ? 'automatic' : 'never'}
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
       >

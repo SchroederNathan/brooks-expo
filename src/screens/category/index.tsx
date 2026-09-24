@@ -1,5 +1,6 @@
-import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { router, Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
+import { useMemo, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -8,19 +9,10 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/chip';
-import { FilterButton } from '@/components/filter-button';
-import { OUTLINE_BUTTON_SIZE, OutlineIconButton } from '@/components/outline-icon-button';
 import { ProductTile } from '@/components/product-tile';
-import { useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
@@ -37,7 +29,7 @@ import {
   patchSearchFilterState,
   useSearchFilterState,
 } from '@/store/search-filters';
-import { colors, motion, spacing } from '@/theme';
+import { colors, headerIcon, spacing } from '@/theme';
 
 const { width: W } = Dimensions.get('window');
 const GRID_GAP = spacing.lg;
@@ -49,10 +41,11 @@ const TITLE_ZONE = 64;
  * The PLP.
  *
  * @ref LLP 0003#plp — Zappos's utility with adidas's rhythm: a collapsing large
- * title over a 2-up grid of ProductTiles. [observed 2026-08-28] The chrome
- * above the grid is one row of Browse's outlined squares — back on the left,
- * `Filter & sort` on the right — and the filter panel is the same form sheet
- * Search opens (`/search-filters`), fed through `store/search-filters`.
+ * title over a 2-up grid of ProductTiles. [observed 2026-09-24] The chrome
+ * above the grid is the native bar — the system back chevron on the left,
+ * `Filter & sort` as a `Stack.Toolbar.Button` on the right — and the filter
+ * panel is the same form sheet Search opens (`/search-filters`), fed through
+ * `store/search-filters`.
  */
 export function Category({
   id,
@@ -64,17 +57,10 @@ export function Category({
   franchise?: string;
 }) {
   const insets = useSafeAreaInsets();
-  // No native bar: this screen draws its own, so it takes the same safe-area
-  // rhythm as the headerless anchors and owns every pixel of its top band.
-  // @ref LLP 0003#pushed-screens-wear-the-native-header
-  const paddingTop = useScreenTopPadding();
-  const reduceMotion = useReducedMotion();
+  // The bar is transparent and this screen pays for its own top inset, so the
+  // layout does not move when a zoom transition paints it. @ref header.plain
+  const headerHeight = useHeaderHeight();
   const [showBarTitle, setShowBarTitle] = useState(false);
-  const barTitle = useSharedValue(0);
-  useEffect(() => {
-    barTitle.set(withTiming(showBarTitle ? 1 : 0, { duration: reduceMotion ? 0 : motion.base }));
-  }, [showBarTitle, barTitle, reduceMotion]);
-  const barTitleStyle = useAnimatedStyle(() => ({ opacity: barTitle.get() }));
 
   const { filters, sort } = useSearchFilterState();
   const nFilters = countSearchFilters(filters);
@@ -110,25 +96,21 @@ export function Category({
 
   return (
     <View style={styles.root}>
-      {/* The app's own bar: back and `Filter & sort` as the outlined squares
-          that flank Browse's search field, so a push out of Browse keeps the
-          controls it left. The title fades in between them once the in-content
-          large title has scrolled away — the same 64pt collapse this screen
-          always had. @ref LLP 0003#pushed-screens-wear-the-native-header */}
-      <View style={[styles.bar, { paddingTop }]}>
-        <OutlineIconButton
-          icon="caretLeft"
-          iconSize={18}
-          accessibilityLabel="Back"
-          onPress={() => router.back()}
-        />
-        <Animated.View style={[styles.barTitle, barTitleStyle]} pointerEvents="none">
-          <Txt variant="barTitle" numberOfLines={1}>
-            {screenTitle}
-          </Txt>
-        </Animated.View>
-        <FilterButton count={nFilters} onPress={openFilters} />
-      </View>
+      {/* The stack's own bar: the system back chevron, and `Filter & sort` in
+          the trailing slot with the applied count as the item's badge. The
+          title stays empty until the in-content large title has scrolled
+          away — the same 64pt collapse this screen always had.
+          @ref LLP 0003#pushed-screens-wear-the-native-header */}
+      <Stack.Screen options={{ headerTitle: showBarTitle ? screenTitle : '' }} />
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          icon={headerIcon.filters}
+          accessibilityLabel={nFilters ? `Filter & sort, ${nFilters} applied` : 'Filter & sort'}
+          onPress={openFilters}
+        >
+          {nFilters ? <Stack.Toolbar.Badge>{String(nFilters)}</Stack.Toolbar.Badge> : null}
+        </Stack.Toolbar.Button>
+      </Stack.Toolbar>
 
       <FlatList
         data={products}
@@ -138,7 +120,11 @@ export function Category({
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         columnWrapperStyle={{ gap: GRID_GAP, paddingHorizontal: spacing.gutter }}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 40, gap: spacing.xl }}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingBottom: insets.bottom + 40,
+          gap: spacing.xl,
+        }}
         ListHeaderComponent={
           <View style={styles.head}>
             <Txt variant="h1">{screenTitle}</Txt>
@@ -172,26 +158,6 @@ export function Category({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.surface },
-  /**
-   * Back, collapsing title, `Filter & sort` — one row of Browse's outlined
-   * squares, on the screen's white. The only chrome above the grid.
-   */
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.gutter,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    zIndex: 10,
-  },
-  barTitle: {
-    flex: 1,
-    height: OUTLINE_BUTTON_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-  },
   head: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, paddingBottom: spacing.sm },
   empty: {
     alignItems: 'center',

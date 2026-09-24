@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -10,7 +10,7 @@ import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
 import { join } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
-import { border, colors, font, spacing } from '@/theme';
+import { border, colors, font, headerIcon, nativeSheetHeader, spacing } from '@/theme';
 
 /**
  * Join Brooks Run Club.
@@ -57,11 +57,24 @@ export function Login() {
         paddingBottom: insets.bottom + spacing.xl,
       }}
     >
-      <View style={styles.head}>
-        <Press hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
-          <BrooksIcon name="close" size={14} color={colors.inkMuted} />
-        </Press>
-      </View>
+      {/* On iOS the close is the modal's native bar: the system `xmark` in
+          its trailing slot. Elsewhere the sheet draws its own.
+          @ref LLP 0003#pushed-screens-wear-the-native-header */}
+      {nativeSheetHeader ? (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            icon={headerIcon.close}
+            accessibilityLabel="Close"
+            onPress={() => router.back()}
+          />
+        </Stack.Toolbar>
+      ) : (
+        <View style={styles.head}>
+          <Press hitSlop={10} onPress={() => router.back()} style={{ alignSelf: 'flex-end' }}>
+            <BrooksIcon name="close" size={14} color={colors.inkMuted} />
+          </Press>
+        </View>
+      )}
 
       {/* --------------------------------------------------- THE PITCH --- */}
       <View style={styles.card}>

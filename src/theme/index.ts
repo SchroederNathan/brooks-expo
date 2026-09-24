@@ -12,4 +12,4 @@ export { radius } from './radius';
 export { border } from './border';
 export { shadows } from './shadows';
 export { motion } from './motion';
-export { header, headerIcon } from './header';
+export { header, headerIcon, nativeSheetHeader } from './header';
