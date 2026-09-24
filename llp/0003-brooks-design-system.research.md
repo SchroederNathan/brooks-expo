@@ -5,7 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
-**Revised:** 2026-08-26
+**Revised:** 2026-09-24
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -676,6 +676,39 @@ wherever it opens. A franchise tile still narrows the PLP, as a fixed scope
 rather than a toggled chip; the search button is gone, since Browse — one pop
 away — *is* the search screen.
 
+[observed 2026-09-24] **The PLP wears the native bar again, and so do the
+sheets.** A human asked for every screen with custom header buttons to use
+`Stack.Toolbar` instead, as the PDP does. This supersedes the 2026-08-28
+paragraph above for the chrome only; the shared filter sheet and store stay.
+
+- **PLP:** `category/[id]` takes `header.plain` (transparent, Filson title).
+  The system chevron replaces the `caretLeft` square. `Filter & sort` is a
+  `Stack.Toolbar.Button` with `line.3.horizontal.decrease`, and the applied
+  count is the item's native badge (`Stack.Toolbar.Badge`, a
+  `UIBarButtonItem` badge on iOS 26) instead of `FilterButton`'s ink square.
+  The collapse is `headerTitle: showBarTitle ? title : ''` again, and
+  `type.barTitle` is gone. The grid pads itself by `useHeaderHeight()` for the
+  zoom reason in *The header had to stop insetting the PLP*. With no sticky
+  control row, tiles now scroll under the bar; iOS 26's scroll edge effect
+  keeps the bar legible.
+- **`Filter & sort` sheet and Run Club modal:** on iOS both take
+  `header.sheet` and put the system `xmark` (`headerIcon.close`) in the
+  trailing slot. The sheet's title moved from an in-content `h2` to the bar.
+  Run Club's bar has no title, because its card already says "Brooks Run
+  Club". Android's form sheet renders no stack header (Expo's modal docs), so
+  on Android both sheets still draw their own title and cross.
+  `nativeSheetHeader` in `theme/header.ts` is the one switch.
+- [observed] Two layout traps in the form sheet. First, the native bar does
+  not inset the sheet's content: the list started under the bar until its
+  `ScrollView` took `contentInsetAdjustmentBehavior="automatic"`. Second,
+  react-native-screens sizes the first scroll view on the sheet's
+  first-subview chain to the whole sheet (`RNSScreen.mm`). The in-content head
+  used to sit first in that chain. Without it the list became first and ran
+  under the footer, so an empty `View` now holds that slot.
+
+Browse keeps its `FilterButton` and dismiss squares. They flank a search field
+in content on an anchor with no native bar, so they are not header buttons.
+
 [observed] The bar buttons are **SF Symbols**, not Brooks sprite glyphs, and
 that is deliberate. Bar chrome is the platform's: a symbol lines up optically
 with the back chevron beside it, scales with Dynamic Type, and inherits the
@@ -772,6 +805,10 @@ control row up behind the bar (`useHeaderHeight()` from
 own (see *Pushed screens wear the native header*), taking its top inset from
 `useScreenTopPadding()`. The rule below still holds — the screen owns its
 geometry — and `header.plain` is removed.
+[observed 2026-09-24] The native bar is back on the PLP and `header.plain`
+returns, transparent, with the grid padded by `useHeaderHeight()`. There is no
+control row now, so the bar has no surface of its own. Tiles scroll under it,
+behind iOS 26's scroll edge effect.
 Nothing is lost visually: the control row is sticky and opaque, so the grid
 never reaches the band the bar occupies either way — and the first painted frame
 is now the final one.

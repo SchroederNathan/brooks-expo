@@ -1,4 +1,5 @@
 import type { NativeStackNavigationOptions } from 'expo-router';
+import { Platform } from 'react-native';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { colors } from './colors';
@@ -24,10 +25,11 @@ import { font } from './typography';
  * It belongs to Home alone now — the other anchors draw no chrome at all and
  * take their safe area from `components/screen`.
  *
- * [superseded 2026-08-28] The PLP no longer wears the native bar. It hides it
- * and draws back and search as Browse's `OutlineIconButton` squares, so the
- * `plain` preset that used to sit here is gone. Native chrome is now the PDP's
- * alone. @ref LLP 0003#pushed-screens-wear-the-native-header
+ * [observed 2026-09-24] Every pushed or presented screen wears the native bar
+ * again: the PDP (`overlay`), the PLP (`plain`), and the `Filter & sort` and
+ * Run Club sheets (`sheet`). Their buttons are `Stack.Toolbar.Button`s — the
+ * PLP's filter, each sheet's close — not app-drawn squares or crosses.
+ * @ref LLP 0003#pushed-screens-wear-the-native-header
  */
 
 /** The bar's own tint: back chevron and every toolbar button. */
@@ -62,7 +64,43 @@ export const header = {
     headerBlurEffect: 'none',
     headerTitle: '',
   } satisfies NativeStackNavigationOptions,
+
+  /**
+   * A bar with no surface of its own over a scrolling grid (the PLP). The
+   * screen sets the title, and passes `''` until its in-content large title
+   * has scrolled away.
+   *
+   * Transparent because the PLP is a zoom destination: an opaque bar makes
+   * UIKit inset the content, and under a zoom that inset lands a beat late, so
+   * the grid paints behind the bar and then jumps down. The screen pads itself
+   * by `useHeaderHeight()` instead, and iOS 26's scroll edge effect keeps the
+   * bar legible over tiles that scroll under it. @ref LLP 0003#zoom-transitions
+   */
+  plain: {
+    ...base,
+    headerTransparent: true,
+    headerBlurEffect: 'none',
+    // Filson, not the system face — the one piece of brand the native bar takes.
+    headerTitleStyle: { fontFamily: font.extraBold, fontSize: 17, color: colors.ink },
+  } satisfies NativeStackNavigationOptions,
+
+  /**
+   * The bar of a presented sheet (`Filter & sort`, Run Club). No back button:
+   * the screen puts the system close button in its trailing slot with
+   * `Stack.Toolbar`. The screen's own white is the bar's surface.
+   */
+  sheet: {
+    ...base,
+    headerStyle: { backgroundColor: colors.surface },
+    headerTitleStyle: { fontFamily: font.extraBold, fontSize: 17, color: colors.ink },
+  } satisfies NativeStackNavigationOptions,
 } as const;
+
+/**
+ * Whether presented sheets wear the native bar. iOS only: Android's form sheet
+ * renders no stack header, so there a sheet draws its own title and close.
+ */
+export const nativeSheetHeader = Platform.OS === 'ios';
 
 /**
  * SF Symbols for `Stack.Toolbar.Button`, named for what the app means rather
@@ -78,5 +116,7 @@ export const headerIcon = {
   share: 'square.and.arrow.up',
   cart: 'bag',
   filters: 'line.3.horizontal.decrease',
+  /** A sheet's dismiss: the glyph UIKit's own `.close` bar item draws. */
+  close: 'xmark',
   account: 'person',
 } as const satisfies Record<string, SFSymbol>;
