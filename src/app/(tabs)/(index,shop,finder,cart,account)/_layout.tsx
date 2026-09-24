@@ -2,6 +2,7 @@ import { Stack } from 'expo-router/stack';
 import { StyleSheet, View } from 'react-native';
 
 import { colors } from '@/theme';
+import { InTabContext } from '@/utils/native-tabs';
 
 export const unstable_settings = {
   index: { anchor: 'index' },
@@ -37,27 +38,29 @@ export default function TabStackLayout({ segment }: { segment: string }) {
   const screenName = tabNames.has(matchedName) ? matchedName : 'index';
 
   return (
-    <View collapsable={false} style={styles.root}>
-      <Stack
-        screenOptions={{
-          animation: 'none',
-          contentStyle: { backgroundColor: colors.surface },
-          headerBackButtonDisplayMode: 'minimal',
-          headerBlurEffect: 'none',
-          headerShadowVisible: false,
-          headerTitle: '',
-          headerTransparent: true,
-        }}
-      >
-        {screenName === 'finder' ? null : (
-          <Stack.Screen name={screenName} options={{ headerShown: false }} />
-        )}
-        {/* Declared unconditionally, not just when it is the anchor: the Browse
-            card and the Account row can land on this route inside another tab's
-            stack, and its full-bleed navy panel has no room for a header. */}
-        <Stack.Screen name="finder" options={{ headerShown: false }} />
-      </Stack>
-    </View>
+    <InTabContext value>
+      <View collapsable={false} style={styles.root}>
+        <Stack
+          screenOptions={{
+            animation: 'none',
+            contentStyle: { backgroundColor: colors.surface },
+            headerBackButtonDisplayMode: 'minimal',
+            headerBlurEffect: 'none',
+            headerShadowVisible: false,
+            headerTitle: '',
+            headerTransparent: true,
+          }}
+        >
+          {screenName === 'finder' ? null : (
+            <Stack.Screen name={screenName} options={{ headerShown: false }} />
+          )}
+          {/* Declared unconditionally, not just when it is the anchor: the Browse
+              card and the Account row can land on this route inside another tab's
+              stack, and its full-bleed navy panel has no room for a header. */}
+          <Stack.Screen name="finder" options={{ headerShown: false }} />
+        </Stack>
+      </View>
+    </InTabContext>
   );
 }
 

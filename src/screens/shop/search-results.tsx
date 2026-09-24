@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
@@ -27,6 +26,7 @@ import {
 import type { Product } from '@/data/types';
 import { clearSearchFilterState, patchSearchFilterState, useSearchFilterState } from '@/store/search-filters';
 import { colors, spacing } from '@/theme';
+import { useJsTabBarHeight, useTabBarOverlap } from '@/utils/native-tabs';
 
 /**
  * Search results, shown in place of Browse's own content while its field is in
@@ -74,10 +74,16 @@ export function SearchResults({ query }: { query: string }) {
    *
    * `height` is negative while the keyboard is up (the library reports the
    * frame as an offset), hence the negation.
+   *
+   * Under the glass tab bar the arithmetic flips: the body runs to the bottom
+   * of the window, so nothing comes off the keyboard, and with the keys down
+   * the floor is the bar itself rather than 0, or the copy centres on a space
+   * that includes the strip under the glass. @ref utils/native-tabs
    */
-  const tabBarHeight = useBottomTabBarHeight();
+  const tabBarHeight = useJsTabBarHeight();
+  const tabBarOverlap = useTabBarOverlap();
   const emptyPad = useAnimatedStyle(() => ({
-    paddingBottom: Math.max(0, -keyboard.height.get() - tabBarHeight),
+    paddingBottom: Math.max(tabBarOverlap, -keyboard.height.get() - tabBarHeight),
   }));
 
   /** Debounced live autocomplete; aborts the in-flight request on every keystroke. */
@@ -203,6 +209,7 @@ export function SearchResults({ query }: { query: string }) {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={{ paddingBottom: spacing.xxl }}
+      contentInset={{ bottom: tabBarOverlap }}
       showsVerticalScrollIndicator={false}
     >
       {loading && !live && (

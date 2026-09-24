@@ -16,6 +16,7 @@ import { heroImage } from '@/data/images';
 import { VOICE } from '@/data/editorial';
 import { useCart, type CartItemView } from '@/store/cart';
 import { border, colors, spacing } from '@/theme';
+import { useTabBarOverlap } from '@/utils/native-tabs';
 
 const FREE_SHIPPING_OVER = 100;
 
@@ -30,6 +31,7 @@ const FREE_SHIPPING_OVER = 100;
  */
 export function Cart() {
   const cart = useCart();
+  const tabBarOverlap = useTabBarOverlap();
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const [scopeNote, setScopeNote] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -204,7 +206,10 @@ export function Cart() {
       </ScreenScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
-      <View style={styles.stickyBar}>
+      {/* Under the glass tab bar the checkout bar still runs to the window's
+          bottom edge and pads its button up past the bar, so the glass sits on
+          the bar's white fill instead of on cart rows scrolling behind it. */}
+      <View style={[styles.stickyBar, { paddingBottom: spacing.md + tabBarOverlap }]}>
         <Button
           title="Checkout"
           accessory={fmt(cart.total)}
@@ -298,10 +303,14 @@ function DeleteAction({ drag, onPress }: { drag: SharedValue<number>; onPress: (
   );
 }
 
-/** 100 clears the sticky checkout bar (≈87pt tall) it floats over. */
+/**
+ * 100 clears the sticky checkout bar (≈87pt tall) it floats over, plus the glass
+ * tab bar's overlap, which the checkout bar grows by.
+ */
 function UndoBar({ item, onUndo }: { item: CartItemView; onUndo: () => void }) {
+  const tabBarOverlap = useTabBarOverlap();
   return (
-    <View style={styles.undo}>
+    <View style={[styles.undo, { bottom: 100 + tabBarOverlap }]}>
       <Txt variant="caption" c={colors.surface} numberOfLines={1} style={{ flex: 1 }}>
         Removed {item.product.name}
       </Txt>

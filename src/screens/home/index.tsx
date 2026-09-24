@@ -21,6 +21,7 @@ import { HERO, HOME_GEAR, LONGER_DAYS, STORIES, USE_CASES } from '@/data/editori
 import { productsIn } from '@/data/query';
 import type { Product } from '@/data/types';
 import { colors, font, spacing } from '@/theme';
+import { useTabBarOverlap } from '@/utils/native-tabs';
 
 // @ref LLP 0003#expo-implementation-paper-home-port — The Paper Home artboard
 // supplies this screen's geometry; the app's system NativeTabs remain the shell.
@@ -70,6 +71,7 @@ export function Home() {
     hiddenStatusBarStyle: 'light',
   });
   const { width } = useWindowDimensions();
+  const tabBarOverlap = useTabBarOverlap();
   const heroHeight = Math.round((width / PAPER_WIDTH) * PAPER_HERO_HEIGHT);
 
   const player = useVideoPlayer(HERO.video, (videoPlayer) => {
@@ -96,6 +98,7 @@ export function Home() {
         scrollHandlers={handlers}
         scrollRef={scrollRef}
         contentInsetAdjustmentBehavior="never"
+        contentInset={{ bottom: tabBarOverlap }}
         showsVerticalScrollIndicator={false}
         header={
           <View style={styles.hero}>
