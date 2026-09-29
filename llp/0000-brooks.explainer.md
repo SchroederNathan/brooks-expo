@@ -9,7 +9,7 @@
 **Author:** Charlie Cheever / Codex
 **Date:** 2026-07-13
 **Revised:** 2026-08-12
-**Related:** LLP 0001, LLP 0002, LLP 0003, LLP 0004, [ccheever/llp](https://github.com/ccheever/llp)
+**Related:** LLP 0001, LLP 0002, LLP 0003, LLP 0004, LLP 0005, [ccheever/llp](https://github.com/ccheever/llp)
 
 ## Summary
 
