@@ -8,11 +8,21 @@ import { Press } from '@/components/press';
 import { Screen, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
+import {
+  ACTIVITY_WINDOW_DAYS,
+  type ActivityProfile,
+  formatMiles,
+  formatSteps,
+  isActivityAvailable,
+  readActivityProfile,
+} from '@/data/activity';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
 import type { Product } from '@/data/types';
 import { border, colors, spacing } from '@/theme';
 import { useTabBarOverlap } from '@/utils/native-tabs';
+
+import { answersFromActivity, type Evidence } from './from-activity';
 
 const { width: W } = Dimensions.get('window');
 const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
@@ -27,7 +37,7 @@ const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
  * turns a quiz into advice.
  */
 
-type Answers = {
+export type Answers = {
   use?: 'road' | 'trail' | 'walk';
   trailType?: 'light' | 'mountain' | 'speed';
   race?: string;
@@ -127,8 +137,11 @@ const STEPS: Record<string, Step> = {
   },
 };
 
-/** The flow, branched on the answers so far. `takeEmOff` is the checkpoint beat. */
-function flowFor(a: Answers): string[] {
+/**
+ * The flow, branched on the answers so far. `takeEmOff` is the checkpoint beat.
+ * Steps in `skip` were answered from Apple Health and are not asked again.
+ */
+function flowFor(a: Answers, skip: ReadonlySet<string> = NO_SKIP): string[] {
   return [
     'use',
     ...(a.use === 'trail' ? ['trailType'] : []),
@@ -138,7 +151,14 @@ function flowFor(a: Answers): string[] {
     'takeEmOff',
     'balance',
     'gender',
-  ];
+  ].filter((id) => !skip.has(id));
+}
+
+const NO_SKIP: ReadonlySet<string> = new Set();
+
+/** The quiz's own label for a pre-filled answer, so the summary speaks its language. */
+function optionLabel(stepId: keyof Answers, value: string | undefined): string {
+  return STEPS[stepId]?.options.find((o) => o.value === value)?.label ?? '';
 }
 
 /* --------------------------------------------------------------- scoring --- */
@@ -149,7 +169,10 @@ const SUPPORT_FOR_BALANCE: Record<string, string[]> = {
   wobbly: ['structured_support', 'max_support'],
 };
 
-function recommend(a: Answers): { product: Product; reasons: string[]; score: number }[] {
+function recommend(
+  a: Answers,
+  activity: ActivityProfile | null
+): { product: Product; reasons: string[]; score: number }[] {
   const shoes = catalog.products.filter(
     (p) =>
       p.productType === 'Shoes' &&
@@ -187,7 +210,11 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
     } else if (a.use === 'walk') {
       if (exp === 'walking' || p.bestFor.includes('Walking')) {
         score += 4;
-        reasons.push('A favorite for all-day walking comfort');
+        reasons.push(
+          activity?.avgDailySteps != null
+            ? `A favorite for all-day walking, and you average ${formatSteps(activity.avgDailySteps)} steps a day`
+            : 'A favorite for all-day walking comfort'
+        );
       } else if (exp.includes('trail')) score -= 6;
       else if (p.cushion === 'Plush') score += 1;
     } else {
@@ -200,7 +227,11 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
         }
         if (p.bestFor.some((b) => /long run/i.test(b))) {
           score += 2;
-          reasons.push('Loved for long runs');
+          reasons.push(
+            activity && activity.longestRunMiles >= 9
+              ? `Loved for long runs like your ${formatMiles(activity.longestRunMiles, 1)}-miler`
+              : 'Loved for long runs'
+          );
         }
       }
       if (p.bestFor.some((b) => /everyday|daily/i.test(b))) score += 1;
@@ -230,7 +261,10 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
     }
 
     // High mileage rewards durable daily trainers.
-    if (a.mileage === 'high' && p.bestFor.some((b) => /everyday|daily|long/i.test(b))) score += 1;
+    if (a.mileage === 'high' && p.bestFor.some((b) => /everyday|daily|long/i.test(b))) {
+      score += 1;
+      if (activity) reasons.push(`Built to take your ${formatMiles(activity.weeklyRunMiles)} miles a week`);
+    }
 
     // Crowd wisdom, gently.
     if (p.badge === 'Best Seller') score += 1;
@@ -247,7 +281,10 @@ function recommend(a: Answers): { product: Product; reasons: string[]; score: nu
 
 /* ------------------------------------------------------------------ view --- */
 
-type Phase = 'intro' | 'quiz' | 'results';
+type Phase = 'intro' | 'activity' | 'quiz' | 'results';
+
+/** Read once: availability does not change while the app runs. */
+const ACTIVITY_AVAILABLE = isActivityAvailable();
 
 export function Finder() {
   // The Finder never carried the blue header, and still does not: its intro is a
@@ -261,22 +298,56 @@ export function Finder() {
   const [stepIndex, setStepIndex] = useState(0);
   const advancing = useRef(false);
 
-  const flow = useMemo(() => flowFor(answers), [answers]);
+  // Apple Health. `activity` is the profile the results may quote; `prefill`
+  // and `evidence` are the answers it supports and why. All three are screen
+  // state only. @ref LLP 0005#nothing-leaves-the-device
+  const [reading, setReading] = useState(false);
+  const [activity, setActivity] = useState<ActivityProfile | null>(null);
+  const [prefill, setPrefill] = useState<Partial<Answers>>({});
+  const [evidence, setEvidence] = useState<Evidence>({});
+  const skip = useMemo(() => new Set(Object.keys(prefill)), [prefill]);
+
+  const flow = useMemo(() => flowFor(answers, skip), [answers, skip]);
   const stepId = flow[stepIndex];
   const results = useMemo(
-    () => (phase === 'results' ? recommend(answers) : []),
-    [phase, answers]
+    () => (phase === 'results' ? recommend(answers, activity) : []),
+    [phase, answers, activity]
   );
+
+  const forgetActivity = () => {
+    setActivity(null);
+    setPrefill({});
+    setEvidence({});
+  };
 
   const reset = () => {
     setAnswers({});
     setStepIndex(0);
+    forgetActivity();
     setPhase('intro');
+  };
+
+  const startFromActivity = async () => {
+    if (reading) return;
+    setReading(true);
+    let profile: ActivityProfile | null = null;
+    try {
+      profile = await readActivityProfile();
+    } catch {
+      // A failed read is the same as no data: the quiz still works.
+    }
+    const derived = profile ? answersFromActivity(profile) : { answers: {}, evidence: {} };
+    // Quote the numbers in results only when they decided something.
+    setActivity(Object.keys(derived.answers).length ? profile : null);
+    setPrefill(derived.answers);
+    setEvidence(derived.evidence);
+    setReading(false);
+    setPhase('activity');
   };
 
   const advance = (next: Answers) => {
     // flowFor can grow (trail branch), so recompute against the new answers.
-    const newFlow = flowFor(next);
+    const newFlow = flowFor(next, skip);
     if (stepIndex + 1 >= newFlow.length) {
       setPhase('results');
     } else {
@@ -311,6 +382,89 @@ export function Finder() {
         </Txt>
         <View style={{ flex: 1 }} />
         <Button title={VOICE.finderCta} variant="onDark" onPress={() => setPhase('quiz')} />
+        {ACTIVITY_AVAILABLE ? (
+          <Press
+            onPress={startFromActivity}
+            disabled={reading}
+            style={styles.healthLink}
+            accessibilityRole="button"
+          >
+            <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
+              {reading ? 'Reading Apple Health…' : 'Start from my Apple Health activity'}
+            </Txt>
+          </Press>
+        ) : null}
+      </Screen>
+    );
+  }
+
+  /* ------------------------------------------------------------- activity -- */
+  if (phase === 'activity') {
+    const filled = (Object.keys(prefill) as (keyof Answers)[]).sort(
+      (x, y) => STEP_ORDER.indexOf(x) - STEP_ORDER.indexOf(y)
+    );
+    const found = filled.length > 0;
+    const weeks = Math.round(ACTIVITY_WINDOW_DAYS / 7);
+    return (
+      <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
+        <Txt variant="eyebrow" c={colors.lime}>
+          From Apple Health
+        </Txt>
+        <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.md }}>
+          {found
+            ? `${filled.length === 1 ? 'One answer' : `${filled.length} answers`} down already.`
+            : 'Nothing to go on yet.'}
+        </Txt>
+        <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.sm }}>
+          {found
+            ? `From your last ${weeks} weeks of activity. The quiz asks the rest.`
+            : `We found no runs, walks or steps from the last ${weeks} weeks. You can check what Brooks can read in the Health app.`}
+        </Txt>
+
+        {found ? (
+          <View style={{ marginTop: spacing.xl }}>
+            {filled.map((key) => (
+              <View key={key} style={styles.evidenceRow}>
+                <Txt variant="tiny" c="rgba(255,255,255,0.6)">
+                  {STEPS[key].eyebrow}
+                </Txt>
+                <Txt variant="h3" c={colors.surface} style={{ marginTop: 2 }}>
+                  {optionLabel(key, prefill[key])}
+                </Txt>
+                <Txt variant="bodySmall" c="rgba(255,255,255,0.7)" style={{ marginTop: 2 }}>
+                  {evidence[key]}
+                </Txt>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        <View style={{ flex: 1 }} />
+        <Button
+          title={found ? 'Continue' : 'Answer the questions'}
+          variant="onDark"
+          onPress={() => {
+            setAnswers(prefill);
+            setStepIndex(0);
+            setPhase('quiz');
+          }}
+        />
+        {found ? (
+          <Press
+            onPress={() => {
+              forgetActivity();
+              setAnswers({});
+              setStepIndex(0);
+              setPhase('quiz');
+            }}
+            style={styles.healthLink}
+            accessibilityRole="button"
+          >
+            <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
+              Answer every question instead
+            </Txt>
+          </Press>
+        ) : null}
       </Screen>
     );
   }
@@ -328,9 +482,11 @@ export function Finder() {
             {results.length ? 'Found your run.' : 'Hmm — nothing quite fits.'}
           </Txt>
           <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-            {results.length
-              ? 'Ranked for how you actually run, from the real Brooks catalog.'
-              : 'Try loosening an answer or two.'}
+            {!results.length
+              ? 'Try loosening an answer or two.'
+              : activity
+                ? 'Ranked from your Apple Health activity and your answers, from the real Brooks catalog.'
+                : 'Ranked for how you actually run, from the real Brooks catalog.'}
           </Txt>
         </View>
 
@@ -366,6 +522,7 @@ export function Finder() {
             title="Retake the quiz"
             variant="secondary"
             onPress={() => {
+              forgetActivity();
               setAnswers({});
               setStepIndex(0);
               setPhase('quiz');
@@ -487,11 +644,21 @@ function Progress({ flow, index }: { flow: string[]; index: number }) {
   );
 }
 
+/** Every answer key in quiz order, so the Health summary lists them the same way. */
+const STEP_ORDER: (keyof Answers)[] = ['use', 'trailType', 'race', 'mileage', 'feel', 'balance', 'gender'];
+
 const styles = StyleSheet.create({
   intro: {
     flex: 1,
     backgroundColor: colors.navy,
     paddingHorizontal: spacing.gutter,
+  },
+  healthLink: { alignSelf: 'center', padding: spacing.md, marginTop: spacing.sm },
+  healthLinkText: { textDecorationLine: 'underline' },
+  evidenceRow: {
+    paddingVertical: spacing.md,
+    borderTopWidth: border.rule,
+    borderTopColor: 'rgba(255,255,255,0.2)',
   },
   quiz: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: spacing.gutter },
   quizHead: {

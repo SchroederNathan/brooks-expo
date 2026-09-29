@@ -150,6 +150,7 @@ This repository uses [Linked Literate Programming](https://github.com/ccheever/l
 - [LLP 0002: The Brooks commerce API](./llp/0002-brooks-commerce-api.research.md) explains the data and network architecture. Read it before changing `src/data/` or `packages/catalog/`.
 - [LLP 0003: Brooks design system and screen patterns](./llp/0003-brooks-design-system.research.md) records brand tokens, navigation, motion, and current screen decisions.
 - [LLP 0004: Building on Exact today](./llp/0004-building-on-exact.research.md) preserves research from the original monorepo.
+- [LLP 0005: Activity-informed Shoe Finder](./llp/0005-activity-informed-finder.design.md) explains how the Finder reads Apple Health through the local `modules/brooks-activity` module.
 - [AGENTS.md](./AGENTS.md) contains working rules for AI agents, including LLP and diary requirements.
 
 Code uses `@ref LLP NNNN#section` comments where a non-obvious implementation decision needs its rationale close by.
