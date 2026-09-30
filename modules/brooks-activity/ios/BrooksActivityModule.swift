@@ -74,15 +74,16 @@ public class BrooksActivityModule: Module {
       return result
     }
 
-    // Development only. Writes eight weeks of plausible road-runner data so the
+    // Debug builds only. Writes eight weeks of plausible road-runner data so the
     // Finder can be exercised on a simulator, where Health starts empty.
+    // @ref LLP 0005#read-only-by-default — Compiled out of Release, so the
+    // store binary contains no HealthKit write calls at all.
+    #if DEBUG
     AsyncFunction("seedSampleDataAsync") { () async throws in
       try ensureAvailable()
-      guard Bundle.main.object(forInfoDictionaryKey: "NSHealthUpdateUsageDescription") != nil else {
-        throw SampleDataDisabledException()
-      }
       try await seedSampleData()
     }
+    #endif
   }
 
   // MARK: - Queries
@@ -112,6 +113,7 @@ public class BrooksActivityModule: Module {
 
   // MARK: - Sample data
 
+  #if DEBUG
   private func seedSampleData() async throws {
     let workoutType = HKObjectType.workoutType()
     let steps = HKQuantityType(.stepCount)
@@ -204,6 +206,7 @@ public class BrooksActivityModule: Module {
     try await builder.endCollection(at: end)
     _ = try await builder.finishWorkout()
   }
+  #endif
 }
 
 // MARK: - Records
@@ -255,11 +258,5 @@ struct DailyStepsRecord: Record {
 final class HealthUnavailableException: Exception, @unchecked Sendable {
   override var reason: String {
     "Health data is not available on this device"
-  }
-}
-
-final class SampleDataDisabledException: Exception, @unchecked Sendable {
-  override var reason: String {
-    "Sample data needs NSHealthUpdateUsageDescription. Build with the brooks-activity plugin's `sampleData` option on"
   }
 }

@@ -17,8 +17,11 @@ declare class BrooksActivityModule extends NativeModule<{}> {
   getWorkoutsAsync(days: number): Promise<ActivityWorkout[]>;
   /** One entry per day for the last `days` days, oldest first. */
   getDailyStepsAsync(days: number): Promise<DailySteps[]>;
-  /** Development builds only. Replaces this app's samples with eight weeks of sample data. */
-  seedSampleDataAsync(): Promise<void>;
+  /**
+   * Debug builds only; undefined in Release. Replaces this app's samples with
+   * eight weeks of sample data.
+   */
+  seedSampleDataAsync?(): Promise<void>;
 }
 
 /**

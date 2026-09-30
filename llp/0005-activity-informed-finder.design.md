@@ -95,16 +95,27 @@ The app never asks for Health access at launch. It asks only after the tap.
 ## Read-only by default
 
 The config plugin (`modules/brooks-activity/app.plugin.js`) adds
-`com.apple.developer.healthkit` and `NSHealthShareUsageDescription`. Its
-`sampleData` option also adds `NSHealthUpdateUsageDescription`, so that
-`seedSampleDataAsync` can write eight weeks of road-runner data to an empty
-simulator. `app.config.ts` turns `sampleData` on for every build except the EAS
-`production` profile. `seedSampleDataAsync` throws when the key is absent, so a
-store build cannot write to Health even if the JS calls it.
+`com.apple.developer.healthkit`, `NSHealthShareUsageDescription` and
+`NSHealthUpdateUsageDescription`. It adds no background delivery.
 
-`seedSampleDataAsync` deletes only samples this app wrote, then writes the new
-set, so it can run more than once. It is not called from any screen. Call it
-from a debugger:
+[observed 2026-09-30] The write string is required even though the store
+build never writes. The first TestFlight upload left it out and App Store
+Connect rejected the build with ITMS-90683 ("Missing purpose string in
+Info.plist ... should contain a NSHealthUpdateUsageDescription key"). The
+message says either the code or the HealthKit entitlement can trigger this.
+So the key is always present, and its text says that Brooks does not save data
+to Apple Health.
+
+The store binary stays read-only because the write code does not compile
+into it: `seedSampleDataAsync` and its helpers sit inside `#if DEBUG`. [observed
+2026-09-30] The Pods project defines `DEBUG` for the Debug configuration only.
+`nm` on the Release `libBrooksActivity.a` finds no `HKWorkoutBuilder`,
+`deleteObjects` or `seedSampleData` symbols; the Debug library has them.
+
+`seedSampleDataAsync` writes eight weeks of road-runner data to an empty
+simulator. It deletes only samples this app wrote, then writes the new set, so
+it can run more than once. It is not called from any screen, and it is
+undefined in Release builds. Call it from a debugger in a Debug build:
 
 ```js
 await globalThis.expo.modules.BrooksActivity.seedSampleDataAsync()
@@ -117,9 +128,9 @@ await globalThis.expo.modules.BrooksActivity.seedSampleDataAsync()
 - The read sheet lists Steps, Walking + Running Distance and Workouts, and shows
   the `NSHealthShareUsageDescription` text. In this development build, the
   sheet header says the app wants to "access and update" Health data.
-  [inferred] The cause is the `NSHealthUpdateUsageDescription` key in this
-  build, and a production build without it would say "access" only. Neither
-  is checked yet.
+  [inferred] The cause is the `NSHealthUpdateUsageDescription` key. Every
+  build has that key now (see above), so a store build probably shows the same
+  header. Not checked on a store build yet.
 - With an empty Health store, the Finder shows "Nothing to go on yet" and
   the full 7-step quiz.
 - After `seedSampleDataAsync`: 23 runs and 8 walks, 55 days with steps. The
@@ -157,7 +168,12 @@ build has been tried. The Health Connect work is:
 
 - Should the thresholds above be checked against real runners' data before a
   demo?
-- A store build needs the HealthKit capability on the App ID. [inferred] EAS
-  capability sync should add it from the entitlement on the next build.
+- [observed 2026-09-30] The TestFlight workflow build failed until the App ID
+  had the HealthKit capability: the stored App Store profile "doesn't include
+  the HealthKit capability". EAS syncs capabilities when `eas build` runs
+  locally with an Apple sign-in, not in a workflow build on EAS servers. After
+  a capability change, run one local `eas build -p ios --profile production`,
+  or enable it in the Apple Developer portal and regenerate the profile with
+  `eas credentials`.
 - Should the Finder remember that the shopper connected Health, and offer the
   Health start by default next time?

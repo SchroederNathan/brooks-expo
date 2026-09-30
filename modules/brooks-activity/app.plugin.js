@@ -1,22 +1,22 @@
 /**
  * Config plugin for the local brooks-activity module.
  *
- * @ref LLP 0005#read-only-by-default — Adds the HealthKit entitlement and the
- * read-access usage string, and nothing else: no background delivery and no
- * write access. `sampleData: true` adds the write-access string so that a
- * development build can seed a simulator; production builds leave it off.
+ * @ref LLP 0005#read-only-by-default — Adds the HealthKit entitlement and both
+ * Health usage strings, and nothing else: no background delivery. App Store
+ * Connect rejects a HealthKit app without `NSHealthUpdateUsageDescription`
+ * (ITMS-90683) even when the store binary never writes, so the write string is
+ * always present. The store binary stays read-only because the Swift write
+ * code only compiles into Debug builds.
  */
 const { withEntitlementsPlist, withInfoPlist } = require('expo/config-plugins');
 
 const SHARE_DESCRIPTION =
   'The Shoe Finder reads your recent runs, walks, hikes and steps to answer some of its questions for you. Your data stays on this device.';
 const UPDATE_DESCRIPTION =
-  'Development builds write sample workouts so the Shoe Finder can be tested on a simulator.';
+  'Brooks does not save your data to Apple Health. Only development builds add sample workouts, to test the Shoe Finder.';
 
-/** @type {import('expo/config-plugins').ConfigPlugin<{ sampleData?: boolean } | void>} */
-module.exports = function withBrooksActivity(config, props) {
-  const sampleData = !!props?.sampleData;
-
+/** @type {import('expo/config-plugins').ConfigPlugin} */
+module.exports = function withBrooksActivity(config) {
   config = withEntitlementsPlist(config, (config) => {
     config.modResults['com.apple.developer.healthkit'] = true;
     return config;
@@ -24,8 +24,7 @@ module.exports = function withBrooksActivity(config, props) {
 
   config = withInfoPlist(config, (config) => {
     config.modResults.NSHealthShareUsageDescription = SHARE_DESCRIPTION;
-    if (sampleData) config.modResults.NSHealthUpdateUsageDescription = UPDATE_DESCRIPTION;
-    else delete config.modResults.NSHealthUpdateUsageDescription;
+    config.modResults.NSHealthUpdateUsageDescription = UPDATE_DESCRIPTION;
     return config;
   });
 
