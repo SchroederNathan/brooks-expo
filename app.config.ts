@@ -27,11 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     ...(config.plugins ?? []),
-    // Sample-data writing is for development builds only, so the store build
-    // asks for read access and nothing more. @ref LLP 0005#read-only-by-default
-    [
-      './modules/brooks-activity/app.plugin.js',
-      { sampleData: process.env.EAS_BUILD_PROFILE !== 'production' },
-    ],
+    // HealthKit entitlement and usage strings. @ref LLP 0005#read-only-by-default
+    './modules/brooks-activity/app.plugin.js',
   ],
 });

@@ -37,13 +37,24 @@ longest run. LLP 0005 records the design and the thresholds.
   command to seed it. A write-access path with a build-time plugin option was
   necessary just to test a read-only feature.
 
+- [observed 2026-09-30] The first TestFlight workflow build failed: the
+  stored App Store profile had no HealthKit capability. The workflow build
+  does not sync capabilities; a local `eas build` with an Apple sign-in does.
+  I had guessed in LLP 0005 that sync would handle it, and that was wrong for
+  workflow builds.
+- [observed 2026-09-30] The next upload was rejected with ITMS-90683 for a
+  missing `NSHealthUpdateUsageDescription`. The plugin had left the key out
+  of production builds to keep them read-only. The fix keeps the key in every
+  build and compiles the write code out of Release with `#if DEBUG`.
+
 ## What was hard
 
 - HealthKit does not report read denials, so "denied" and "no data" are the
   same state. The UI must present an empty result as normal.
 - Keeping the store build read-only while development builds can write
-  sample data. This needed the plugin option, the `EAS_BUILD_PROFILE` gate,
-  and a runtime Info.plist check in Swift.
+  sample data. The first version removed the write usage string from
+  production builds, and App Store Connect rejected that. The version that
+  works keeps the string and compiles the write code out of Release.
 
 ## Comparative friction
 
@@ -58,6 +69,13 @@ Not observed. No library-based version was built for comparison.
   module needed all three before it could read anything.
 - The Expo docs have no page on reading health data. A search for "HealthKit
   Health Connect steps workouts" returned only `expo-pedometer`.
+
+- EAS could warn before a workflow build when the app's entitlements include a
+  capability that the stored provisioning profile lacks. The failure came only
+  at the fastlane step.
+- The Expo HealthKit guidance (or the config-plugin docs) could say that
+  App Store Connect requires `NSHealthUpdateUsageDescription` for a read-only
+  HealthKit app.
 
 ## Follow-ups
 
