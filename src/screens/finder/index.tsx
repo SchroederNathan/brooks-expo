@@ -1,5 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Image } from 'expo-image';
+import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import Svg, { Path, Rect } from 'react-native-svg';
 
 import { ProductTile } from '@/components/product-tile';
 import { BrooksIcon } from '@/components/icons';
@@ -30,11 +32,14 @@ const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
 /**
  * The Shoe Finder.
  *
+ * @ref LLP 0005#health-first — Where Apple Health exists, the Finder starts
+ * from it, and the quiz only asks what the data cannot answer. Without Health,
+ * the quiz is the whole Finder.
+ *
  * @ref LLP 0003#shoe-finder — A condensed but faithful take on Brooks's real
- * 16-step quiz ("Shoe Finder S26 US"): single-select steps auto-advance, the
- * flow branches on trail, the barefoot "Take 'em off"
- * checkpoint plays as a full-screen beat, and results name *why* — which is what
- * turns a quiz into advice.
+ * 16-step quiz ("Shoe Finder S26 US"): the flow branches on trail, the barefoot
+ * "Take 'em off" checkpoint plays as a full-screen beat, and results name
+ * *why* — which is what turns a quiz into advice.
  */
 
 export type Answers = {
@@ -286,6 +291,11 @@ type Phase = 'intro' | 'activity' | 'quiz' | 'results';
 /** Read once: availability does not change while the app runs. */
 const ACTIVITY_AVAILABLE = isActivityAvailable();
 
+const WEEKS = Math.round(ACTIVITY_WINDOW_DAYS / 7);
+
+const HEALTH_ICON = require('../../../assets/apple-health-icon.png');
+const BROOKS_ICON = require('../../../assets/icon.png');
+
 export function Finder() {
   // The Finder never carried the blue header, and still does not: its intro is a
   // full-bleed navy panel. It takes its safe area from the same primitive every
@@ -296,16 +306,17 @@ export function Finder() {
   const [phase, setPhase] = useState<Phase>('intro');
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0);
-  const advancing = useRef(false);
 
-  // Apple Health. `activity` is the profile the results may quote; `prefill`
-  // and `evidence` are the answers it supports and why. All three are screen
-  // state only. @ref LLP 0005#nothing-leaves-the-device
+  // Apple Health. `profile` is what was read; `prefill` and `evidence` are the
+  // answers it supports and why. All three are screen state only.
+  // @ref LLP 0005#nothing-leaves-the-device
   const [reading, setReading] = useState(false);
-  const [activity, setActivity] = useState<ActivityProfile | null>(null);
+  const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [prefill, setPrefill] = useState<Partial<Answers>>({});
   const [evidence, setEvidence] = useState<Evidence>({});
   const skip = useMemo(() => new Set(Object.keys(prefill)), [prefill]);
+  // Results quote the shopper's numbers only when those numbers decided something.
+  const activity = skip.size > 0 ? profile : null;
 
   const flow = useMemo(() => flowFor(answers, skip), [answers, skip]);
   const stepId = flow[stepIndex];
@@ -315,9 +326,15 @@ export function Finder() {
   );
 
   const forgetActivity = () => {
-    setActivity(null);
+    setProfile(null);
     setPrefill({});
     setEvidence({});
+  };
+
+  const startQuiz = (start: Answers) => {
+    setAnswers(start);
+    setStepIndex(0);
+    setPhase('quiz');
   };
 
   const reset = () => {
@@ -330,44 +347,86 @@ export function Finder() {
   const startFromActivity = async () => {
     if (reading) return;
     setReading(true);
-    let profile: ActivityProfile | null = null;
+    let read: ActivityProfile | null = null;
     try {
-      profile = await readActivityProfile();
+      read = await readActivityProfile();
     } catch {
       // A failed read is the same as no data: the quiz still works.
     }
-    const derived = profile ? answersFromActivity(profile) : { answers: {}, evidence: {} };
-    // Quote the numbers in results only when they decided something.
-    setActivity(Object.keys(derived.answers).length ? profile : null);
+    const derived = read ? answersFromActivity(read) : { answers: {}, evidence: {} };
+    setProfile(read);
     setPrefill(derived.answers);
     setEvidence(derived.evidence);
     setReading(false);
     setPhase('activity');
   };
 
-  const advance = (next: Answers) => {
-    // flowFor can grow (trail branch), so recompute against the new answers.
-    const newFlow = flowFor(next, skip);
-    if (stepIndex + 1 >= newFlow.length) {
-      setPhase('results');
-    } else {
-      setStepIndex(stepIndex + 1);
-    }
+  // @ref LLP 0005#the-quiz-waits-for-next — A tap selects; only Next moves on.
+  const next = () => {
+    // flowFor can grow (trail branch), so it is recomputed from the answers.
+    if (stepIndex + 1 >= flow.length) setPhase('results');
+    else setStepIndex(stepIndex + 1);
   };
 
-  const pick = (step: Step, value: string) => {
-    if (advancing.current) return;
-    advancing.current = true;
-    const next = step.set(answers, value);
-    setAnswers(next);
-    // A beat so the selection state is visible before the slide advances.
-    setTimeout(() => {
-      advancing.current = false;
-      advance(next);
-    }, 260);
+  const back = () => {
+    if (stepIndex > 0) setStepIndex(stepIndex - 1);
+    // The first question goes back to wherever the quiz started from.
+    else if (profile) setPhase('activity');
+    else reset();
   };
 
   /* ---------------------------------------------------------------- intro -- */
+  // @ref LLP 0005#health-first — With Health on the device, the Finder leads
+  // with it and the quiz is the fallback.
+  if (phase === 'intro' && ACTIVITY_AVAILABLE) {
+    return (
+      <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
+        <View style={{ flex: 2 }} />
+        <View style={styles.linkArt}>
+          <Image source={HEALTH_ICON} style={styles.appIcon} accessibilityLabel="Apple Health" />
+          <Image source={BROOKS_ICON} style={styles.appIcon} accessibilityLabel="Brooks" />
+          <View style={styles.linkBadge}>
+            <LinkGlyph />
+          </View>
+        </View>
+
+        <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.xxl }}>
+          Link to{'\n'}
+          <Txt variant="hero" c={colors.lime}>
+            Apple Health
+          </Txt>
+        </Txt>
+        <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.md }}>
+          We read your last {WEEKS} weeks of runs, walks and steps, then ask only what Health
+          can't tell us.
+        </Txt>
+        <View style={styles.introRule} />
+
+        <View style={{ flex: 3 }} />
+        <LockGlyph />
+        <Txt variant="bodySmall" c="rgba(255,255,255,0.8)" style={styles.privacy}>
+          Your Health data stays on this iPhone. Brooks never stores it or sends it anywhere.
+        </Txt>
+        <Button
+          title="Connect Apple Health"
+          variant="onDark"
+          loading={reading}
+          onPress={startFromActivity}
+        />
+        <Press
+          onPress={() => startQuiz({})}
+          disabled={reading}
+          style={styles.healthLink}
+          accessibilityRole="button"
+        >
+          <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
+            Answer the questions instead
+          </Txt>
+        </Press>
+      </Screen>
+    );
+  }
+
   if (phase === 'intro') {
     return (
       <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
@@ -381,19 +440,7 @@ export function Finder() {
           {VOICE.finderBlurb}
         </Txt>
         <View style={{ flex: 1 }} />
-        <Button title={VOICE.finderCta} variant="onDark" onPress={() => setPhase('quiz')} />
-        {ACTIVITY_AVAILABLE ? (
-          <Press
-            onPress={startFromActivity}
-            disabled={reading}
-            style={styles.healthLink}
-            accessibilityRole="button"
-          >
-            <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
-              {reading ? 'Reading Apple Health…' : 'Start from my Apple Health activity'}
-            </Txt>
-          </Press>
-        ) : null}
+        <Button title={VOICE.finderCta} variant="onDark" onPress={() => startQuiz({})} />
       </Screen>
     );
   }
@@ -404,67 +451,73 @@ export function Finder() {
       (x, y) => STEP_ORDER.indexOf(x) - STEP_ORDER.indexOf(y)
     );
     const found = filled.length > 0;
-    const weeks = Math.round(ACTIVITY_WINDOW_DAYS / 7);
+    // Some activity, but not enough to decide any answer.
+    const thin =
+      !!profile && (profile.runs > 0 || profile.walks > 0 || profile.avgDailySteps != null);
+    const left = flowFor(prefill, skip).filter((id) => id !== 'takeEmOff').length;
     return (
-      <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
-        <Txt variant="eyebrow" c={colors.lime}>
-          From Apple Health
-        </Txt>
-        <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.md }}>
-          {found
-            ? `${filled.length === 1 ? 'One answer' : `${filled.length} answers`} down already.`
-            : 'Nothing to go on yet.'}
-        </Txt>
-        <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.sm }}>
-          {found
-            ? `From your last ${weeks} weeks of activity. The quiz asks the rest.`
-            : `We found no runs, walks or steps from the last ${weeks} weeks. You can check what Brooks can read in the Health app.`}
-        </Txt>
+      <Screen style={[styles.intro, { paddingHorizontal: 0, paddingBottom: spacing.xl }]}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl }}
+          showsVerticalScrollIndicator={false}
+        >
+          <Txt variant="h1" c={colors.surface}>
+            {found
+              ? `${filled.length === 1 ? 'One answer' : `${filled.length} answers`} down already.`
+              : thin
+                ? 'Not quite enough to go on.'
+                : 'Nothing to go on yet.'}
+          </Txt>
+          <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.sm }}>
+            {found
+              ? `From your last ${WEEKS} weeks in Apple Health. The quiz asks the rest.`
+              : thin
+                ? `We need about four runs or walks in ${WEEKS} weeks to answer for you. The quiz asks everything.`
+                : `We found no runs, walks or steps from the last ${WEEKS} weeks. You can check what Brooks can read in the Health app.`}
+          </Txt>
 
-        {found ? (
-          <View style={{ marginTop: spacing.xl }}>
-            {filled.map((key) => (
-              <View key={key} style={styles.evidenceRow}>
-                <Txt variant="tiny" c="rgba(255,255,255,0.6)">
-                  {STEPS[key].eyebrow}
-                </Txt>
-                <Txt variant="h3" c={colors.surface} style={{ marginTop: 2 }}>
-                  {optionLabel(key, prefill[key])}
-                </Txt>
-                <Txt variant="bodySmall" c="rgba(255,255,255,0.7)" style={{ marginTop: 2 }}>
-                  {evidence[key]}
-                </Txt>
-              </View>
-            ))}
-          </View>
-        ) : null}
+          {found ? (
+            <View style={{ marginTop: spacing.xl }}>
+              {filled.map((key) => (
+                <View key={key} style={styles.evidenceRow}>
+                  <Txt variant="tiny" c="rgba(255,255,255,0.6)">
+                    {STEPS[key].eyebrow}
+                  </Txt>
+                  <Txt variant="h3" c={colors.surface} style={{ marginTop: 2 }}>
+                    {optionLabel(key, prefill[key])}
+                  </Txt>
+                  <Txt variant="bodySmall" c="rgba(255,255,255,0.7)" style={{ marginTop: 2 }}>
+                    {evidence[key]}
+                  </Txt>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </ScrollView>
 
-        <View style={{ flex: 1 }} />
-        <Button
-          title={found ? 'Continue' : 'Answer the questions'}
-          variant="onDark"
-          onPress={() => {
-            setAnswers(prefill);
-            setStepIndex(0);
-            setPhase('quiz');
-          }}
-        />
-        {found ? (
-          <Press
-            onPress={() => {
-              forgetActivity();
-              setAnswers({});
-              setStepIndex(0);
-              setPhase('quiz');
-            }}
-            style={styles.healthLink}
-            accessibilityRole="button"
-          >
-            <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
-              Answer every question instead
-            </Txt>
-          </Press>
-        ) : null}
+        <View style={{ paddingHorizontal: spacing.gutter }}>
+          <Button
+            title={found ? 'Continue' : 'Answer the questions'}
+            accessory={found ? `${left} left` : undefined}
+            variant="onDark"
+            onPress={() => startQuiz(prefill)}
+          />
+          {found ? (
+            <Press
+              onPress={() => {
+                forgetActivity();
+                startQuiz({});
+              }}
+              style={styles.healthLink}
+              accessibilityRole="button"
+            >
+              <Txt variant="bodySmall" c={colors.surface} style={styles.healthLinkText}>
+                Answer every question instead
+              </Txt>
+            </Press>
+          ) : null}
+        </View>
       </Screen>
     );
   }
@@ -518,16 +571,9 @@ export function Finder() {
         </View>
 
         <View style={{ paddingHorizontal: spacing.gutter, marginTop: spacing.xxl, gap: spacing.md }}>
-          <Button
-            title="Retake the quiz"
-            variant="secondary"
-            onPress={() => {
-              forgetActivity();
-              setAnswers({});
-              setStepIndex(0);
-              setPhase('quiz');
-            }}
-          />
+          {/* A retake keeps the Health answers: the data has not changed, only
+              the shopper's mind about the questions it could not answer. */}
+          <Button title="Retake the quiz" variant="secondary" onPress={() => startQuiz(prefill)} />
           <Press onPress={reset} style={{ alignSelf: 'center', padding: spacing.sm }}>
             <Txt variant="caption" c={colors.inkMuted}>
               Start over
@@ -560,7 +606,7 @@ export function Finder() {
         <View style={{ flex: 1 }} />
         <Progress flow={flow} index={stepIndex} />
         <View style={{ marginTop: spacing.lg }}>
-          <Button title="Done — one foot survived" onPress={() => advance(answers)} />
+          <Button title="Done — one foot survived" onPress={next} />
         </View>
       </View>
     );
@@ -569,14 +615,12 @@ export function Finder() {
   /* ----------------------------------------------------------------- quiz -- */
   const step = STEPS[stepId];
   const selected = (answers as Record<string, unknown>)[step.id];
+  const last = stepIndex + 1 >= flow.length;
 
   return (
     <Screen style={[styles.quiz, { paddingBottom: spacing.xl }]}>
       <View style={styles.quizHead}>
-        <Press
-          hitSlop={10}
-          onPress={() => (stepIndex === 0 ? reset() : setStepIndex(stepIndex - 1))}
-        >
+        <Press hitSlop={10} onPress={back} accessibilityRole="button" accessibilityLabel="Back">
           <BrooksIcon name="caretLeft" size={16} color={colors.inkMuted} />
         </Press>
         <Txt variant="tiny" c={colors.inkMuted}>
@@ -597,15 +641,17 @@ export function Finder() {
           </Txt>
         ) : null}
 
-        <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
+        <View style={{ marginTop: spacing.xl, gap: spacing.md }} accessibilityRole="radiogroup">
           {step.options.map((o) => {
             const isOn = selected === o.value;
             return (
               <Press
                 key={o.value}
                 scaleTo={0.98}
-                onPress={() => pick(step, o.value)}
+                onPress={() => setAnswers(step.set(answers, o.value))}
                 style={[styles.option, isOn && styles.optionOn]}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isOn }}
               >
                 <View style={{ flex: 1 }}>
                   <Txt variant="h3" c={isOn ? colors.surface : colors.ink}>
@@ -629,6 +675,9 @@ export function Finder() {
       </View>
 
       <Progress flow={flow} index={stepIndex} />
+      <View style={{ marginTop: spacing.lg }}>
+        <Button title={last ? 'See my matches' : 'Next'} disabled={selected == null} onPress={next} />
+      </View>
     </Screen>
   );
 }
@@ -644,6 +693,25 @@ function Progress({ flow, index }: { flow: string[]; index: number }) {
   );
 }
 
+/** The chain link between the two app icons. */
+function LinkGlyph() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.surface} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <Path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </Svg>
+  );
+}
+
+function LockGlyph() {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24" accessibilityElementsHidden>
+      <Path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke={colors.surface} strokeWidth={2.5} />
+      <Rect x={4} y={10} width={16} height={12} rx={2.5} fill={colors.surface} />
+    </Svg>
+  );
+}
+
 /** Every answer key in quiz order, so the Health summary lists them the same way. */
 const STEP_ORDER: (keyof Answers)[] = ['use', 'trailType', 'race', 'mileage', 'feel', 'balance', 'gender'];
 
@@ -655,6 +723,32 @@ const styles = StyleSheet.create({
   },
   healthLink: { alignSelf: 'center', padding: spacing.md, marginTop: spacing.sm },
   healthLinkText: { textDecorationLine: 'underline' },
+  linkArt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  // App icons keep the iOS icon corner: this row shows two real app icons.
+  appIcon: { width: 104, height: 104, borderRadius: 24 },
+  linkBadge: {
+    position: 'absolute',
+    bottom: -20,
+    alignSelf: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.ink,
+    borderWidth: 3,
+    borderColor: colors.navy,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  introRule: {
+    marginTop: spacing.xl,
+    borderTopWidth: border.rule,
+    borderTopColor: 'rgba(255,255,255,0.2)',
+  },
+  privacy: { marginTop: spacing.sm, marginBottom: spacing.xl },
   evidenceRow: {
     paddingVertical: spacing.md,
     borderTopWidth: border.rule,

@@ -1201,7 +1201,9 @@ Experience → Mileage → Injuries → **"Take 'em off"** checkpoint → Balanc
 bend → Flexibility → Shoe feel → Features → Gender/size → Email (skippable) →
 Results.
 
-[inferred] Single-select steps should auto-advance; the barefoot-test checkpoint is
+[inferred] Single-select steps should auto-advance [superseded 2026-09-30 by
+LLP 0005#the-quiz-waits-for-next: a tap selects, and a Next button advances];
+the barefoot-test checkpoint is
 the most charming, most Brooks moment in the whole product and should be played as
 a full-screen beat. Results should name *why* ("Balanced cushion — you wanted soft
 and smooth"), which is what turns a quiz into advice.
@@ -1362,7 +1364,8 @@ continuous morph.
 1. **Project 222 live countdown** on the hero — news-pegged, expires correctly.
 2. **Add-to-cart flying shoe** arcing into the tab-bar bag, lime badge popping.
 3. **Colorway swatches on the tile** that swap the image in place.
-4. **Shoe Finder auto-advance quiz** with the "Take 'em off" checkpoint.
+4. **Shoe Finder quiz** with the "Take 'em off" checkpoint. [superseded
+   2026-09-30] It no longer auto-advances; see LLP 0005#the-quiz-waits-for-next.
 5. [superseded 2026-08-26] **Haptics tuned per gesture** — selection ticks on
    chips, success on add, error on missing size. Built, then removed. Tuning
    them per gesture was the wrong reading: `Press` fired an impact on *every*

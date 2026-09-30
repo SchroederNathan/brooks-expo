@@ -4,7 +4,7 @@
 **Status:** Draft
 **Systems:** Expo App
 **Author:** Claude Opus 5.5
-**Date:** 2026-09-29
+**Date:** 2026-09-29 (Health-first flow and Next button: 2026-09-30)
 **Related:** LLP 0000, LLP 0002, LLP 0003
 
 ## Summary
@@ -15,9 +15,61 @@ weeks. From these it fills in the quiz answers the data supports clearly, shows
 the shopper what it filled in and why, and then asks the remaining questions.
 Results quote the shopper's own numbers in their reasons.
 
+The Finder is Health-first: where Health is available, Health is the main way
+in and the quiz is the fallback (see [Health first](#health-first)).
+
 The reader is a local Expo module, `modules/brooks-activity`. It is iOS only
 today. On Android and web, the module resolves to `null` and the Finder shows no
 Health entry point.
+
+## Health first
+
+[observed 2026-09-30] The Health start used to be an underlined link below the
+quiz's "Let's go" button. It is now the Finder's front door on any device where
+`isActivityAvailable()` is true:
+
+1. **Intro.** The Apple Health app icon and the Brooks app icon sit side by
+   side with a link badge between them, over the Finder's flat navy. The
+   headline is "Link to / Apple Health", with "Apple Health" in lime. One line
+   says what is read, and a lock line says the data stays on the phone. The
+   primary button is "Connect Apple Health". The quiz is a text link below it:
+   "Answer the questions instead". [observed 2026-09-30] The layout follows a
+   reference the user supplied, without its gradient. An earlier version with
+   a list of data types was cut as too busy.
+2. **Summary.** The headline ("3 answers down already.") and one row for each
+   filled answer, with its evidence. The Continue button says how many
+   questions are left. The checkpoint beat is not counted, because it asks
+   nothing. An earlier version also had a grid of headline numbers; it
+   repeated the evidence rows and was cut.
+3. **Quiz.** Only the questions the data could not answer. Back from the
+   first question returns to the summary, not the intro.
+4. **Results.** The reasons quote the shopper's numbers, as before.
+
+The Health icon is `assets/apple-health-icon.png`, copied from the
+`expo-ui-examples` repo and reduced to 384 px. The Brooks icon is the app's
+own `assets/icon.png`. Both get the iOS icon corner radius: they are app
+icons, so the square Brooks corner rule (LLP 0003) does not apply to them.
+
+The quiz is the fallback in three cases: the shopper picks "Answer the
+questions instead", the profile is empty or too thin to fill an answer, or
+Health is not available at all. In the last case (Android, web) the Finder
+shows the old welcome screen and "Let's go". There is no Health copy there.
+
+The profile still lives in screen state only. "Retake the quiz" keeps the
+Health answers and asks the rest again. "Start over" and "Answer every
+question instead" drop them.
+
+## The quiz waits for Next
+
+[observed 2026-09-30] The quiz used to advance 260 ms after a tap on an
+answer. Now a tap only selects the answer. The shopper moves on with a Next
+button at the bottom, which is disabled until an answer is selected. On the
+last question the button says "See my matches". A mis-tap no longer costs a
+step, and the shopper can look at the choice before committing to it. This
+replaces the auto-advance that LLP 0003#shoe-finder inferred.
+
+Answers are `radio` elements with a `selected` state, so VoiceOver reads the
+choice before the shopper moves on.
 
 ## Why a local module
 
@@ -85,8 +137,8 @@ option label, so the shopper can check it against the question it replaces.
 ## Nothing leaves the device
 
 [observed — LLP 0002] The app has no Brooks backend. The profile is computed
-when the shopper taps "Start from my Apple Health activity", held in Finder
-screen state, and dropped on "Start over" or "Retake the quiz". It is never
+when the shopper taps "Connect Apple Health", held in Finder screen state, and
+dropped on "Start over" or "Answer every question instead". It is never
 written to storage and never sent over the network. The `NSHealthShareUsageDescription`
 string says so.
 
