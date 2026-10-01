@@ -14,6 +14,7 @@ import { useCart } from '@/store/cart';
 import { leave, useMember } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
 import { border, colors, spacing } from '@/theme';
+import { useUpdateCheck } from '@/utils/updates';
 
 /**
  * Account.
@@ -29,6 +30,7 @@ import { border, colors, spacing } from '@/theme';
 export function Account() {
   const member = useMember();
   const cart = useCart();
+  const update = useUpdateCheck();
 
   // @ref LLP 0003#the-header-collapses-on-scroll — the blue header is Home's
   // alone. The controls this screen used to carry up top (search, cart, browse)
@@ -95,6 +97,7 @@ export function Account() {
           label="Run Happy Promise"
           detail="90-day trial run on every order"
         />
+        <Row label={update.label} detail={update.detail} onPress={update.onPress} />
       </View>
 
       {member ? (

@@ -117,7 +117,7 @@ src/
   utils/               Storage, haptics, and formatting
 packages/catalog/      Source catalog package and schemas
 tools/harvest/         Browser capture, validation, and sync tools
-.eas/workflows/        TestFlight delivery workflow
+.eas/workflows/        TestFlight and OTA delivery workflow
 docs/                  README screenshots
 llp/                   Product, system, and design rationale
 diaries/               AI-agent development records
@@ -125,15 +125,30 @@ diaries/               AI-agent development records
 
 `brand.config.js` owns the shippable app identity. `app.config.ts` overlays it on `app.json`, so the display name, slug, URL scheme, and native identifiers stay together.
 
-## TestFlight
+## TestFlight and OTA updates
 
-The iOS workflow in [`.eas/workflows/deploy-to-testflight.yml`](./.eas/workflows/deploy-to-testflight.yml) fingerprints the native layer, builds when native inputs change, and otherwise uses a matching build as the base for a repack. The resulting binary goes to TestFlight. The project does not use EAS Update.
+The iOS workflow in [`.eas/workflows/deploy-to-testflight.yml`](./.eas/workflows/deploy-to-testflight.yml) runs on pushes to `main` and on manual runs. It type-checks the app, fingerprints the production native layer, and looks for a completed store build with the same fingerprint on the `production` channel.
+
+- A match publishes an iOS EAS Update to the `production` channel. Installed builds with that fingerprint download it.
+- No match builds a new binary and uploads it to TestFlight.
+
+The app uses the `fingerprint` runtime version policy, so an update can only reach a binary with the same native layer. Updates download on launch and apply on the next cold start. Account → **Check for updates** checks the channel by hand and offers a restart when an update is ready. Development builds load JavaScript from Metro, so the row is off there.
+
+The first run after this change needs a new native build, because older binaries do not include `expo-updates`. Testers must install that build from TestFlight before they can receive updates. An update does not create a new TestFlight build number.
 
 Run it manually with an Expo account that has access to the configured EAS and App Store Connect projects:
 
 ```sh
 eas workflow:run .eas/workflows/deploy-to-testflight.yml
 ```
+
+To force a new TestFlight binary even when a compatible build exists, for example after a failed or canceled upload:
+
+```sh
+eas workflow:run .eas/workflows/deploy-to-testflight.yml -F force_native=true
+```
+
+`get-build` proves that a build completed. It does not prove that Apple accepted the upload or that testers installed it. Recover a failed upload with a forced run before relying on updates for that runtime.
 
 The workflow also declares a push trigger for `main`. That trigger remains inactive until this GitHub repository is connected to the EAS project.
 

@@ -40,6 +40,13 @@ can be run with Expo Go.
 storage layer uses `expo-sqlite` and the splash animation uses
 `lottie-react-native`, both of which ship inside Expo Go.
 
+[observed 2026-09-30] Store builds take JS-only changes as EAS Updates on
+the `production` channel (see the README's TestFlight section). `expo-updates`
+is an Expo SDK module, and the Account screen's update row only runs when
+`Updates.isEnabled && !__DEV__`, so it is inert in Expo Go and dev clients.
+[inferred] Expo Go includes `expo-updates`, so the import does not break the
+Expo Go target; not yet checked in Expo Go.
+
 ### Required website surfaces
 
 [confirmed — Charlie Cheever, 2026-07-13] The first complete prototype should
