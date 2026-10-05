@@ -1205,7 +1205,9 @@ Results.
 LLP 0005#the-quiz-waits-for-next: a tap selects, and a Next button advances];
 the barefoot-test checkpoint is
 the most charming, most Brooks moment in the whole product and should be played as
-a full-screen beat. Results should name *why* ("Balanced cushion — you wanted soft
+a full-screen beat. [observed 2026-10-05] The app no longer condenses the quiz:
+it asks the site's own questions from the embedded config, version 24, with the
+site's barefoot videos. See LLP 0005#the-sites-own-questions. Results should name *why* ("Balanced cushion — you wanted soft
 and smooth"), which is what turns a quiz into advice.
 
 [confirmed — live walkthrough of the site quiz, 2026-08-16] The step order above

@@ -10,7 +10,7 @@ A working mobile shopping prototype inspired by [Brooks Running](https://www.bro
 
 - Home mirrors the current Brooks campaign with the Ghost Amp video hero, product rails, editorial cards, and the "Longer days. Longer runs." feature.
 - Browse covers categories and franchises. Its search field swaps the screen into live Constructor.io results, with suggestions, filters, sorting, and an on-device fallback when the service is unavailable.
-- Shoe Finder starts from Apple Health on iOS: it reads eight weeks of runs, walks and steps, fills the answers the data supports, and asks the rest. Without Health it runs a fit and preference quiz. It ranks products from the bundled catalog.
+- Shoe Finder starts from Apple Health on iOS: it reads eight weeks of runs, walks and steps, fills the answers the data supports, and asks the rest. The questions, branches and barefoot-test videos are the ones brooksrunning.com's own Shoe Finder uses. It ranks products from the bundled catalog.
 - Product details include a swipeable gallery, colorways, widths, per-size availability, specifications, fit data, reviews, and a persistent add-to-cart flow.
 - Cart supports quantity changes, swipe-to-remove with undo, totals, and persisted items. Checkout displays the prototype boundary instead of contacting Brooks.
 - Brooks Run Club membership is a local demo state. Names and email addresses stay on the device.

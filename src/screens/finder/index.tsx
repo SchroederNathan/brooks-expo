@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Image } from 'expo-image';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { Dimensions, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import { ProductTile } from '@/components/product-tile';
@@ -25,9 +26,26 @@ import { border, colors, spacing } from '@/theme';
 import { useTabBarOverlap } from '@/utils/native-tabs';
 
 import { answersFromActivity, type Evidence } from './from-activity';
+import {
+  type Answer,
+  type Answers,
+  type QuestionCode,
+  PAGE_ORDER,
+  PAGES,
+  QUIZ_UI,
+  SIZES,
+  answerLabel,
+  answersOnPath,
+  chosen,
+  flowFor,
+  question,
+  supportScore,
+} from './quiz';
 
 const { width: W } = Dimensions.get('window');
 const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
+const CLIP_W = Math.floor((W - spacing.gutter * 2 - spacing.md) / 2);
+const SIZE_W = Math.floor((W - spacing.gutter * 2 - spacing.sm * 3) / 4);
 
 /**
  * The Shoe Finder.
@@ -36,155 +54,62 @@ const TILE_W = Math.floor((W - spacing.gutter * 2 - spacing.lg) / 2);
  * from it, and the quiz only asks what the data cannot answer. Without Health,
  * the quiz is the whole Finder.
  *
- * @ref LLP 0003#shoe-finder — A condensed but faithful take on Brooks's real
- * 16-step quiz ("Shoe Finder S26 US"): the flow branches on trail, the barefoot
- * "Take 'em off" checkpoint plays as a full-screen beat, and results name
- * *why* — which is what turns a quiz into advice.
+ * @ref LLP 0005#the-sites-own-questions — The quiz is the one brooksrunning.com
+ * runs, word for word, with its branches, its scores and its barefoot videos
+ * (`./quiz.ts`). The "Take 'em off" checkpoint plays as a full-screen beat, and
+ * results name *why* — which is what turns a quiz into advice.
  */
-
-export type Answers = {
-  use?: 'road' | 'trail' | 'walk';
-  trailType?: 'light' | 'mountain' | 'speed';
-  race?: string;
-  mileage?: string;
-  feel?: 'Plush' | 'Balanced' | 'Responsive';
-  balance?: 'steady' | 'slight' | 'wobbly';
-  gender?: 'womens' | 'mens';
-};
-
-interface Step {
-  id: string;
-  eyebrow: string;
-  question: string;
-  hint?: string;
-  options: { value: string; label: string; caption?: string }[];
-  set: (a: Answers, value: string) => Answers;
-}
-
-const STEPS: Record<string, Step> = {
-  use: {
-    id: 'use',
-    eyebrow: 'First things first',
-    question: 'Where do you run?',
-    options: [
-      { value: 'road', label: 'Road', caption: 'Pavement, sidewalks, treadmill' },
-      { value: 'trail', label: 'Trail', caption: 'Dirt, rocks, roots' },
-      { value: 'walk', label: 'Walking', caption: 'All-day comfort' },
-    ],
-    set: (a, v) => ({ ...a, use: v as Answers['use'] }),
-  },
-  trailType: {
-    id: 'trailType',
-    eyebrow: 'Trail check',
-    question: 'What kind of trails?',
-    options: [
-      { value: 'light', label: 'Light trails', caption: 'Groomed paths, gravel' },
-      { value: 'mountain', label: 'Technical & mountain', caption: 'Steep, rocky, wild' },
-      { value: 'speed', label: 'Fast trail racing', caption: 'Race day off-road' },
-    ],
-    set: (a, v) => ({ ...a, trailType: v as Answers['trailType'] }),
-  },
-  race: {
-    id: 'race',
-    eyebrow: 'The goal',
-    question: 'Training for something?',
-    options: [
-      { value: 'fun', label: 'Just running for me' },
-      { value: '5k', label: 'A 5K or 10K' },
-      { value: 'half', label: 'A half marathon' },
-      { value: 'marathon', label: 'A marathon or more' },
-    ],
-    set: (a, v) => ({ ...a, race: v }),
-  },
-  mileage: {
-    id: 'mileage',
-    eyebrow: 'Volume',
-    question: 'Miles per week, roughly?',
-    options: [
-      { value: 'low', label: 'Under 10' },
-      { value: 'mid', label: '10 – 25' },
-      { value: 'high', label: '25 and up' },
-    ],
-    set: (a, v) => ({ ...a, mileage: v }),
-  },
-  feel: {
-    id: 'feel',
-    eyebrow: 'Feel under foot',
-    question: 'How should the ground feel?',
-    options: [
-      { value: 'Plush', label: 'Soft & plush', caption: 'Pillowy, protective' },
-      { value: 'Balanced', label: 'Balanced', caption: 'Soft and smooth' },
-      { value: 'Responsive', label: 'Springy & fast', caption: 'Energetic toe-off' },
-    ],
-    set: (a, v) => ({ ...a, feel: v as Answers['feel'] }),
-  },
-  balance: {
-    id: 'balance',
-    eyebrow: 'The barefoot test',
-    question: 'Standing on one foot — how did it go?',
-    hint: 'Eyes forward, knee soft. Ten seconds.',
-    options: [
-      { value: 'steady', label: 'Rock steady' },
-      { value: 'slight', label: 'A little wobbly' },
-      { value: 'wobbly', label: 'Grabbed the counter' },
-    ],
-    set: (a, v) => ({ ...a, balance: v as Answers['balance'] }),
-  },
-  gender: {
-    id: 'gender',
-    eyebrow: 'Almost there',
-    question: 'Which fit?',
-    options: [
-      { value: 'womens', label: "Women's" },
-      { value: 'mens', label: "Men's" },
-    ],
-    set: (a, v) => ({ ...a, gender: v as Answers['gender'] }),
-  },
-};
-
-/**
- * The flow, branched on the answers so far. `takeEmOff` is the checkpoint beat.
- * Steps in `skip` were answered from Apple Health and are not asked again.
- */
-function flowFor(a: Answers, skip: ReadonlySet<string> = NO_SKIP): string[] {
-  return [
-    'use',
-    ...(a.use === 'trail' ? ['trailType'] : []),
-    'race',
-    'mileage',
-    'feel',
-    'takeEmOff',
-    'balance',
-    'gender',
-  ].filter((id) => !skip.has(id));
-}
-
-const NO_SKIP: ReadonlySet<string> = new Set();
-
-/** The quiz's own label for a pre-filled answer, so the summary speaks its language. */
-function optionLabel(stepId: keyof Answers, value: string | undefined): string {
-  return STEPS[stepId]?.options.find((o) => o.value === value)?.label ?? '';
-}
 
 /* --------------------------------------------------------------- scoring --- */
 
-const SUPPORT_FOR_BALANCE: Record<string, string[]> = {
-  steady: ['neutral', 'flexible_support'],
-  slight: ['balanced_support', 'structured_support'],
-  wobbly: ['structured_support', 'max_support'],
+/**
+ * The total of the site's own answer scores at which a shopper gets a support
+ * shoe. [inferred] Brooks scores answers but decides results on its server; 20
+ * is the score of a single "unstable" or "knees bend" answer, and the site's own
+ * example (a 0-2 year runner training for a marathon "benefiting from a little
+ * more support") lands on 15–20.
+ */
+const SUPPORT_AT = 20;
+
+/** Brooks's support shoes are the GTS line ("Go-To Support") and the structured models. */
+function isSupportShoe(p: Product): boolean {
+  return /\bGTS\b/.test(p.name) || p.support === 'structured_support';
+}
+
+const CUSHION_FOR_FEEL: Record<string, Product['cushion']> = {
+  plush: 'Plush',
+  balanced: 'Balanced',
+  responsive: 'Responsive',
 };
 
 function recommend(
-  a: Answers,
+  all: Answers,
   activity: ActivityProfile | null
 ): { product: Product; reasons: string[]; score: number }[] {
-  const shoes = catalog.products.filter(
+  const a = answersOnPath(all);
+  const use = chosen(a, 'use');
+  const trail = chosen(a, 'trailtype');
+  const goal = chosen(a, 'training');
+  const when = chosen(a, 'traininguse');
+  const feel = chosen(a, 'shoefeel');
+  const gender = chosen(a, 'gender');
+  const features = new Set(a.features ?? []);
+  const needsSupport = supportScore(a) >= SUPPORT_AT || features.has('extrasupport');
+
+  let shoes = catalog.products.filter(
     (p) =>
       p.productType === 'Shoes' &&
       p.colors.length > 0 &&
       !p.colors.every((c) => c.soldOut) &&
-      (!a.gender || p.gender === a.gender || p.gender === 'unisex')
+      (!gender || p.gender === gender || p.gender === 'unisex')
   );
+  // A chosen size narrows to shoes that have it, unless nothing would be left.
+  if (a.size) {
+    const fits = shoes.filter((p) =>
+      p.colors.some((c) => !c.soldOut && c.sizes.some((s) => s.value === a.size && s.available))
+    );
+    if (fits.length) shoes = fits;
+  }
 
   const scored = shoes.map((p) => {
     let score = 0;
@@ -192,44 +117,35 @@ function recommend(
 
     // Surface is the hardest gate: trail shoes for trail, road for road.
     const exp = p.experience ?? '';
-    if (a.use === 'trail') {
+    if (use === 'usetrail') {
       if (!exp.includes('trail')) score -= 10;
       else {
         score += 4;
         reasons.push('Built for trail — grip and protection off-road');
-        if (
-          (a.trailType === 'light' && exp === 'light_trail') ||
-          (a.trailType === 'mountain' && exp === 'mountain_trail') ||
-          (a.trailType === 'speed' && exp === 'speed_trail')
-        ) {
+        if ((trail === 'smooth' && exp === 'light_trail') || (trail === 'rugged' && exp === 'mountain_trail')) {
           score += 3;
-          reasons.push(
-            a.trailType === 'light'
-              ? 'Happiest on groomed paths and gravel'
-              : a.trailType === 'mountain'
-                ? 'Made for steep, technical ground'
-                : 'A fast shoe for race-day trails'
-          );
+          reasons.push(trail === 'smooth' ? 'Happiest on smooth trails' : 'Made for rocky and rugged ground');
         }
       }
-    } else if (a.use === 'walk') {
+    } else if (use === 'usewalk') {
       if (exp === 'walking' || p.bestFor.includes('Walking')) {
         score += 4;
         reasons.push(
           activity?.avgDailySteps != null
             ? `A favorite for all-day walking, and you average ${formatSteps(activity.avgDailySteps)} steps a day`
-            : 'A favorite for all-day walking comfort'
+            : 'A favorite for walking and everyday wear'
         );
       } else if (exp.includes('trail')) score -= 6;
       else if (p.cushion === 'Plush') score += 1;
     } else {
-      // Road
+      // Run or Treadmill, or Workout Class or Gym
       if (exp.includes('trail')) score -= 10;
-      if (a.race === 'marathon' || a.race === 'half') {
-        if (exp === 'speed') {
-          score += 2;
-          reasons.push('Race-ready — light and quick when it counts');
-        }
+      if (exp === 'walking') score -= 6;
+      if (use === 'usegym' && p.bestFor.some((b) => /gym|workout/i.test(b))) {
+        score += 3;
+        reasons.push('Made for workouts and the gym');
+      }
+      if (goal === 'traininghalfmarathon' || goal === 'trainingmarathon' || goal === 'trainingultra') {
         if (p.bestFor.some((b) => /long run/i.test(b))) {
           score += 2;
           reasons.push(
@@ -239,34 +155,46 @@ function recommend(
           );
         }
       }
+      if (when === 'userace' && exp === 'speed') {
+        score += 3;
+        reasons.push('Race-ready — light and quick when it counts');
+      } else if (when === 'userace') score -= 1;
       if (p.bestFor.some((b) => /everyday|daily/i.test(b))) score += 1;
     }
 
-    // Cushion: the quiz's "feel" answer maps 1:1 to Brooks's own vocabulary.
-    if (a.feel && p.cushion === a.feel) {
+    // Cushion: the site's three feels map 1:1 to Brooks's cushion vocabulary.
+    if (feel && p.cushion === CUSHION_FOR_FEEL[feel]) {
       score += 3;
-      reasons.push(
-        a.feel === 'Plush'
-          ? 'Plush cushion — you wanted soft and protective'
-          : a.feel === 'Balanced'
-            ? 'Balanced cushion — you wanted soft and smooth'
-            : 'Responsive cushion — you wanted spring, not mush'
-      );
+      reasons.push(`${p.cushion} cushion — you wanted each step ${answerLabel('shoefeel', feel).toLowerCase()}`);
     }
 
-    // Support from the barefoot test.
-    if (a.balance) {
-      const wanted = SUPPORT_FOR_BALANCE[a.balance];
-      if (p.support && wanted.includes(p.support)) {
+    // Support, from the site's scores. Trail and spike models carry no support
+    // rating, so the rule only applies where the catalog has one.
+    if (p.support) {
+      if (needsSupport === isSupportShoe(p)) {
         score += 3;
-        if (a.balance !== 'steady')
-          reasons.push('Support that steadies the wobble you felt');
-        else reasons.push('Neutral — your stride doesn’t need correcting');
-      }
+        reasons.push(
+          needsSupport
+            ? 'Support that steadies you, from your answers and the barefoot tests'
+            : 'Neutral — your stride doesn’t need correcting'
+        );
+      } else score -= 1;
+    }
+
+    if (
+      features.has('maxcushion') &&
+      (p.cushion === 'Plush' || [...p.bestFor, ...p.features].some((f) => /max cushion/i.test(f)))
+    ) {
+      score += 2;
+      reasons.push('Maximum cushion, as you asked');
+    }
+    if (features.has('flexiblemidsole') && p.features.some((f) => /flex/i.test(f))) {
+      score += 2;
+      reasons.push('A flexible midsole, as you asked');
     }
 
     // High mileage rewards durable daily trainers.
-    if (a.mileage === 'high' && p.bestFor.some((b) => /everyday|daily|long/i.test(b))) {
+    if (chosen(a, 'rundistance') === 'rundistance3' && p.bestFor.some((b) => /everyday|daily|long/i.test(b))) {
       score += 1;
       if (activity) reasons.push(`Built to take your ${formatMiles(activity.weeklyRunMiles)} miles a week`);
     }
@@ -282,6 +210,13 @@ function recommend(
     .filter((s) => s.score > 0)
     .sort((x, y) => y.score - x.score || (y.product.rating ?? 0) - (x.product.rating ?? 0))
     .slice(0, 4);
+}
+
+/** The site's short "Behind the Science" lines for the barefoot answers given. */
+function scienceNotes(a: Answers): string[] {
+  return (['balance', 'knee', 'flexibility'] as const)
+    .map((code) => question(code).answers.find((x) => x.code === chosen(a, code))?.whyShort)
+    .filter((note): note is string => !!note);
 }
 
 /* ------------------------------------------------------------------ view --- */
@@ -312,7 +247,7 @@ export function Finder() {
   // @ref LLP 0005#nothing-leaves-the-device
   const [reading, setReading] = useState(false);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
-  const [prefill, setPrefill] = useState<Partial<Answers>>({});
+  const [prefill, setPrefill] = useState<Answers>({});
   const [evidence, setEvidence] = useState<Evidence>({});
   const skip = useMemo(() => new Set(Object.keys(prefill)), [prefill]);
   // Results quote the shopper's numbers only when those numbers decided something.
@@ -320,6 +255,8 @@ export function Finder() {
 
   const flow = useMemo(() => flowFor(answers, skip), [answers, skip]);
   const stepId = flow[stepIndex];
+  // "Behind the Science" opens per page and closes when the page changes.
+  const [scienceFor, setScienceFor] = useState<string | null>(null);
   const results = useMemo(
     () => (phase === 'results' ? recommend(answers, activity) : []),
     [phase, answers, activity]
@@ -447,14 +384,14 @@ export function Finder() {
 
   /* ------------------------------------------------------------- activity -- */
   if (phase === 'activity') {
-    const filled = (Object.keys(prefill) as (keyof Answers)[]).sort(
-      (x, y) => STEP_ORDER.indexOf(x) - STEP_ORDER.indexOf(y)
+    const filled = (Object.keys(prefill) as QuestionCode[]).sort(
+      (x, y) => PAGE_ORDER.indexOf(x) - PAGE_ORDER.indexOf(y)
     );
     const found = filled.length > 0;
     // Some activity, but not enough to decide any answer.
     const thin =
       !!profile && (profile.runs > 0 || profile.walks > 0 || profile.avgDailySteps != null);
-    const left = flowFor(prefill, skip).filter((id) => id !== 'takeEmOff').length;
+    const left = flowFor(prefill, skip).filter((id) => id !== 'checkpoint_bio').length;
     return (
       <Screen style={[styles.intro, { paddingHorizontal: 0, paddingBottom: spacing.xl }]}>
         <ScrollView
@@ -482,10 +419,10 @@ export function Finder() {
               {filled.map((key) => (
                 <View key={key} style={styles.evidenceRow}>
                   <Txt variant="tiny" c="rgba(255,255,255,0.6)">
-                    {STEPS[key].eyebrow}
+                    {question(key).progress}
                   </Txt>
                   <Txt variant="h3" c={colors.surface} style={{ marginTop: 2 }}>
-                    {optionLabel(key, prefill[key])}
+                    {answerLabel(key, chosen(prefill, key))}
                   </Txt>
                   <Txt variant="bodySmall" c="rgba(255,255,255,0.7)" style={{ marginTop: 2 }}>
                     {evidence[key]}
@@ -532,15 +469,30 @@ export function Finder() {
           </Txt>
           <Squiggle />
           <Txt variant="h1">
-            {results.length ? 'Found your run.' : 'Hmm — nothing quite fits.'}
+            {results.length ? QUIZ_UI.resultsTitle : 'Hmm — nothing quite fits.'}
           </Txt>
           <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             {!results.length
               ? 'Try loosening an answer or two.'
               : activity
-                ? 'Ranked from your Apple Health activity and your answers, from the real Brooks catalog.'
-                : 'Ranked for how you actually run, from the real Brooks catalog.'}
+                ? 'From your Apple Health activity and your answers, we suggest:'
+                : QUIZ_UI.resultsLead}
           </Txt>
+          {scienceNotes(answers).length ? (
+            <View style={styles.scienceBox}>
+              <Txt variant="eyebrow" c={colors.inkMuted}>
+                {QUIZ_UI.behindScience}
+              </Txt>
+              {scienceNotes(answers).map((note) => (
+                <View key={note} style={styles.why}>
+                  <View style={styles.whyTick} />
+                  <Txt variant="bodySmall" c={colors.inkSoft} style={{ flex: 1 }}>
+                    {note}
+                  </Txt>
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         <View style={{ marginTop: spacing.xl, gap: spacing.xxl }}>
@@ -585,7 +537,10 @@ export function Finder() {
   }
 
   /* ------------------------------------------------------------ checkpoint -- */
-  if (stepId === 'takeEmOff') {
+  const page = PAGES[stepId];
+  if (page.kind === 'checkpoint') {
+    // The site's description opens with the punchline; the rest is the instruction.
+    const [punch, ...rest] = page.description.split('. ');
     // Extra air above the shared screen top: the checkpoint is a full-screen
     // beat, and its headline wants more room than a normal screen's first line.
     return (
@@ -594,32 +549,55 @@ export function Finder() {
           Quick checkpoint
         </Txt>
         <Txt variant="hero" style={{ marginTop: spacing.md }}>
-          Take 'em off.
+          {page.title}
         </Txt>
         <Txt variant="script" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-          Your shoes, that is.
+          {punch}.
         </Txt>
         <Txt variant="body" c={colors.inkSoft} style={{ marginTop: spacing.xl }}>
-          The next question works best barefoot. Stand up, find your balance on one
-          foot, and hold it for ten seconds. We'll wait.
+          {rest.join('. ')}
         </Txt>
         <View style={{ flex: 1 }} />
         <Progress flow={flow} index={stepIndex} />
         <View style={{ marginTop: spacing.lg }}>
-          <Button title="Done — one foot survived" onPress={next} />
+          <Button title={page.button} onPress={next} />
         </View>
       </View>
     );
   }
 
   /* ----------------------------------------------------------------- quiz -- */
-  const step = STEPS[stepId];
-  const selected = (answers as Record<string, unknown>)[step.id];
+  const q = page;
+  const picks = answers[q.code] ?? [];
   const last = stepIndex + 1 >= flow.length;
+  const explained = !q.multi ? q.answers.find((x) => x.code === picks[0])?.why : undefined;
+  const showScience = scienceFor === q.code;
+
+  const pick = (code: string) =>
+    setAnswers((prev) => {
+      const current = prev[q.code] ?? [];
+      const values = q.multi
+        ? current.includes(code)
+          ? current.filter((c) => c !== code)
+          : [...current, code]
+        : [code];
+      const out: Answers = { ...prev, [q.code]: values };
+      // A size belongs to one size chart: switching Women's/Men's clears it.
+      if (q.code === 'gender' && current[0] !== code) delete out.size;
+      return out;
+    });
+
+  // An optional page moves on with nothing chosen, under the site's own label.
+  const title = last
+    ? QUIZ_UI.showResults
+    : q.optional && picks.length === 0
+      ? QUIZ_UI.noneOfThese
+      : QUIZ_UI.continue;
+  const gender = q.code === 'gender' ? (picks[0] as keyof typeof SIZES | undefined) : undefined;
 
   return (
-    <Screen style={[styles.quiz, { paddingBottom: spacing.xl }]}>
-      <View style={styles.quizHead}>
+    <Screen style={[styles.quiz, { paddingHorizontal: 0, paddingBottom: spacing.xl }]}>
+      <View style={[styles.quizHead, { paddingHorizontal: spacing.gutter }]}>
         <Press hitSlop={10} onPress={back} accessibilityRole="button" accessibilityLabel="Back">
           <BrooksIcon name="caretLeft" size={16} color={colors.inkMuted} />
         </Press>
@@ -628,57 +606,181 @@ export function Finder() {
         </Txt>
       </View>
 
-      <View key={step.id} style={{ flex: 1 }}>
+      <ScrollView
+        key={q.code}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl }}
+        showsVerticalScrollIndicator={false}
+      >
         <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginTop: spacing.xl }}>
-          {step.eyebrow}
+          {q.progress}
         </Txt>
-        <Txt variant="h1" style={{ marginTop: spacing.sm }}>
-          {step.question}
+        <Txt
+          variant={q.question.length > 90 ? 'h3' : q.question.length > 50 ? 'h2' : 'h1'}
+          style={{ marginTop: spacing.sm }}
+        >
+          {q.question}
         </Txt>
-        {step.hint ? (
-          <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
-            {step.hint}
-          </Txt>
+
+        {q.behindScience ? (
+          <>
+            <Press
+              onPress={() => setScienceFor(showScience ? null : q.code)}
+              style={styles.scienceLink}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: showScience }}
+            >
+              <Txt variant="eyebrow" c={colors.ink} style={styles.underline}>
+                {QUIZ_UI.behindScience}
+              </Txt>
+            </Press>
+            {showScience ? (
+              <Txt variant="bodySmall" c={colors.inkSoft} style={styles.scienceBox}>
+                {q.behindScience}
+              </Txt>
+            ) : null}
+          </>
         ) : null}
 
-        <View style={{ marginTop: spacing.xl, gap: spacing.md }} accessibilityRole="radiogroup">
-          {step.options.map((o) => {
-            const isOn = selected === o.value;
-            return (
-              <Press
-                key={o.value}
-                scaleTo={0.98}
-                onPress={() => setAnswers(step.set(answers, o.value))}
-                style={[styles.option, isOn && styles.optionOn]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isOn }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Txt variant="h3" c={isOn ? colors.surface : colors.ink}>
-                    {o.label}
-                  </Txt>
-                  {o.caption ? (
-                    <Txt
-                      variant="bodySmall"
-                      c={isOn ? 'rgba(255,255,255,0.7)' : colors.inkMuted}
-                      style={{ marginTop: 2 }}
-                    >
-                      {o.caption}
-                    </Txt>
-                  ) : null}
-                </View>
-                <View style={[styles.optionTick, isOn && styles.optionTickOn]} />
-              </Press>
-            );
-          })}
+        {q.video != null ? <LoopVideo source={q.video} style={styles.questionClip} /> : null}
+
+        {q.layout === 'video' ? (
+          <View style={styles.clipRow} accessibilityRole="radiogroup">
+            {q.answers.map((o) => (
+              <ClipAnswer key={o.code} answer={o} on={picks.includes(o.code)} onPress={() => pick(o.code)} />
+            ))}
+          </View>
+        ) : (
+          <View style={{ marginTop: spacing.xl, gap: spacing.md }} accessibilityRole={q.multi ? undefined : 'radiogroup'}>
+            {q.answers.map((o) => (
+              <TextAnswer key={o.code} answer={o} multi={q.multi} on={picks.includes(o.code)} onPress={() => pick(o.code)} />
+            ))}
+          </View>
+        )}
+
+        {explained ? (
+          <View style={styles.scienceBox}>
+            <Txt variant="eyebrow" c={colors.inkMuted}>
+              {QUIZ_UI.whatDoesThisMean}
+            </Txt>
+            <Txt variant="bodySmall" c={colors.inkSoft} style={{ marginTop: spacing.xs }}>
+              {explained}
+            </Txt>
+          </View>
+        ) : null}
+
+        {gender ? (
+          <View style={{ marginTop: spacing.xl }}>
+            <Txt variant="eyebrow" c={colors.inkMuted}>
+              {QUIZ_UI.selectSize}
+            </Txt>
+            <View style={styles.sizeGrid}>
+              {SIZES[gender].map((size) => {
+                const isOn = answers.size === size;
+                return (
+                  <Press
+                    key={size}
+                    onPress={() => setAnswers((prev) => ({ ...prev, size: isOn ? undefined : size }))}
+                    style={[styles.sizeCell, isOn && styles.sizeCellOn]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isOn }}
+                    accessibilityLabel={`Size ${size}`}
+                  >
+                    <Txt variant="caption">{size}</Txt>
+                  </Press>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
+
+      <View style={{ paddingHorizontal: spacing.gutter }}>
+        <Progress flow={flow} index={stepIndex} />
+        <View style={{ marginTop: spacing.lg }}>
+          <Button title={title} disabled={!q.optional && picks.length === 0} onPress={next} />
         </View>
       </View>
-
-      <Progress flow={flow} index={stepIndex} />
-      <View style={{ marginTop: spacing.lg }}>
-        <Button title={last ? 'See my matches' : 'Next'} disabled={selected == null} onPress={next} />
-      </View>
     </Screen>
+  );
+}
+
+/** One text answer row. A selected row fills ink; a multi-select row also ticks. */
+function TextAnswer({
+  answer,
+  multi,
+  on,
+  onPress,
+}: {
+  answer: Answer;
+  multi: boolean;
+  on: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Press
+      scaleTo={0.98}
+      onPress={onPress}
+      style={[styles.option, on && styles.optionOn]}
+      accessibilityRole={multi ? 'checkbox' : 'radio'}
+      accessibilityState={multi ? { checked: on } : { selected: on }}
+    >
+      <Txt variant="h3" c={on ? colors.surface : colors.ink} style={{ flex: 1 }}>
+        {answer.label}
+      </Txt>
+      <View style={[styles.optionTick, on && styles.optionTickOn]} />
+    </Press>
+  );
+}
+
+/**
+ * A video answer: the site's looping clip of the exercise, with its label
+ * below. Both clips play at once so the shopper can compare them, and a tap
+ * anywhere on the tile chooses it.
+ *
+ * @ref LLP 0003#border-widths — Chosen is the outlined-control gesture: the
+ * rule doubles and turns ink.
+ */
+function ClipAnswer({ answer, on, onPress }: { answer: Answer; on: boolean; onPress: () => void }) {
+  return (
+    <Press
+      scaleTo={0.98}
+      onPress={onPress}
+      style={[styles.clip, on && styles.clipOn]}
+      accessibilityRole="radio"
+      accessibilityState={{ selected: on }}
+      accessibilityLabel={answer.label}
+    >
+      {answer.video != null ? <LoopVideo source={answer.video} style={styles.clipVideo} /> : null}
+      <View style={[styles.clipLabel, on && styles.clipLabelOn]}>
+        <View style={[styles.optionTick, on && styles.optionTickOn]} />
+        <Txt variant="caption" c={on ? colors.surface : colors.ink} style={{ flex: 1 }}>
+          {answer.label}
+        </Txt>
+      </View>
+    </Press>
+  );
+}
+
+/** A muted, looping clip that plays as soon as it mounts and never takes the audio session. */
+function LoopVideo({ source, style }: { source: number; style: StyleProp<ViewStyle> }) {
+  const player = useVideoPlayer(source, (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.audioMixingMode = 'mixWithOthers';
+    p.play();
+  });
+  return (
+    <VideoView
+      style={style}
+      player={player}
+      nativeControls={false}
+      contentFit="contain"
+      surfaceType="textureView"
+      allowsVideoFrameAnalysis={false}
+      playsInline
+      pointerEvents="none"
+    />
   );
 }
 
@@ -711,9 +813,6 @@ function LockGlyph() {
     </Svg>
   );
 }
-
-/** Every answer key in quiz order, so the Health summary lists them the same way. */
-const STEP_ORDER: (keyof Answers)[] = ['use', 'trailType', 'race', 'mileage', 'feel', 'balance', 'gender'];
 
 const styles = StyleSheet.create({
   intro: {
@@ -791,6 +890,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     paddingHorizontal: spacing.gutter,
   },
+
+  underline: { textDecorationLine: 'underline' },
+  scienceLink: { alignSelf: 'flex-start', paddingVertical: spacing.sm, marginTop: spacing.sm },
+  scienceBox: {
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceAlt,
+  },
+  // The site's clips are shot on white, so `contain` on the white screen reads
+  // as one surface.
+  questionClip: { width: '100%', aspectRatio: 2, marginTop: spacing.lg, backgroundColor: colors.surface },
+  clipRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xl },
+  clip: {
+    width: CLIP_W,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
+    backgroundColor: colors.surface,
+  },
+  clipOn: { borderWidth: border.emphasis, borderColor: colors.ink },
+  clipVideo: { width: '100%', aspectRatio: 1, backgroundColor: colors.surface },
+  clipLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    minHeight: 56,
+    borderTopWidth: border.rule,
+    borderTopColor: colors.hairline,
+  },
+  clipLabelOn: { backgroundColor: colors.ink, borderTopColor: colors.ink },
+  sizeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
+  sizeCell: {
+    width: SIZE_W,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
+    backgroundColor: colors.surface,
+  },
+  sizeCellOn: { borderWidth: border.emphasis, borderColor: colors.ink },
 
   progress: { flexDirection: 'row', gap: 4, marginTop: spacing.lg },
   progressSeg: { flex: 1, height: 5, backgroundColor: colors.surfaceSunken },
