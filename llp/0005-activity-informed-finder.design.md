@@ -4,7 +4,7 @@
 **Status:** Draft
 **Systems:** Expo App
 **Author:** Claude Opus 5.5
-**Date:** 2026-09-29 (Health-first flow and Next button: 2026-09-30)
+**Date:** 2026-09-29 (Health-first flow and Next button: 2026-09-30; the site's own questions: 2026-10-05)
 **Related:** LLP 0000, LLP 0002, LLP 0003
 
 ## Summary
@@ -59,9 +59,49 @@ The profile still lives in screen state only. "Retake the quiz" keeps the
 Health answers and asks the rest again. "Start over" and "Answer every
 question instead" drop them.
 
+## The site's own questions
+
+[observed 2026-10-05] The quiz is now the one brooksrunning.com runs, word for
+word. brooksrunning.com/en_us/shoefinder/ embeds its whole config as JSON in a
+`data-quiz` attribute: "Shoe Finder S26 US", version 24, 17 pages. It was read
+with the Playwright browser in `tools/harvest` (headed Chrome; headless Chrome
+gets a 403 from Akamai). `src/screens/finder/quiz.ts` copies from it:
+
+- Every question, answer label and page order.
+- The branches (`jumpToPage`): Run or Treadmill and Workout Class or Gym go to
+  Training, Trail Run or Hike goes to Trail Type first, Walk or Everyday Wear
+  skips to Recent Injuries, and Health skips Training Use.
+- The per-answer scores, the progress-bar labels (shown as each page's
+  eyebrow), the "Behind the Science" text, each answer's "What does this
+  mean?" text, the "Take 'em off" checkpoint copy, and the US size charts.
+- Injuries and Features are multi-select and optional. With nothing chosen,
+  the button says the site's "None of these".
+
+The barefoot tests use the site's own clips, downloaded from
+finders.brooksrunning.com into `assets/finder` (five MP4s, 2.2 MB). Balance
+and Flexibility show both answers as looping clips side by side, so the
+shopper compares them and taps one. The knee test plays its single clip above
+the three text answers, as the site does. All clips are muted, loop, and mix
+with other audio.
+
+What the app does differently:
+
+- The email page ("Want your results sent to your email?") is left out. The
+  app has no backend to send results from (LLP 0002).
+- "What does this mean?" is a box under the answers, not the site's modal, so
+  the Next flow below does not gain a second tap.
+- [inferred] The site decides results on its server. The app sums the site's
+  answer scores and gives a support shoe at 20 or more, or when the shopper
+  picks Extra Support. 20 is the score of one "I feel a bit unstable" or "My
+  knees bend" answer. Support shoes are the GTS models and those the catalog
+  marks `structured_support`. Not checked against the site's results.
+- The welcome copy, "Let's go", "Take 'em off" and "Okay, they're off" were
+  already verbatim; the results headline now uses the site's "The results are
+  in." and "We suggest:".
+
 ## The quiz waits for Next
 
-[observed 2026-09-30] The quiz used to advance 260 ms after a tap on an
+[observed 2026-09-30, still true 2026-10-05 with the site's questions] The quiz used to advance 260 ms after a tap on an
 answer. Now a tap only selects the answer. The shopper moves on with a Next
 button at the bottom, which is disabled until an answer is selected. On the
 last question the button says "See my matches". A mis-tap no longer costs a
@@ -116,19 +156,24 @@ Refresh, and an Android reader only has to return the same two record shapes.
 clearly. Every threshold below is `[inferred]` and has not been checked against
 real runners' data.
 
+[observed 2026-10-05] The answer codes below are the site's own (see
+[The site's own questions](#the-sites-own-questions)). The thresholds are
+unchanged from 2026-09-29 except the mileage bands, which now follow the
+site's 0-10 / 11-30 / 31+ bands instead of the old quiz's 10 / 25.
+
 | Answer | Rule | Evidence shown |
 |---|---|---|
-| `use: 'road'` | 4 or more runs in the window (one every two weeks), and fewer than half are trail runs | "18 runs in 8 weeks, mostly on the road", or "Most of your N runs were on a treadmill" |
-| `use: 'trail'` | Half or more of the runs climb 40 m or more per mile | "N of your M runs climbed like trail runs" |
-| `trailType` | `mountain` when half or more of the trail runs climb 80 m or more per mile, otherwise `light`. Never `speed`: nothing in the data shows racing. | "Most of them climbed steeply" |
-| `mileage` | Weekly run miles under 10, under 25, or 25 and up, which are the quiz's own bands | "About 22 miles a week" |
-| `race` | Longest run of 16 mi or more → marathon, 9 mi or more → half. Otherwise the step is asked: Health cannot separate a 5K plan from running for fun. | "Your longest run was 13.1 miles" |
-| `use: 'walk'` | Fewer than 4 runs, and 4 or more walks or 7,500 or more steps a day | "About 9,400 steps a day" |
+| `use: useroadtread` (Run or Treadmill) | 4 or more runs in the window (one every two weeks), and fewer than half are trail runs | "18 runs in 8 weeks, mostly on the road", or "Most of your N runs were on a treadmill" |
+| `use: usetrail` (Trail Run or Hike) | Half or more of the runs climb 40 m or more per mile | "N of your M runs climbed like trail runs" |
+| `trailtype` | `rugged` (Rocky and Rugged) when half or more of the trail runs climb 80 m or more per mile, otherwise `smooth` | "Most of them climbed steeply" |
+| `rundistance` | Weekly run miles, rounded: 10 or less, 11–30, or 31 and up | "About 22 miles a week" |
+| `training` | Longest run of 16 mi or more → Marathon, 9 mi or more → Half Marathon. Otherwise the step is asked: Health cannot separate a 5k plan from running for health, and cannot see an ultra plan. | "Your longest run was 13.1 miles" |
+| `use: usewalk` (Walk or Everyday Wear) | Fewer than 4 runs, and 4 or more walks or 7,500 or more steps a day | "About 9,400 steps a day" |
 
-The data cannot see how the ground should feel, the barefoot balance test, or
-fit, so those steps stay in every flow. A walker's race and mileage steps also
-stay: "Just running for me" is not an answer the data can give for someone who
-does not run.
+The data cannot see training use (race days or training days), experience,
+injuries, the three barefoot tests, how each step should feel, features or fit,
+so those steps stay in every flow. A walker skips the training steps because
+the site's own branch sends "Walk or Everyday Wear" straight to injuries.
 
 The summary screen lists each filled answer with the quiz's own eyebrow and
 option label, so the shopper can check it against the question it replaces.
