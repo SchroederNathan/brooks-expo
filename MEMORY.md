@@ -6,6 +6,11 @@
   New Architecture enabled; routes live in `src/app`.
 - Bun 1.2.22 is the package manager (`bun.lock`). Use `bun run start`,
   `bun run ios`, `bun run android`, `bun run web`, and `bun run typecheck`.
+- `react-native-keyboard-controller` is in `expo.install.exclude`: the project
+  uses `^1.22.4`, and `expo install --fix` would downgrade it to SDK 57's
+  `1.21.9`. If `expo-doctor` reports a duplicate that a clean reinstall does
+  not clear, look for a stale nested key in `bun.lock` (for example
+  `"expo-router/react-native-screens"`), delete it, and reinstall.
 - Metro uses port 8081. `metro.config.js` excludes `tools/` from crawling.
 - Generated iOS and Android native projects are present locally but ignored by
   git; web uses Metro single output. iOS uses `com.exponathan.brooks` in both

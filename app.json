@@ -36,14 +36,15 @@
       "expo-router",
       "expo-image",
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
       "expo-sqlite",
       "expo-video"
     ],
-    "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#FFFFFF"
-    },
     "extra": {
       "router": {},
       "eas": {
