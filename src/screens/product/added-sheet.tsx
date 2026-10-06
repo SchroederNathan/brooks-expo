@@ -71,9 +71,9 @@ function rubberband(overshoot: number, dimension: number, constant = 0.55) {
  * sheet, and closing the sheet folds it back into the button.
  *
  * @ref LLP 0003#add-to-bag-sheet — The sheet is the button, not a second
- * surface that replaces it. One childless layer (the shell) runs from the
- * button's face to the sheet's frame while its fill turns from Brooks blue to
- * white; the sheet's content fades in over it once the shell is mostly open.
+ * surface that replaces it. One layer (the shell) runs from the button's face
+ * to the sheet's frame while its fill turns from Brooks blue to white. It clips
+ * the sheet's content, which fades in once the shell is mostly open.
  * `progress` is owned by the PDP so the sticky bar can hand off to the shell.
  *
  * It is a transparent RN `Modal` rather than an overlay view so the scrim also

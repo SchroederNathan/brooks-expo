@@ -44,7 +44,10 @@ were cut into frame strips to check each motion.
   the content to the screen by undoing the shell's offsets fixed it.
 - Exits. `Bag (n)` and the rail tiles first unmounted the sheet and navigated
   in the same tick, so the sheet vanished (also caught in user review). They
-  now fold into the button and navigate from the spring's completion callback.
+  now fold into the button and navigate once the fold lands (an animated
+  reaction at under ~2pt of travel). Waiting for the spring's completion
+  callback cost about 200ms of sub-pixel creep: 573ms from tap to navigation,
+  against 322ms now.
 - The transparent native header sits above RN content, so an overlay view
   cannot dim it. A transparent RN `Modal` covers it.
 
