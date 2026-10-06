@@ -5,7 +5,7 @@
 **Systems:** Brooks, Expo App, Exact App, Design
 **Author:** Claude Fable 5
 **Date:** 2026-07-13
-**Revised:** 2026-09-24
+**Revised:** 2026-10-06
 **Related:** LLP 0000, LLP 0001, LLP 0002
 
 ## Summary
@@ -256,6 +256,8 @@ weight:
   wearing Apple's icons instead of Brooks's. Cart and Profile are now
   `#icon-cart` and `#icon-account` verbatim; Shoe Finder wears `#icon-search`
   (see the focus-rule constraint below). Home and Browse stay hand-drawn.
+  [superseded 2026-10-06 → *Browse and Shoe Finder swap glyphs* below: Browse
+  wears `#icon-search`, and Shoe Finder wears a drawn shoe.]
 - **Four tabs was a hard ceiling.** A fifth regular tab plus the detached
   `role="search"` trigger tipped `UITabBarController` into a "More" tab, which
   swallowed the search role. That is why Shoe Finder had no slot. The app-drawn
@@ -323,7 +325,29 @@ wears `#icon-search` instead; its ring cannot be confused with the rule, and
 Search itself is a pushed screen, so the tab bar is the only place that glyph is
 a destination.
 
+#### Browse and Shoe Finder swap glyphs
+
+[observed 2026-10-06] [confirmed — human request, 2026-10-06] Browse wears
+`#icon-search` and Shoe Finder wears a shoe, on both bars. The reasoning above
+expired with *Browse is the search screen*: there is no pushed search screen,
+and Browse's own field is the search, so the magnifier now names the tab it
+leads to. The 2×2 grid is gone.
+
+- [observed] The sprite has no shoe glyph, so the shoe is drawn in
+  `tab-icon.tsx` at the shared 2.2 stroke, after the SF Symbol `shoe` that the
+  glass bar uses: a profile with the toe to the right and a midsole line. The
+  first draft was 12 units tall and read small and low beside the ~18-unit house
+  and person. It is 15.6 units tall now and reads at the same height.
+- [observed] It still passes the focus-rule test: its top edge is a 2-unit heel
+  collar and a slope, and its long horizontals (sole, midsole) are at the bottom.
+- [superseded later the same day → *The glass bar wears the Brooks glyphs*]
+  The glass bar's Browse trigger used `magnifyingglass`.
+
 ### Liquid Glass devices get the system tab bar
+
+[superseded 2026-10-06 by *Liquid Glass is a Profile toggle* below] The glass
+bar is no longer the default, and the choice is no longer fixed at launch. The
+rest of this section still describes the glass bar itself.
 
 [observed 2026-09-24] The tab layout (`app/(tabs)/_layout.tsx`) now picks its
 bar once at launch. Where `isLiquidGlassAvailable()` (from `expo-glass-effect`)
@@ -338,9 +362,10 @@ out as not native; elsewhere the brand bar has no system look to compete with.
 
 What the glass bar gives up and keeps:
 
-- [observed] **Icons are SF Symbols**: `house`, `square.grid.2x2`, `shoe`,
-  `cart`, `person`, each with its `.fill` form when selected. The sprite glyphs
-  and the focus dash stay on the app-drawn bar only. [confirmed — human
+- [superseded 2026-10-06 → *The glass bar wears the Brooks glyphs* below]
+  **Icons were SF Symbols**: `house`, `square.grid.2x2`, `shoe`, `cart`,
+  `person`, each with its `.fill` form when selected. The focus dash stays on
+  the app-drawn bar only. [confirmed — human
   request, 2026-09-24] Icons only, no titles, as on the app-drawn bar. A
   `hidden` label blanks the item title, so each trigger carries its name as
   `accessibilityLabel` instead.
@@ -380,6 +405,63 @@ follow:
   (Login, the PDP) gets 0.
 - Browse's empty search state reserves the larger of the keyboard and the glass
   bar, instead of the keyboard minus the JS bar's height.
+
+#### The glass bar wears the Brooks glyphs
+
+[observed 2026-10-06] [confirmed — human request, 2026-10-06: "ios should be
+custom only", "same as the js tab bar"] The glass bar shows the same five
+glyphs as `BrooksTabBar`, not SF Symbols.
+
+- [observed] `NativeTabs.Trigger.Icon` takes SF Symbols, asset-catalog names
+  (`xcasset`), or image files (`src`). As a React element, `src` accepts only
+  `VectorIcon` (an icon font); anything else logs a warning. So the glyphs ship
+  as PNGs in `assets/tab-icons/` at @1x/@2x/@3x, and `src` uses them with
+  `renderingMode="template"`.
+- [observed] `tools/tab-icons/render.js` writes them. It copies `TabIcon`'s
+  geometry (24pt slot, per-glyph size, `thicken`) and the sprite paths, builds
+  one SVG per glyph and scale, and rasterizes with macOS `sips`, which reads SVG
+  and keeps alpha. Rerun it after changing a glyph in `tab-icon.tsx` or
+  `icons.tsx`. Two copies of the geometry can drift; the script header names
+  both sources.
+- [inferred] PNGs, not an asset catalog, because `require`d images are JS
+  assets and ship in an EAS Update; an `xcasset` needs a native build.
+- [observed] On the iPhone 17 Pro (iOS 26.5) the template images tint like the
+  SF Symbols did: ink on light glass and white on dark glass over Shoe
+  Finder's navy panel, with the system's selection pill. Selected and
+  unselected use the same image, because the sprite has no filled forms.
+- [observed] The cart badge is still the system badge (blue, white text).
+  It was not re-checked after the icon change.
+
+### Liquid Glass is a Profile toggle
+
+[observed 2026-10-06] Every device opens on the app-drawn `BrooksTabBar`. On a
+Liquid Glass device, Profile has a *Liquid Glass tab bar* switch that mounts
+`NativeTabs` instead. [confirmed — human request, 2026-10-06] The default is the
+custom JS bar, and the switch shows only where glass is available. The row is on
+both the member screen (after *Check for updates*) and the guest pitch (after the
+perks), because most testers never sign in.
+
+- [observed] `utils/native-tabs.ts` keeps `LIQUID_GLASS =
+  isLiquidGlassAvailable()` as a constant, because that answer cannot change
+  while the app runs. The choice is a small store over `kv-storage` (key
+  `brooks.glassTabs.v1`), read with `useNativeTabs()`. Storage is synchronous,
+  so the stored bar is the one the first frame mounts. Off a glass device the
+  store always reads false.
+- [observed] `useTabBarOverlap()` reads the same store, so every screen's bottom
+  inset switches with the bar.
+- [observed] Switching the bar swaps the tab navigator, and a new navigator
+  starts on Home with fresh state. `setGlassTabs(on, from)` records the screen
+  that holds the switch, and the tab layout's effect navigates back to it once
+  the new navigator is up. On the iPhone 17 Pro (iOS 26.5) Profile stayed
+  focused both ways. Profile's scroll position and stacks pushed inside other
+  tabs are lost. `initialRouteName` is not the fix: `NativeTabs` does not pass
+  it to its router.
+- [observed] The guest pitch scrolls now, with `alwaysBounceVertical={false}`
+  and `flexGrow: 1`, so it stays still and pins the button low where it fits.
+  With the switch drawn it did not fit on an iPhone SE (3rd generation): the
+  button went under the tab bar. Because `flexGrow` sizes the content to the
+  full frame, which runs under the glass, this screen takes the glass overlap
+  as bottom padding, not as `contentInset` like other scroll roots.
 
 ### The header collapses on scroll
 

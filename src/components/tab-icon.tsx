@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 import { BrooksIcon, type BrooksIconName } from '@/components/icons';
 import { Txt } from '@/components/themed-text';
@@ -9,25 +9,29 @@ import { border, colors, radius } from '@/theme';
  * Icons for the app-owned bottom tab bar.
  *
  * @ref LLP 0003#icons-and-the-logo — Three of the five tabs are real sprite
- * glyphs lifted verbatim from brooksrunning.com: `#icon-search` (Shoe Finder),
- * `#icon-cart` (Cart), `#icon-account` (Profile). The sprite has no home and no
- * storefront glyph — a website needs neither — so Home and Browse are drawn
- * here to sit at the real set's line weight.
+ * glyphs lifted verbatim from brooksrunning.com: `#icon-search` (Browse),
+ * `#icon-cart` (Cart), `#icon-account` (Profile). The sprite has no home, no
+ * shoe, and no storefront glyph — a website needs none of them — so Home and
+ * Shoe Finder are drawn here to sit at the real set's line weight.
  *
- * Shoe Finder wears the magnifier, not `#icon-filters`. The funnel was the first
- * choice — it is the site's own glyph and "narrow this down" is exactly what the
- * quiz does — but its top bar is a full-width horizontal rule 21px wide, which
- * merges with the tab bar's 18px focus rule directly above it into a four-bar
- * stack. The indicator stops indicating. Any glyph whose top edge is a long
- * horizontal is disqualified by a bar with a top rule; the magnifier's ring is
- * not. Search itself is a pushed screen, so the tab bar is the only place this
- * glyph appears as a destination.
+ * Browse wears the magnifier because Browse *is* the search screen: its own
+ * field is the search (LLP 0003#browse-is-the-search-screen). It used to wear a
+ * drawn 2×2 grid, with the magnifier on Shoe Finder; the shoe says what that
+ * tab is about directly.
+ *
+ * The focus rule still constrains the drawn glyphs: any glyph whose top edge is
+ * a long horizontal merges with the dash on the bar's top edge (that is what
+ * disqualified `#icon-filters`). The shoe's top edge is a short heel collar
+ * and a slope, and its long horizontals are at the bottom, away from the dash.
  *
  * Weight normalization: the sprite encodes non-uniform line weights (the cart's
- * line-work is ~1.3 viewBox units, the account's ~1.4, the funnel's 1.75), so
- * equal render sizes read as unequal strokes. A fill cannot be thinned, only
+ * line-work is ~1.3 viewBox units, the account's ~1.4, the search ring's ~1.9),
+ * so equal render sizes read as unequal strokes. A fill cannot be thinned, only
  * fattened, so each glyph is thickened up to a shared ~2.2px and the two drawn
- * glyphs stroke at 2.2 directly.
+ * glyphs stroke at 2.2 directly. *
+ * The Liquid Glass bar shows these same glyphs as PNGs, which
+ * `tools/tab-icons/render.js` draws from a copy of the geometry here. After
+ * changing a glyph, a size, or `thicken`, update that copy and rerun it.
  */
 
 const STROKE = 2.2;
@@ -45,7 +49,7 @@ export type TabIconName = 'home' | 'browse' | 'finder' | 'cart' | 'account';
  */
 const sprite: Partial<Record<TabIconName, { name: BrooksIconName; size: number; thicken: number }>> =
   {
-    finder: { name: 'search', size: 21, thicken: 0 },
+    browse: { name: 'search', size: 21, thicken: 0 },
     cart: { name: 'cart', size: 20, thicken: 0.9 },
     account: { name: 'account', size: 20, thicken: 0.65 },
   };
@@ -82,7 +86,7 @@ export function TabIcon({
   );
 }
 
-/** Home and Browse: no sprite equivalent, drawn at the real set's weight. */
+/** Home and Shoe Finder: no sprite equivalent, drawn at the real set's weight. */
 function Drawn({ name, color }: { name: TabIconName; color: string }) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
@@ -95,30 +99,20 @@ function Drawn({ name, color }: { name: TabIconName; color: string }) {
           strokeLinejoin="round"
         />
       )}
-      {name === 'browse' && (
-        /* The 2×2 grid the site uses for its catalog "tile view" control. Sized
-           from the outside in: the 21.6 outer span is centered in the 24-box,
-           the inter-square gap matches the stroke weight so the negative space
-           reads as even, and what is left (7.5) is the square. Smaller squares
-           close their holes at this stroke and read as four blobs. */
+      {name === 'finder' && (
+        /* A running shoe in profile, toe to the right, after the SF Symbol the
+           glass bar uses for this tab. The midsole line sits about 5 units above the sole
+           so the gap stays open at 2.2 strokes, and it stops short of the toe so
+           its round cap stays inside the outline. */
         <>
-          {[
-            [2.3, 2.3],
-            [14.2, 2.3],
-            [2.3, 14.2],
-            [14.2, 14.2],
-          ].map(([x, y]) => (
-            <Rect
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              width={7.5}
-              height={7.5}
-              rx={1.6}
-              stroke={color}
-              strokeWidth={STROKE}
-            />
-          ))}
+          <Path
+            d="M2.5 18.5V4.59c0-.91 .5-1.69 1.2-1.69h2.1c.6 0 1 .52 1.2 1.17 .8 2.08 2.9 2.6 4.2 1.04l.6-.78 3.6 4.29c.5 .65 1.2 1.04 1.9 1.3 2.5 .78 4.2 3.12 4.2 5.98V18.5H2.5Z"
+            stroke={color}
+            strokeWidth={STROKE}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path d="M2.5 13.56h18" stroke={color} strokeWidth={STROKE} strokeLinecap="round" />
         </>
       )}
     </Svg>

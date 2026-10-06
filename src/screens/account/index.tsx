@@ -1,13 +1,13 @@
 import { router, useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 import Svg, { Circle, Line, Path, Polygon, Polyline, Rect } from 'react-native-svg';
 
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
-import { Screen, ScreenHeading, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
+import { ScreenHeading, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
@@ -16,6 +16,7 @@ import { useCart } from '@/store/cart';
 import { leave, useMember } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
 import { border, colors, spacing } from '@/theme';
+import { LIQUID_GLASS, setGlassTabs, useNativeTabs, useTabBarOverlap } from '@/utils/native-tabs';
 import { useUpdateCheck } from '@/utils/updates';
 
 /**
@@ -96,6 +97,7 @@ export function Account() {
           detail="90-day trial run on every order"
         />
         <Row label={update.label} detail={update.detail} onPress={update.onPress} />
+        <GlassTabsRow />
       </View>
 
       {member ? (
@@ -126,9 +128,19 @@ export function Account() {
  */
 function GuestPitch() {
   const top = useScreenTopPadding();
+  const overlap = useTabBarOverlap();
   const focused = useIsFocused();
   return (
-    <Screen style={styles.guestScreen}>
+    // Scrolls only when the pitch is taller than the screen (an iPhone SE with
+    // the tab bar switch drawn); elsewhere the spacer still pins the button low.
+    // `flexGrow` sizes the content to the full frame, which runs under the
+    // glass bar, so the bar's overlap goes in the padding, not `contentInset`:
+    // the button has to rest above the bar, not scroll clear of it.
+    <ScreenScrollView
+      alwaysBounceVertical={false}
+      contentInset={{ bottom: 0 }}
+      contentContainerStyle={[styles.guestScreen, { paddingBottom: spacing.xl + overlap }]}
+    >
       {/* The navy panel runs under the status bar, so the bar goes light while
           this tab is in front. */}
       {focused && <StatusBar style="light" animated />}
@@ -152,6 +164,7 @@ function GuestPitch() {
         <Perk glyph={<TruckGlyph />} title="Free shipping" body="Standard shipping on every order. Express is free over $160." />
         <Perk glyph={<GiftGlyph />} title="A birthday gift" body="A gift with purchase in your birthday month, every year." />
         <Perk glyph={<ClockGlyph />} title="Early access" body="Early access to new shoes and sales." />
+        <GlassTabsRow />
       </View>
 
       <View style={{ flex: 1 }} />
@@ -161,7 +174,7 @@ function GuestPitch() {
           Browsing never requires an account.
         </Txt>
       </View>
-    </Screen>
+    </ScreenScrollView>
   );
 }
 
@@ -230,12 +243,40 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
   );
 }
 
+/**
+ * The tab bar switch. Only a Liquid Glass device has a second bar to offer, so
+ * everywhere else the row is not drawn.
+ *
+ * @ref LLP 0003#liquid-glass-is-a-profile-toggle — Off by default: the
+ * app-drawn bar is the brand's, and the system bar is opt-in.
+ */
+function GlassTabsRow() {
+  const on = useNativeTabs();
+  if (!LIQUID_GLASS) return null;
+  return (
+    <View style={styles.row}>
+      <View style={{ flex: 1 }}>
+        <Txt variant="navRow">Liquid Glass tab bar</Txt>
+        <Txt variant="tiny" c={colors.inkMuted} style={{ marginTop: 2 }}>
+          Use the system tab bar instead of the Brooks one
+        </Txt>
+      </View>
+      <Switch
+        accessibilityLabel="Liquid Glass tab bar"
+        value={on}
+        onValueChange={(value) => setGlassTabs(value, '/(tabs)/(account)/account')}
+        trackColor={{ true: colors.blue }}
+      />
+    </View>
+  );
+}
+
 /** The button's hard shadow hangs 4pt below its face; the note clears it. */
 const SHADOW_GAP = 4;
 
 const styles = StyleSheet.create({
   /** The navy panel draws its own top inset, so the screen adds none. */
-  guestScreen: { paddingTop: 0, paddingBottom: spacing.xl },
+  guestScreen: { flexGrow: 1, paddingTop: 0 },
   hero: {
     backgroundColor: colors.navy,
     paddingHorizontal: spacing.gutter,
