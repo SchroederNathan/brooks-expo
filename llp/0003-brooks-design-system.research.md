@@ -313,6 +313,17 @@ pop must be addressed to the nested stack's own key — actions bubble *up* from
 the navigator they are dispatched on, so an untargeted `popToTop()` escapes the
 tab navigator into the root stack and silently does nothing.
 
+[observed 2026-10-06] [confirmed — human request, 2026-10-06] A second tap on
+the focused tab also scrolls its anchor back to the top. The bar supplies only
+the `tabPress` event; each tab's scroll root listens for it with
+`useScrollToTop`, which acts only while that screen is focused and first in its
+stack. So a tap that pops a pushed screen does not also scroll the anchor under
+it. The scroll roots that listen: `ScreenScrollView` (Cart, Profile, Finder
+results), `useHeaderScroll` (Home, Browse), Browse's search results, and the
+Finder's quiz and activity pages. Checked on an iPhone 17 Pro (iOS 26.5) under
+both bars: Home and Browse, scrolled two screens down, came back to the top
+with the header or search row shown.
+
 [observed] The focus rule constrains which glyphs are usable. `#icon-filters`,
 the site's three-bar funnel, was the first choice for Shoe Finder on semantics
 ("narrow this down"), but its top bar is a 21px horizontal rule that merged with
@@ -378,9 +389,14 @@ What the glass bar gives up and keeps:
 - [observed] **The selected tint is dynamic**: ink on light glass, white on
   dark glass. Glass flips to its dark appearance over Shoe Finder's navy panel
   and Home's blue footer, where a fixed ink tint was nearly invisible.
-- [observed] **Pop-to-top and scroll-to-top on re-tap are the system's.** The
-  JS bar's reimplementation does not run here. Scroll-to-top worked on Home and
-  did not on Browse; the JS bar never had it, so this is not a regression.
+- [observed] **Pop-to-top on re-tap is the system's; scroll-to-top is the
+  app's.** The JS bar's pop does not run here. [superseded 2026-10-06] The
+  system's scroll-to-top worked on Home and not on Browse: react-native-screens
+  scrolls only the first `UIScrollView` down the first-subview chain
+  (`RNSScrollViewFinder`). [observed 2026-10-06] Every trigger now sets
+  `disableScrollToTop`, and the screens scroll themselves on `tabPress`, as
+  under the JS bar. `NativeTabs` still emits `tabPress` on a repeated
+  selection, so Browse scrolls to the top under the glass bar too.
 
 [observed] The two bars have opposite layout models, and that is most of the
 work. The JS bar is a flex sibling that shortens the screen. The glass bar

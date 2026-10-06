@@ -1,3 +1,4 @@
+import { useScrollToTop } from 'expo-router';
 import { useMemo } from 'react';
 import {
   scrollTo,
@@ -99,6 +100,8 @@ export function useHeaderScroll(options?: HeaderScrollOptions) {
   const reduceMotion = useReducedMotion();
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  // A second tap on this tab scrolls back to the top. @ref components/screen
+  useScrollToTop(scrollRef);
   const offsetY = useSharedValue(0);
   const headerTop = useSharedValue(0);
   const revealRequest = useSharedValue(false);

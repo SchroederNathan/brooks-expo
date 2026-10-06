@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { router, useScrollToTop } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -85,6 +85,11 @@ export function SearchResults({ query }: { query: string }) {
   const emptyPad = useAnimatedStyle(() => ({
     paddingBottom: Math.max(tabBarOverlap, -keyboard.height.get() - tabBarHeight),
   }));
+
+  // While searching, the results are what a second tap on Browse should scroll.
+  // @ref components/screen
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
 
   /** Debounced live autocomplete; aborts the in-flight request on every keystroke. */
   useEffect(() => {
@@ -206,6 +211,7 @@ export function SearchResults({ query }: { query: string }) {
 
   return (
     <ScrollView
+      ref={scrollRef}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={{ paddingBottom: spacing.xxl }}

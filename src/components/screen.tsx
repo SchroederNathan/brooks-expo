@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useScrollToTop } from 'expo-router';
+import { useRef, type ReactNode } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -82,13 +83,26 @@ export function Screen({ style, ...rest }: ViewProps) {
  * The glass tab bar's overlap goes on `contentInset`, not the content padding:
  * content still scrolls under the glass, it just comes to rest above it, and
  * the caller's `paddingBottom` keeps meaning what it meant under the JS bar.
+ *
+ * A second tap on the focused tab scrolls back to the top, under either bar:
+ * both emit `tabPress` (the JS bar by hand, `NativeTabs` on a repeated
+ * selection), and `useScrollToTop` acts only while the screen is focused and
+ * first in its stack — so the tap that pops a pushed screen does not also
+ * scroll the anchor under it. Every tab scroll root does the same: the
+ * collapsing-header scroll (Home, Browse), Browse's search results, and the
+ * Finder's quiz and activity pages. The glass bar's own scroll-to-top is off
+ * (`disableScrollToTop`): it only finds a scroll view down the first-subview
+ * chain, which missed Browse.
  */
 export function ScreenScrollView({ contentContainerStyle, style, ...rest }: ScrollViewProps) {
   const paddingTop = useScreenTopPadding();
   const overlap = useTabBarOverlap();
+  const ref = useRef<ScrollView>(null);
+  useScrollToTop(ref);
 
   return (
     <ScrollView
+      ref={ref}
       contentInsetAdjustmentBehavior="never"
       showsVerticalScrollIndicator={false}
       contentInset={{ bottom: overlap }}
