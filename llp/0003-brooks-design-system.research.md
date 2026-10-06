@@ -1327,8 +1327,20 @@ continuous morph.
   body copy on what signing in unlocks, then `Log in` (primary) over `Create
   an account` (secondary) as a full-width stack, both the app's own shadowed
   square buttons. Both push the same on-device form; `?mode=login|create`
-  only relabels its heading and button. The perk copy (`RUN_CLUB_PERKS`) now
-  repeats only what Brooks states itself. [observed via search snippets of
+  only relabels its heading and button. [superseded 2026-10-05] The guest
+  state is now a full-bleed navy Run Club panel ("Join the club. Run
+  happier.", lime eyebrow, light status bar while focused), three ruled perk
+  rows with outlined line glyphs (free shipping, a birthday gift, early
+  access), and one `Log in or join` button. The sheet is email-first, as in
+  the Mobbin references (Fresha, ChatGPT): one email field and Continue. An
+  email that joined on this device before logs straight back in
+  (`knownMember` in `src/store/member.ts`; signing out keeps it); a new one
+  gets "Welcome to the club.", the email with a Change link, three perks and a
+  first-name field. `?mode` is gone. The email field does not auto-focus, so
+  the keyboard never hides "Continue as guest".
+
+  [superseded 2026-10-05 — see below] The perk copy (`RUN_CLUB_PERKS`) was
+  set to repeat only what Brooks states itself. [observed via search snippets of
   support.brooksrunning.com article 360016635851, "Why should I create a
   Brooks Run Club account?"; the page itself is behind Cloudflare and
   brooksrunning.com behind Akamai, so neither could be fetched directly]:
@@ -1339,6 +1351,21 @@ continuous morph.
   Dropped as unverified: "Early access to new shoes and sales" and "Fun games
   and prizes". No wishlist claim is made — `/wishlist/view` exists on the
   site but no fetched source ties it to an account.
+
+  [observed 2026-10-05, live site in headed Chrome] The perk copy is now
+  checked against brooksrunning.com itself, which the 2026-08-28 work could
+  not load. The sign-up page (`/en_us/account-registration/`) lists
+  "Membership benefits include: Free shipping, Annual birthday gift, Early
+  access to shoes & sales, Fun games and prizes". The Brooks Run Club page
+  (`/en_us/brooks-run-club/`) adds a "20% off apparel welcome offer" (one
+  full-price apparel item). The Shipping page's member column: standard
+  free, express $15 and free over $160; Friends & Family and Sports Medicine
+  discount groups get no shipping perks. The support article (360016635851)
+  says the birthday gift is a gift *with purchase*. So the August note was
+  wrong: "Early access" and "Fun games and prizes" are real perks.
+  `RUN_CLUB_PERKS` now lists only the site's perks. Order history and saved
+  addresses are account features, not perks, and "easy returns" is not a
+  member perk: the 90-day Run Happy Promise covers every customer.
 - **Tab bar & search** (Nike). [superseded 2026-08-17→2026-08-21] The bar was the
   system native tab bar (liquid glass on iOS 26) with a `role="search"` tab that
   iOS detached into the standalone trailing button — Home · Shop · Bag · Account

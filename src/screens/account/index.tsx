@@ -1,11 +1,13 @@
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
+import Svg, { Circle, Line, Path, Polygon, Polyline, Rect } from 'react-native-svg';
 
 import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
-import { Screen, ScreenHeading, ScreenScrollView } from '@/components/screen';
+import { Screen, ScreenHeading, ScreenScrollView, useScreenTopPadding } from '@/components/screen';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
@@ -21,11 +23,9 @@ import { useUpdateCheck } from '@/utils/updates';
  *
  * @ref LLP 0003#login — Run Club framing throughout: a member sees their club
  * card; a guest sees the pitch, with browsing never gated behind either.
- * [observed 2026-08-28] A guest gets the pitch and nothing else: no heading,
- * no rows, no footer — a centred illustration, one line saying what signing
- * in unlocks, then `Log in` over `Create an account` as a full-width stack,
- * held in the middle of the screen. Both lead to the same on-device form; the
- * mode only relabels it. The bag and Shoe Finder are one tab-bar tap away.
+ * A guest gets the pitch and nothing else: a navy Run Club panel, three perks
+ * Brooks states itself, and one `Log in or join` button that opens the
+ * email-first sheet. The bag and Shoe Finder are one tab-bar tap away.
  */
 export function Account() {
   const member = useMember();
@@ -38,9 +38,7 @@ export function Account() {
   // the Shoe Finder.
   if (!member) {
     return (
-      <Screen style={styles.guestScreen}>
-        <GuestPitch />
-      </Screen>
+      <GuestPitch />
     );
   }
 
@@ -123,46 +121,96 @@ export function Account() {
 }
 
 /**
- * What a guest sees. The copy makes only claims Brooks makes on its own
- * support site (see `RUN_CLUB_PERKS`); the illustration is built from the
- * brand's own sprite glyphs so it needs no new asset.
+ * What a guest sees. The perks repeat only what brooksrunning.com lists as
+ * member perks (see `RUN_CLUB_PERKS`).
  */
 function GuestPitch() {
+  const top = useScreenTopPadding();
+  const focused = useIsFocused();
   return (
-    <View style={styles.guest}>
-      <View style={styles.illustration} accessible={false}>
-        <View style={styles.illustrationCore}>
-          <BrooksIcon name="account" size={56} color={colors.surface} />
-        </View>
-        <View style={[styles.satellite, styles.satelliteTopLeft]}>
-          <BrooksIcon name="cart" size={22} color={colors.blue} />
-        </View>
-        <View style={[styles.satellite, styles.satelliteTopRight]}>
-          <BrooksIcon name="clock" size={22} color={colors.blue} />
-        </View>
-        <View style={[styles.satellite, styles.satelliteBottom]}>
-          <BrooksIcon name="pin" size={22} color={colors.blue} />
-        </View>
+    <Screen style={styles.guestScreen}>
+      {/* The navy panel runs under the status bar, so the bar goes light while
+          this tab is in front. */}
+      {focused && <StatusBar style="light" animated />}
+      <View style={[styles.hero, { paddingTop: top + spacing.xl }]}>
+        <Txt variant="eyebrow" c={colors.lime}>
+          Brooks Run Club
+        </Txt>
+        <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.md }}>
+          Join the club.{'\n'}Run happier.
+        </Txt>
+        <Txt variant="body" c="rgba(255,255,255,0.8)" style={{ marginTop: spacing.md }}>
+          Membership is free. Log in to see your orders and keep your addresses
+          and payment methods in one place.
+        </Txt>
       </View>
 
-      <Txt variant="body" c={colors.inkSoft} style={styles.guestBody}>
-        Log in to your Brooks Run Club account to see your order history, start
-        a return, and keep your addresses and payment methods in one place.
-      </Txt>
-
-      <View style={styles.actions}>
-        <Button title="Log in" onPress={() => router.push('/login?mode=login')} />
-        <Button
-          title="Create an account"
-          variant="secondary"
-          onPress={() => router.push('/login?mode=create')}
-        />
+      <View style={styles.perkList}>
+        <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.sm }}>
+          What members get
+        </Txt>
+        <Perk glyph={<TruckGlyph />} title="Free shipping" body="Standard shipping on every order. Express is free over $160." />
+        <Perk glyph={<GiftGlyph />} title="A birthday gift" body="A gift with purchase in your birthday month, every year." />
+        <Perk glyph={<ClockGlyph />} title="Early access" body="Early access to new shoes and sales." />
       </View>
 
-      <Txt variant="tiny" c={colors.inkFaint} style={styles.guestNote}>
-        Membership is free. Browsing never requires it.
-      </Txt>
+      <View style={{ flex: 1 }} />
+      <View style={styles.guestActions}>
+        <Button title="Log in or join" onPress={() => router.push('/login')} />
+        <Txt variant="tiny" c={colors.inkFaint} style={styles.guestNote}>
+          Browsing never requires an account.
+        </Txt>
+      </View>
+    </Screen>
+  );
+}
+
+function Perk({ glyph, title, body }: { glyph: React.ReactNode; title: string; body: string }) {
+  return (
+    <View style={styles.perk} accessible accessibilityLabel={`${title}. ${body}`}>
+      <View style={styles.perkGlyph}>{glyph}</View>
+      <View style={{ flex: 1 }}>
+        <Txt variant="productTitle">{title}</Txt>
+        <Txt variant="bodySmall" c={colors.inkMuted} style={{ marginTop: 2 }}>
+          {body}
+        </Txt>
+      </View>
     </View>
+  );
+}
+
+/** Line glyphs for the perks, drawn in the ink of the control rule. */
+const GLYPH = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: colors.ink, strokeWidth: 2, strokeLinecap: 'square', strokeLinejoin: 'miter' } as const;
+
+function TruckGlyph() {
+  return (
+    <Svg {...GLYPH}>
+      <Rect x={1} y={4} width={15} height={12} />
+      <Polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+      <Circle cx={5.5} cy={18.5} r={2.5} />
+      <Circle cx={18.5} cy={18.5} r={2.5} />
+    </Svg>
+  );
+}
+
+function ClockGlyph() {
+  return (
+    <Svg {...GLYPH}>
+      <Circle cx={12} cy={12} r={10} />
+      <Polyline points="12 6 12 12 16 14" />
+    </Svg>
+  );
+}
+
+function GiftGlyph() {
+  return (
+    <Svg {...GLYPH}>
+      <Polyline points="20 12 20 22 4 22 4 12" />
+      <Rect x={2} y={7} width={20} height={5} />
+      <Line x1={12} y1={22} x2={12} y2={7} />
+      <Path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+      <Path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+    </Svg>
   );
 }
 
@@ -184,44 +232,35 @@ function Row({ label, detail, onPress }: { label: string; detail?: string; onPre
 
 /** The button's hard shadow hangs 4pt below its face; the note clears it. */
 const SHADOW_GAP = 4;
-const ILLUSTRATION = 168;
-const SATELLITE = 44;
 
 const styles = StyleSheet.create({
-  /** Centre the pitch in the space above the tab bar; the safe area is already applied. */
-  guestScreen: { justifyContent: 'center', paddingBottom: spacing.xxxl },
-  guest: { paddingHorizontal: spacing.gutter, alignItems: 'center' },
-  illustration: {
-    width: ILLUSTRATION,
-    height: ILLUSTRATION,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  illustrationCore: {
-    width: 104,
-    height: 104,
+  /** The navy panel draws its own top inset, so the screen adds none. */
+  guestScreen: { paddingTop: 0, paddingBottom: spacing.xl },
+  hero: {
     backgroundColor: colors.navy,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: spacing.gutter,
+    paddingBottom: spacing.xxl,
   },
-  /** Square, outlined in the brand's control rule: the same block the buttons are. */
-  satellite: {
-    position: 'absolute',
-    width: SATELLITE,
-    height: SATELLITE,
-    backgroundColor: colors.surface,
+  perkList: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
+  perk: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: border.rule,
+    borderBottomColor: colors.hairline,
+  },
+  /** Square, outlined in the control rule: the same block the buttons are. */
+  perkGlyph: {
+    width: 44,
+    height: 44,
     borderWidth: border.heavy,
     borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  satelliteTopLeft: { top: 0, left: 0 },
-  satelliteTopRight: { top: 0, right: 0 },
-  satelliteBottom: { bottom: 0, right: spacing.lg },
-  guestBody: { textAlign: 'center', marginTop: spacing.xl },
-  /** The two actions stack with room for the lower button's hard shadow. */
-  actions: { alignSelf: 'stretch', marginTop: spacing.xl, gap: spacing.lg },
-  guestNote: { marginTop: spacing.lg + SHADOW_GAP, textAlign: 'center' },
+  guestActions: { paddingHorizontal: spacing.gutter },
+  guestNote: { marginTop: spacing.md + SHADOW_GAP, textAlign: 'center' },
   card: {
     marginHorizontal: spacing.gutter,
     backgroundColor: colors.navy,
