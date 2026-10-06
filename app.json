@@ -39,7 +39,11 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFFFFF"
+          "backgroundColor": "#FFFFFF",
+          "android": {
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 120
+          }
         }
       ],
       "expo-sqlite",
