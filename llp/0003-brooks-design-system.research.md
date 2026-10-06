@@ -1325,7 +1325,17 @@ continuous morph.
   body copy on what signing in unlocks, then `Log in` (primary) over `Create
   an account` (secondary) as a full-width stack, both the app's own shadowed
   square buttons. Both push the same on-device form; `?mode=login|create`
-  only relabels its heading and button. The perk copy (`RUN_CLUB_PERKS`) now
+  only relabels its heading and button. [superseded 2026-10-05] The guest
+  state is now a full-bleed navy Run Club panel ("Join the club. Run
+  happier.", lime eyebrow, light status bar while focused), three ruled perk
+  rows with outlined line glyphs (free shipping, easy returns, a birthday
+  gift — all from `RUN_CLUB_PERKS`), and one `Log in or join` button. The
+  sheet is email-first, as in the Mobbin references (Fresha, ChatGPT): one
+  email field and Continue. An email that joined on this device before logs
+  straight back in (`knownMember` in `src/store/member.ts`; signing out keeps
+  it); a new one gets "Welcome to the club.", the email with a Change link,
+  three perks and a first-name field. `?mode` is gone. The email field does not
+  auto-focus, so the keyboard never hides "Continue as guest". The perk copy (`RUN_CLUB_PERKS`) now
   repeats only what Brooks states itself. [observed via search snippets of
   support.brooksrunning.com article 360016635851, "Why should I create a
   Brooks Run Club account?"; the page itself is behind Cloudflare and

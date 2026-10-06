@@ -26,9 +26,28 @@ function emit() {
   for (const l of listeners) l();
 }
 
+/**
+ * Members who have joined on this device, by lowercased email. Signing out
+ * keeps the entry, so the email-first login sheet can welcome a returning
+ * member back instead of asking for their name again.
+ */
+const KNOWN_KEY = 'brooks.member.known.v1';
+
+function normalize(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/** A member who has joined on this device before, or null for a new email. */
+export function knownMember(email: string): Member | null {
+  const known = storage.get<Record<string, Member>>(KNOWN_KEY, {});
+  return known[normalize(email)] ?? null;
+}
+
 export function join(member: Omit<Member, 'joinedAt'>) {
-  current = { ...member, joinedAt: Date.now() };
+  current = knownMember(member.email) ?? { ...member, joinedAt: Date.now() };
   storage.set(STORAGE_KEY, current);
+  const known = storage.get<Record<string, Member>>(KNOWN_KEY, {});
+  storage.set(KNOWN_KEY, { ...known, [normalize(current.email)]: current });
   emit();
 }
 
