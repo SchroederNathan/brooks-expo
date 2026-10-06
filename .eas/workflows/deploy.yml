@@ -1,9 +1,10 @@
-name: Deploy iOS (TestFlight or OTA)
+name: Deploy iOS and Android (store or OTA)
 
-# Push to main ships iOS. Native changes create a new TestFlight binary.
-# JS-only changes publish an EAS Update to the `production` channel, which
-# every installed build with the same fingerprint picks up. Store binaries are
-# never repacked. See README.md#testflight.
+# Push to main ships both platforms. Each platform decides on its own: native
+# changes create a new store binary (TestFlight on iOS, the Play internal
+# testing track on Android). JS-only changes publish an EAS Update to the
+# `production` channel, which every installed build with the same fingerprint
+# picks up. Store binaries are never repacked. See README.md#store-builds-and-ota-updates.
 
 on:
   push:
@@ -15,7 +16,7 @@ on:
       force_native:
         type: boolean
         default: false
-        description: Build and upload a new TestFlight binary even if a compatible build exists
+        description: Build and upload new store binaries for both platforms even if compatible builds exist
 
 concurrency:
   cancel_in_progress: true
@@ -37,6 +38,8 @@ jobs:
     type: fingerprint
     # Must match the build profile's environment or the hashes will not line up.
     environment: production
+
+  # iOS
 
   get_ios_build:
     name: Find an OTA-compatible iOS build
@@ -80,5 +83,50 @@ jobs:
     environment: production
     params:
       platform: ios
+      channel: production
+      message: ${{ github.commit_message }}
+
+  # Android
+
+  get_android_build:
+    name: Find an OTA-compatible Android build
+    type: get-build
+    needs: [checks, fingerprint]
+    params:
+      platform: android
+      profile: production
+      distribution: store
+      channel: production
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      runtime_version: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      wait_for_in_progress: false
+
+  build_android:
+    name: Build Android for Google Play
+    type: build
+    needs: [get_android_build]
+    if: ${{ inputs.force_native == true || !needs.get_android_build.outputs.build_id }}
+    params:
+      platform: android
+      profile: production
+      message: ${{ github.commit_message }}
+
+  play_internal:
+    name: Upload to Google Play internal testing
+    type: submit
+    needs: [build_android]
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      # The `production` submit profile targets the internal track (eas.json).
+      profile: production
+
+  publish_android_update:
+    name: Publish Android OTA update
+    type: update
+    needs: [get_android_build]
+    if: ${{ inputs.force_native != true && needs.get_android_build.outputs.build_id }}
+    environment: production
+    params:
+      platform: android
       channel: production
       message: ${{ github.commit_message }}
