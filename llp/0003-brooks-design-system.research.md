@@ -196,6 +196,55 @@ the three public reviews can be bundled, while the full TurnTo experience is
 live, mutable, and unavailable to a direct React Native request because of
 Akamai (LLP 0002).
 
+### Add-to-bag sheet
+
+[confirmed — user direction, 2026-10-06] The sticky purchase bar has no panel
+of its own: no white fill, no hairline, no upward `bar` shadow. The page fades
+to white behind the button instead (`expo-linear-gradient`, transparent at
+the top of the bar, `colors.surface` from its middle down), and the bar is
+`box-none` so the faded band still passes taps to the page. The `bar` shadow
+token was retired with it.
+
+[confirmed — user direction, 2026-10-06, after an On Running reference] Pressing
+`Add to cart` grows the button into an `Added to your bag` sheet, and closing
+it folds the sheet back into the button. This replaced the dark auto-dismissing
+toast. The sheet holds: a grabber, the title with a close cross, the added
+line (photo, name, colorway, `Size · width`, price), `Keep shopping`
+(secondary) beside `Bag (n)` (primary) as the filter sheet's footer pair, then
+a `You might also like…` rail. Brand rules hold throughout: square corners,
+Filson, the app's stacked buttons, `surfaceAlt` behind product photos.
+
+[observed] How the morph is built (`src/screens/product/added-sheet.tsx`):
+
+- One shell view runs from the button's face (gutter insets, `BUTTON_HEIGHT`,
+  the bar's bottom padding) to the full-width sheet, its fill going from
+  Brooks blue to white over the first 40%. The shell clips the content, so
+  nothing shows outside the frame it has grown to; the content is pinned to
+  the screen inside it by undoing the shell's offsets. [confirmed — user
+  review, 2026-10-06] The first version drew the content over the shell
+  unclipped, and it showed outside the shell before the shell had grown.
+- The button's own label rides the shell for the first 20% so the press does
+  not blank it; the sticky bar fades out over the first 15% so its offset
+  outline does not trail behind the shell.
+- `progress` is a shared value owned by the PDP so the bar and the sheet read
+  one value. Open and close are critically damped springs with overshoot
+  clamped: the shell's edges may not pass the screen's.
+- A downward drag (velocity-projected) slides the sheet off at full size
+  instead of folding it. `Bag (n)` and a rail tile fold the sheet back into
+  the button first and navigate when the fold lands. [confirmed — user
+  review, 2026-10-06] The first version unmounted the sheet and navigated at
+  once, and the sheet read as vanishing rather than closing.
+- It is a transparent RN `Modal`, not an overlay view, so the scrim also
+  covers the PDP's native header and Android back closes it. Reduced motion
+  fades the finished sheet in place.
+- No haptic: the add-to-bag notification was removed on purpose (see
+  `utils/haptics`).
+
+[inferred] `You might also like…` is the other half of the kit — apparel
+under a shoe, shoes under apparel — same gender or unisex, in stock, most
+reviewed first. The catalog has no co-purchase data (LLP 0002), so review
+count stands in for popularity.
+
 ### Icons and the logo
 
 [observed — real-browser capture, 2026-08-17] The site ships its entire icon set
