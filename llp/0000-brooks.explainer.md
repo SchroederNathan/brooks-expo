@@ -42,8 +42,10 @@ storage layer uses `expo-sqlite`, which ships inside Expo Go. *Superseded
 [Splash animation](#splash-animation).
 
 [observed 2026-09-30] Store builds take JS-only changes as EAS Updates on
-the `production` channel (see the README's TestFlight section). `expo-updates`
-is an Expo SDK module, and the Account screen's update row only runs when
+the `production` channel (see the README's store builds and OTA section).
+Since 2026-10-06 the same workflow also ships Android, to the Google Play
+internal testing track. `expo-updates` is an Expo SDK module, and the
+Account screen's update row only runs when
 `Updates.isEnabled && !__DEV__`, so it is inert in Expo Go and dev clients.
 [inferred] Expo Go includes `expo-updates`, so the import does not break the
 Expo Go target; not yet checked in Expo Go.

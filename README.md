@@ -16,7 +16,7 @@ A working mobile shopping prototype inspired by [Brooks Running](https://www.bro
 - Brooks Run Club membership is a local demo state. Names and email addresses stay on the device.
 - The app uses native stack headers and sheets, an app-owned five-tab bar, reduced-motion behavior, and Apple zoom transitions on iOS 18 and newer.
 
-The repository has iOS, Android, and web scripts. The current store-delivery workflow is iOS-only.
+The repository has iOS, Android, and web scripts. The store-delivery workflow ships iOS to TestFlight and Android to the Google Play internal testing track.
 
 ## Quick start
 
@@ -117,7 +117,7 @@ src/
   utils/               Storage, haptics, and formatting
 packages/catalog/      Source catalog package and schemas
 tools/harvest/         Browser capture, validation, and sync tools
-.eas/workflows/        TestFlight and OTA delivery workflow
+.eas/workflows/        Store (TestFlight, Google Play) and OTA delivery workflow
 docs/                  README screenshots
 llp/                   Product, system, and design rationale
 diaries/               AI-agent development records
@@ -125,30 +125,35 @@ diaries/               AI-agent development records
 
 `brand.config.js` owns the shippable app identity. `app.config.ts` overlays it on `app.json`, so the display name, slug, URL scheme, and native identifiers stay together.
 
-## TestFlight and OTA updates
+## Store builds and OTA updates
 
-The iOS workflow in [`.eas/workflows/deploy-to-testflight.yml`](./.eas/workflows/deploy-to-testflight.yml) runs on pushes to `main` and on manual runs. It type-checks the app, fingerprints the production native layer, and looks for a completed store build with the same fingerprint on the `production` channel.
+The workflow in [`.eas/workflows/deploy.yml`](./.eas/workflows/deploy.yml) ships iOS and Android. It runs on pushes to `main` and on manual runs. It type-checks the app and fingerprints the production native layer. Then, for each platform, it looks for a completed store build with the same fingerprint on the `production` channel.
 
-- A match publishes an iOS EAS Update to the `production` channel. Installed builds with that fingerprint download it.
-- No match builds a new binary and uploads it to TestFlight.
+- A match publishes an EAS Update for that platform to the `production` channel. Installed builds with that fingerprint download it.
+- No match on iOS builds a new binary and uploads it to TestFlight.
+- No match on Android builds a new binary and submits it to the Google Play internal testing track.
+
+Each platform decides on its own. A change can ship a new Android binary and an iOS update in the same run.
 
 The app uses the `fingerprint` runtime version policy, so an update can only reach a binary with the same native layer. Updates download on launch and apply on the next cold start. Account → **Check for updates** checks the channel by hand and offers a restart when an update is ready. Development builds load JavaScript from Metro, so the row is off there.
 
 The first run after this change needs a new native build, because older binaries do not include `expo-updates`. Testers must install that build from TestFlight before they can receive updates. An update does not create a new TestFlight build number.
 
-Run it manually with an Expo account that has access to the configured EAS and App Store Connect projects:
+The Android submission needs two things outside this repository: the app `com.exponathan.ecommercedemo` must exist in Google Play Console, and the EAS project must have a Google Service Account key for Play submissions. See [Submit to the Google Play Store](https://docs.expo.dev/submit/android/). The submit profile in `eas.json` sends builds to the `internal` track.
+
+Run it manually with an Expo account that has access to the configured EAS, App Store Connect, and Google Play projects:
 
 ```sh
-eas workflow:run .eas/workflows/deploy-to-testflight.yml
+eas workflow:run .eas/workflows/deploy.yml
 ```
 
-To force a new TestFlight binary even when a compatible build exists, for example after a failed or canceled upload:
+To force new store binaries for both platforms even when compatible builds exist, for example after a failed or canceled upload:
 
 ```sh
-eas workflow:run .eas/workflows/deploy-to-testflight.yml -F force_native=true
+eas workflow:run .eas/workflows/deploy.yml -F force_native=true
 ```
 
-`get-build` proves that a build completed. It does not prove that Apple accepted the upload or that testers installed it. Recover a failed upload with a forced run before relying on updates for that runtime.
+`get-build` proves that a build completed. It does not prove that Apple or Google accepted the upload or that testers installed it. Recover a failed upload with a forced run before relying on updates for that runtime.
 
 The workflow also declares a push trigger for `main`. That trigger remains inactive until this GitHub repository is connected to the EAS project.
 
