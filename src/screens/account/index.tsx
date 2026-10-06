@@ -12,7 +12,6 @@ import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { catalog } from '@/data/catalog';
 import { VOICE } from '@/data/editorial';
-import { useCart } from '@/store/cart';
 import { leave, useMember } from '@/store/member';
 import { RUN_CLUB_PERKS } from '@/constants';
 import { border, colors, spacing } from '@/theme';
@@ -24,19 +23,17 @@ import { useUpdateCheck } from '@/utils/updates';
  *
  * @ref LLP 0003#login — Run Club framing throughout: a member sees their club
  * card; a guest sees the pitch, with browsing never gated behind either.
- * A guest gets the pitch and nothing else: a navy Run Club panel, three perks
- * Brooks states itself, and one `Log in or join` button that opens the
- * email-first sheet. The bag and Shoe Finder are one tab-bar tap away.
+ * A guest gets the pitch and the settings rows: a navy Run Club panel, three
+ * perks Brooks states itself, the same rows a member sees, and one `Log in or
+ * join` button that opens the email-first sheet.
  */
 export function Account() {
   const member = useMember();
-  const cart = useCart();
-  const update = useUpdateCheck();
 
   // @ref LLP 0003#the-header-collapses-on-scroll — the blue header is Home's
   // alone. The controls this screen used to carry up top (search, cart, browse)
-  // are all one tab-bar tap away, and the rows below already reach the bag and
-  // the Shoe Finder.
+  // are all one tab-bar tap away, and the rows below already reach the Shoe
+  // Finder.
   if (!member) {
     return (
       <GuestPitch />
@@ -82,22 +79,7 @@ export function Account() {
       {/* ----------------------------------------------------------- ROWS -- */}
       {/* The rows' rules stop at the gutter, not the screen edge. */}
       <View style={{ marginTop: spacing.xxl, marginHorizontal: spacing.gutter }}>
-        <Row
-          label="Your bag"
-          detail={cart.count ? `${cart.count} ${cart.count === 1 ? 'item' : 'items'}` : 'Empty'}
-          onPress={() => router.push('/cart')}
-        />
-        <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
-        <Row
-          label="Order history"
-          detail="Prototype — checkout is out of scope"
-        />
-        <Row
-          label="Run Happy Promise"
-          detail="90-day trial run on every order"
-        />
-        <Row label={update.label} detail={update.detail} onPress={update.onPress} />
-        <GlassTabsRow />
+        <SettingsRows />
       </View>
 
       {member ? (
@@ -164,7 +146,13 @@ function GuestPitch() {
         <Perk glyph={<TruckGlyph />} title="Free shipping" body="Standard shipping on every order. Express is free over $160." />
         <Perk glyph={<GiftGlyph />} title="A birthday gift" body="A gift with purchase in your birthday month, every year." />
         <Perk glyph={<ClockGlyph />} title="Early access" body="Early access to new shoes and sales." />
-        <GlassTabsRow />
+      </View>
+
+      <View style={styles.guestSettings}>
+        <Txt variant="eyebrow" c={colors.inkMuted}>
+          Settings
+        </Txt>
+        <SettingsRows />
       </View>
 
       <View style={{ flex: 1 }} />
@@ -227,6 +215,22 @@ function GiftGlyph() {
   );
 }
 
+/**
+ * The rows a guest and a member share. Only rows that act are listed: the bag
+ * is its own tab, and order history and the Run Happy Promise had no screen
+ * behind them.
+ */
+function SettingsRows() {
+  const update = useUpdateCheck();
+  return (
+    <>
+      <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
+      <Row label={update.label} detail={update.detail} onPress={update.onPress} />
+      <GlassTabsRow />
+    </>
+  );
+}
+
 function Row({ label, detail, onPress }: { label: string; detail?: string; onPress?: () => void }) {
   return (
     <Press scaleTo={onPress ? 0.99 : 1} onPress={onPress} style={styles.row}>
@@ -283,6 +287,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   perkList: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
+  guestSettings: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl, marginBottom: spacing.xl },
   perk: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -508,6 +508,16 @@ custom JS bar, and the switch shows only where glass is available. The row is on
 both the member screen (after *Check for updates*) and the guest pitch (after the
 perks), because most testers never sign in.
 
+[observed 2026-10-06] [confirmed — human request, 2026-10-06] The switch is one
+of the shared *settings rows* now (`SettingsRows` in `screens/account`): Shoe
+Finder, *Check for updates*, and the glass switch. A member sees them under the
+club card; a guest sees them under the perks, below a `Settings` eyebrow, so
+nothing in them needs an account. Rows with no action are gone: *Your bag*
+(the Cart tab already reaches it), *Order history*, and *Run Happy Promise*
+(checkout is out of scope, so neither had a screen). The guest pitch is now
+taller than the iPhone 17 Pro screen, so `Log in or join` sits one short
+scroll down.
+
 - [observed] `utils/native-tabs.ts` keeps `LIQUID_GLASS =
   isLiquidGlassAvailable()` as a constant, because that answer cannot change
   while the app runs. The choice is a small store over `kv-storage` (key
