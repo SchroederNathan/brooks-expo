@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { useScrollToTop } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -238,6 +239,11 @@ export function Finder() {
   // @ref LLP 0003#the-header-collapses-on-scroll
   const screenTop = useScreenTopPadding();
   const tabBarOverlap = useTabBarOverlap();
+  // The quiz and activity pages scroll in a bare `ScrollView`, not
+  // `ScreenScrollView`; only one is mounted at a time, so one ref serves both.
+  // @ref components/screen — a second tab tap scrolls to the top.
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
   const [phase, setPhase] = useState<Phase>('intro');
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0);
@@ -395,6 +401,7 @@ export function Finder() {
     return (
       <Screen style={[styles.intro, { paddingHorizontal: 0, paddingBottom: spacing.xl }]}>
         <ScrollView
+          ref={scrollRef}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl }}
           showsVerticalScrollIndicator={false}
@@ -607,6 +614,7 @@ export function Finder() {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         key={q.code}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl }}

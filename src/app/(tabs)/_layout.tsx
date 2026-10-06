@@ -93,6 +93,11 @@ const ICONS = {
  * so the top inset would be applied twice. Screens clear the bar through
  * `useTabBarOverlap()` instead.
  *
+ * `disableScrollToTop` on every trigger: the system's re-tap scroll finds only
+ * the first scroll view down the first-subview chain, which missed Browse. The
+ * screens scroll themselves on `tabPress` instead, as they do under the JS bar
+ * (@ref components/screen). Pop-to-top stays the system's.
+ *
  * The cart badge is always mounted and toggled with `hidden`, so the trigger's
  * children keep one shape as the count changes. `hidden` is only read when the
  * badge has no text — any string, "0" included, shows — so an empty cart has
@@ -107,6 +112,7 @@ function GlassTabs() {
         name="(index)"
         accessibilityLabel="Home"
         disableAutomaticContentInsets
+        disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.home} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Home</NativeTabs.Trigger.Label>
@@ -115,6 +121,7 @@ function GlassTabs() {
         name="(shop)"
         accessibilityLabel="Browse"
         disableAutomaticContentInsets
+        disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.browse} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Browse</NativeTabs.Trigger.Label>
@@ -123,6 +130,7 @@ function GlassTabs() {
         name="(finder)"
         accessibilityLabel="Shoe Finder"
         disableAutomaticContentInsets
+        disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.finder} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Shoe Finder</NativeTabs.Trigger.Label>
@@ -131,6 +139,7 @@ function GlassTabs() {
         name="(cart)"
         accessibilityLabel="Cart"
         disableAutomaticContentInsets
+        disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.cart} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Cart</NativeTabs.Trigger.Label>
@@ -142,6 +151,7 @@ function GlassTabs() {
         name="(account)"
         accessibilityLabel="Profile"
         disableAutomaticContentInsets
+        disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.account} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Profile</NativeTabs.Trigger.Label>
