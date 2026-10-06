@@ -228,6 +228,8 @@ export function Shop() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={FRANCHISE_WIDTH + spacing.md}
           contentContainerStyle={styles.rail}
         >
           {FRANCHISES.map((f) => {

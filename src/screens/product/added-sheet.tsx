@@ -340,6 +340,8 @@ export function AddedSheet({
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
+                    decelerationRate="fast"
+                    snapToInterval={TILE_W + spacing.md}
                     contentContainerStyle={styles.rail}
                   >
                     {recs.map((p) => (
