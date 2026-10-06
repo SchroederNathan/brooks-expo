@@ -37,8 +37,9 @@ Android, should ideally work on the web, and must target Expo SDK 57 so that it
 can be run with Expo Go.
 
 [observed — port, 2026-08-12] The port preserves Expo Go compatibility: the
-storage layer uses `expo-sqlite` and the splash animation uses
-`lottie-react-native`, both of which ship inside Expo Go.
+storage layer uses `expo-sqlite`, which ships inside Expo Go. *Superseded
+2026-10-06:* the splash animation no longer uses `lottie-react-native`; see
+[Splash animation](#splash-animation).
 
 [observed 2026-09-30] Store builds take JS-only changes as EAS Updates on
 the `production` channel (see the README's TestFlight section). `expo-updates`
@@ -46,6 +47,29 @@ is an Expo SDK module, and the Account screen's update row only runs when
 `Updates.isEnabled && !__DEV__`, so it is inert in Expo Go and dev clients.
 [inferred] Expo Go includes `expo-updates`, so the import does not break the
 Expo Go target; not yet checked in Expo Go.
+
+### Splash animation
+
+[observed 2026-10-06] The launch splash (`src/components/animated-splash.tsx`)
+draws the Brooks chevron with `react-native-svg` and drives it with Reanimated.
+Both were already app dependencies, and both ship inside Expo Go.
+The splash had played a Jitter-exported Lottie through
+`lottie-react-native`. That file held one filled path and two animated
+transform values, so the component reproduces it directly: the same path, the
+same 402×874 cover-scaled composition, the same keyframes and the same
+cubic-bezier(0.5, 0, 0, 1) easing on one 60-frame playhead. The dependency and
+its JSON asset were removed.
+
+[observed 2026-10-06] Frame-by-frame screenshots on an iOS 26.5 simulator
+(Lottie `progress` against the SVG port, frames 0–60) matched to edge
+anti-aliasing. One frame in the fastest part of the scale-up (frame 38) had
+edges up to 0.5 pt apart. Lottie's own easing solver is the likely cause;
+this is [inferred], not checked in lottie-ios.
+
+[inferred 2026-10-06] Unlike Lottie, the Reanimated timing honours the system
+Reduce Motion setting: `withTiming` defaults to `ReduceMotion.System` in the
+Reanimated source. With it on, the splash should go straight to its last frame
+(plain white) and fade out. Not yet checked on a device.
 
 ### Required website surfaces
 

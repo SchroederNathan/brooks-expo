@@ -98,8 +98,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
-            {/* Native only: web has no native splash to hand off from, and
-                lottie-react-native's web renderer would be an extra dependency. */}
+            {/* Native only: web has no native splash to hand off from. */}
             {Platform.OS !== 'web' && <AnimatedSplash />}
           </CartProvider>
         </SafeAreaProvider>
