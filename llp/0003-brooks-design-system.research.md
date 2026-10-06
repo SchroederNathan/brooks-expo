@@ -153,7 +153,9 @@ to an instruction, so the action does not jump as fit choices are made.
 `#F8F8F8` returns band: the circular Run Happy Promise seal, an uppercase
 `90-day free returns` label with the sprite's `icon-info`, and one sentence of
 90-day trial copy. The seal is the same Brooks CDN asset already bundled for the
-home screen, not an app recreation.
+home screen, not an app recreation. [observed 2026-10-06] The band is one shared
+component, `src/components/run-happy-promise.tsx`. The PDP and the Bag both
+draw it; each caller sets only its top margin.
 
 [observed — same sources] Product details are an expanded ruled accordion. The
 description spans the content width, then facts form a stable two-column
@@ -1465,7 +1467,15 @@ continuous morph.
 - **Cart** (GOAT immediacy): bottom sheet, swipe-to-delete with undo, free-shipping
   progress bar, and Brooks's own empty-state copy. [observed 2026-08-26] It opens
   on a `Bag (n)` heading rather than the blue bar — see *Only Home wears the
-  header*.
+  header*. [superseded 2026-10-06] The free-shipping progress card ("You're $X
+  from free shipping" / "You've earned free shipping") is gone, and so is the
+  outlined text-only "Run Happy Promise" box under the totals. The Bag now shows
+  the PDP's own returns band (see *PDP detail sections*) under the totals. The
+  Shipping row in the totals still reads `Free` or the fee. The sticky
+  `Checkout` button has no white bar or top rule behind it; it floats over
+  the rows. A line no longer prints its `#<variant id>`; the id stays in
+  the cart data. `Checkout` no longer opens the navy "Prototype note";
+  the button has no action, because checkout is out of scope.
 - **Login** (adidas membership): framed as *joining Brooks Run Club*, never as a
   gate. Guest path always visible. [observed 2026-08-28] The Account tab's
   guest state dropped its navy pitch card, heading, rows and footer for the
