@@ -17,8 +17,9 @@ import { colors, motion } from '../theme';
  * then swells and sweeps to the bottom right until the screen is the white of
  * its notch — then the splash fades itself out to reveal the app already
  * rendered beneath it. The animation draws on white; the container and the
- * native splash (app.json splash.backgroundColor) match it so the handoff has
- * no seam.
+ * native splash (the expo-splash-screen plugin's backgroundColor in app.json)
+ * match it so the handoff has no seam. On Android the native splash also shows
+ * the chevron at this first frame's size.
  *
  * This is a frame-for-frame port of the Jitter-exported Lottie the splash used
  * to play (402×874 composition, 60 frames at 60 fps; it was

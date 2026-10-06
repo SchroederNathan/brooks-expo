@@ -73,6 +73,18 @@ Reduce Motion setting: `withTiming` defaults to `ReduceMotion.System` in the
 Reanimated source. With it on, the splash should go straight to its last frame
 (plain white) and fade out. Not yet checked on a device.
 
+[observed 2026-10-06] The native Android splash needs an image. When the
+`expo-splash-screen` plugin gets options, its Android theme always points
+`windowSplashScreenAnimatedIcon` at `@drawable/splashscreen_logo`. It deletes
+the template's placeholder logo and writes a new one only when `image` is set.
+With only `backgroundColor`, `:app:processReleaseResources` fails with
+"resource drawable/splashscreen_logo not found" (EAS build `ec92535c`). The
+plugin's `android` options now use `assets/splash-icon.png` at
+`imageWidth: 120`. The chevron fills about 69% of that image, so it draws
+about 82 dp wide. The first frame of the JS splash draws it about 81
+composition units wide, cover-scaled to the screen. iOS keeps a plain white
+native splash.
+
 ### Required website surfaces
 
 [confirmed — Charlie Cheever, 2026-07-13] The first complete prototype should
