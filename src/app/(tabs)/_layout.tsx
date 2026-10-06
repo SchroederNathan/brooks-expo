@@ -1,30 +1,43 @@
 import { Tabs } from 'expo-router/js-tabs';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { DynamicColorIOS, Platform } from 'react-native';
 
 import { BrooksTabBar } from '@/components/tab-bar';
 import { useCart } from '@/store/cart';
 import { colors } from '@/theme';
-import { NATIVE_TABS } from '@/utils/native-tabs';
+import { takeLanding, useNativeTabs } from '@/utils/native-tabs';
 
 /**
  * The bottom tab bar. Five tabs: Home, Browse, Shoe Finder, Cart, Profile.
  *
- * @ref LLP 0003#liquid-glass-devices-get-the-system-tab-bar — Liquid Glass
- * devices get the system bar (`NativeTabs`); every other device gets the
- * app-drawn `BrooksTabBar`. Both mount the same five array-group clones, so the
- * routes, stacks, and anchors are identical either way.
+ * @ref LLP 0003#liquid-glass-is-a-profile-toggle — Every device starts on the
+ * app-drawn `BrooksTabBar`. A Liquid Glass device can switch to the system bar
+ * (`NativeTabs`) from Profile. Both mount the same five array-group clones, so
+ * the routes, stacks, and anchors are identical either way.
  *
  * Each trigger targets one clone of the shared array-group Stack so every tab
  * gets the same native Brooks toolbar without duplicating its layout.
  */
 export default function TabLayout() {
-  return NATIVE_TABS ? <GlassTabs /> : <BrooksTabs />;
+  const native = useNativeTabs();
+
+  // Swapping the bar mounts a new navigator, which opens on Home. Its first
+  // effect sends the reader back to the screen that held the switch. Child
+  // effects run first, so the new navigator is mounted by then.
+  useEffect(() => {
+    const href = takeLanding();
+    if (href) router.navigate(href);
+  }, [native]);
+
+  return native ? <GlassTabs /> : <BrooksTabs />;
 }
 
 /**
- * @ref LLP 0003#icons-and-the-logo — The app-drawn bar keeps the Brooks sprite
- * glyphs and the lime-on-blue cart badge, which the system bar cannot render.
+ * @ref LLP 0003#icons-and-the-logo — The app-drawn bar draws the Brooks glyphs
+ * as SVG, and keeps the lime-on-blue cart badge, which the system bar cannot
+ * render (its badge text is fixed white).
  */
 function BrooksTabs() {
   return (
@@ -51,7 +64,22 @@ const GLASS_TINT =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: colors.ink, dark: colors.surface }) : colors.ink;
 
 /**
- * The system bar, with SF Symbols in place of the sprite glyphs. Icons only,
+ * @ref LLP 0003#the-glass-bar-wears-the-brooks-glyphs — The same five glyphs
+ * as `BrooksTabBar`, as PNGs: `NativeTabs` cannot draw react-native-svg. They
+ * come from `tools/tab-icons/render.js`, which copies `TabIcon`'s geometry;
+ * rerun it after changing a glyph. Black on transparent, drawn as template
+ * images so the bar tints them like any system icon.
+ */
+const ICONS = {
+  home: require('../../../assets/tab-icons/home.png'),
+  browse: require('../../../assets/tab-icons/browse.png'),
+  finder: require('../../../assets/tab-icons/finder.png'),
+  cart: require('../../../assets/tab-icons/cart.png'),
+  account: require('../../../assets/tab-icons/account.png'),
+};
+
+/**
+ * The system bar, wearing the app-drawn bar's own glyphs. Icons only,
  * like the app-drawn bar: each label is `hidden`, which blanks the item title,
  * so the name moves to the trigger's `accessibilityLabel` for VoiceOver.
  *
@@ -80,7 +108,7 @@ function GlassTabs() {
         accessibilityLabel="Home"
         disableAutomaticContentInsets
       >
-        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />
+        <NativeTabs.Trigger.Icon src={ICONS.home} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Home</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
@@ -88,9 +116,7 @@ function GlassTabs() {
         accessibilityLabel="Browse"
         disableAutomaticContentInsets
       >
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'square.grid.2x2', selected: 'square.grid.2x2.fill' }}
-        />
+        <NativeTabs.Trigger.Icon src={ICONS.browse} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Browse</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
@@ -98,7 +124,7 @@ function GlassTabs() {
         accessibilityLabel="Shoe Finder"
         disableAutomaticContentInsets
       >
-        <NativeTabs.Trigger.Icon sf={{ default: 'shoe', selected: 'shoe.fill' }} />
+        <NativeTabs.Trigger.Icon src={ICONS.finder} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Shoe Finder</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
@@ -106,7 +132,7 @@ function GlassTabs() {
         accessibilityLabel="Cart"
         disableAutomaticContentInsets
       >
-        <NativeTabs.Trigger.Icon sf={{ default: 'cart', selected: 'cart.fill' }} />
+        <NativeTabs.Trigger.Icon src={ICONS.cart} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Cart</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Badge hidden={count === 0}>
           {count === 0 ? undefined : count > 9 ? '9+' : String(count)}
@@ -117,7 +143,7 @@ function GlassTabs() {
         accessibilityLabel="Profile"
         disableAutomaticContentInsets
       >
-        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} />
+        <NativeTabs.Trigger.Icon src={ICONS.account} renderingMode="template" />
         <NativeTabs.Trigger.Label hidden>Profile</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>

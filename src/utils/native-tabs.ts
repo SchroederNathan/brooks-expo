@@ -1,21 +1,69 @@
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
+import type { Href } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useSyncExternalStore } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { storage } from './kv-storage';
+
 /**
- * Which tab bar this device gets, decided once at launch.
- *
- * @ref LLP 0003#liquid-glass-devices-get-the-system-tab-bar — Where the system
- * draws Liquid Glass (iOS 26+, unless the app opts out through
- * `UIDesignRequiresCompatibility`), the app hands the bar back to `NativeTabs`.
- * Everywhere else — Android, web, iOS 18 and older — keeps the app-drawn
- * `BrooksTabBar`.
- *
- * A module constant, not state: `NativeTabs` remounts its navigator if its
- * shape changes at runtime, and the answer cannot change while the app runs.
+ * Whether this device can draw the system Liquid Glass tab bar: iOS 26+,
+ * unless the app opts out through `UIDesignRequiresCompatibility`. Android,
+ * web, and iOS 18 and older never can. A native constant, so it is read once.
  */
-export const NATIVE_TABS = isLiquidGlassAvailable();
+export const LIQUID_GLASS = isLiquidGlassAvailable();
+
+const STORAGE_KEY = 'brooks.glassTabs.v1';
+
+/**
+ * Which tab bar this device gets.
+ *
+ * @ref LLP 0003#liquid-glass-is-a-profile-toggle — The app-drawn
+ * `BrooksTabBar` by default, everywhere. On a Liquid Glass device the Profile
+ * tab can switch to the system bar (`NativeTabs`); the choice is stored, so it
+ * holds across launches. Off a glass device the stored value is ignored.
+ *
+ * Storage is synchronous, so the stored bar is the one the first frame mounts.
+ */
+let glassTabs = LIQUID_GLASS && storage.get<boolean>(STORAGE_KEY, false);
+const listeners = new Set<() => void>();
+
+/**
+ * Where to send the reader once the new bar is up. Swapping the bar swaps the
+ * navigator, and a new navigator starts on its first tab — Home — which would
+ * throw the reader off the screen that holds the switch.
+ */
+let landing: Href | undefined;
+
+/** `from` is the screen that holds the switch, to come back to after the swap. */
+export function setGlassTabs(on: boolean, from: Href) {
+  if (!LIQUID_GLASS || on === glassTabs) return;
+  glassTabs = on;
+  landing = from;
+  storage.set(STORAGE_KEY, on);
+  for (const l of listeners) l();
+}
+
+/** The pending landing screen, once: a later remount must not navigate again. */
+export function takeLanding() {
+  const href = landing;
+  landing = undefined;
+  return href;
+}
+
+/** True when the tab layout mounts `NativeTabs` instead of the app-drawn bar. */
+export function useNativeTabs() {
+  return useSyncExternalStore(
+    (cb) => {
+      listeners.add(cb);
+      return () => {
+        listeners.delete(cb);
+      };
+    },
+    () => glassTabs,
+    () => glassTabs
+  );
+}
 
 /**
  * True below a tab's stack. Provided by the array-group layout that every tab
@@ -37,7 +85,8 @@ export const InTabContext = createContext(false);
 export function useTabBarOverlap() {
   const { bottom } = useSafeAreaInsets();
   const inTab = useContext(InTabContext);
-  return NATIVE_TABS && inTab ? bottom : 0;
+  const native = useNativeTabs();
+  return native && inTab ? bottom : 0;
 }
 
 /**
