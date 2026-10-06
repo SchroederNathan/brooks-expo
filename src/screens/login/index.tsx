@@ -8,6 +8,7 @@ import { BrooksIcon } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Press } from '@/components/press';
 import { Txt } from '@/components/themed-text';
+import { RUN_CLUB_PERKS } from '@/constants';
 import { join, knownMember } from '@/store/member';
 import { border, colors, font, headerIcon, nativeSheetHeader, spacing } from '@/theme';
 
@@ -165,12 +166,8 @@ export function Login() {
 /** The button under each field: its top gap, its 50pt face and its hard shadow. */
 const BUTTON_CLEARANCE = spacing.lg + 50 + 6 + spacing.lg;
 
-/** Three of the perks Brooks states itself (`RUN_CLUB_PERKS`), shortened for the sheet. */
-const MEMBER_PERKS = [
-  'Free standard shipping on every order',
-  'Order history in one place, so a return is easy to start',
-  'A gift with purchase during your birthday month',
-];
+/** The first perks Brooks lists for members (`RUN_CLUB_PERKS`). */
+const MEMBER_PERKS = [RUN_CLUB_PERKS[0], RUN_CLUB_PERKS[2], RUN_CLUB_PERKS[3]];
 
 function Field({
   inputRef,

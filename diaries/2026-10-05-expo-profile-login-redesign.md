@@ -20,6 +20,18 @@ different case → straight to "Hey, Sam."; "Continue as guest" closes the
 sheet; the status bar is light over the navy panel and dark on the member
 screen. Before/after screenshots are in `docs/profile-login-redesign.png`.
 
+### Perk copy checked against the live site
+
+The first version showed "Easy returns" as a member perk. On review, the live
+sign-up page lists "Free shipping, Annual birthday gift, Early access to shoes
+& sales, Fun games and prizes"; the Run Club page adds a 20% apparel welcome
+offer; the Shipping page shows standard free and express free over $160 for
+members. Returns are free for every customer (Run Happy Promise), so "Easy
+returns" was replaced with "Early access", and `RUN_CLUB_PERKS` now lists only
+the site's perks. The August note that "Early access" and "Fun games and
+prizes" had no source was wrong: that session could not load the site and
+relied on search snippets of one support article.
+
 ## What worked well
 
 - The design came from the Mobbin board made earlier in the session
@@ -43,7 +55,9 @@ screen. Before/after screenshots are in `docs/profile-login-redesign.png`.
 
 ## What was hard
 
-Not observed.
+- Telling account features (order history, saved addresses) from member
+  perks. The support article mixes them; the sign-up page's benefit list does
+  not.
 
 ## Comparative friction
 

@@ -121,8 +121,8 @@ export function Account() {
 }
 
 /**
- * What a guest sees. The perks repeat only what Brooks states on its own
- * support site (see `RUN_CLUB_PERKS`).
+ * What a guest sees. The perks repeat only what brooksrunning.com lists as
+ * member perks (see `RUN_CLUB_PERKS`).
  */
 function GuestPitch() {
   const top = useScreenTopPadding();
@@ -149,9 +149,9 @@ function GuestPitch() {
         <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginBottom: spacing.sm }}>
           What members get
         </Txt>
-        <Perk glyph={<TruckGlyph />} title="Free shipping" body="Standard shipping on every order. Express is free at $160." />
-        <Perk glyph={<BoxGlyph />} title="Easy returns" body="Your order history in one place, so a return is easy to start." />
-        <Perk glyph={<GiftGlyph />} title="A birthday gift" body="A gift with purchase during your birthday month." />
+        <Perk glyph={<TruckGlyph />} title="Free shipping" body="Standard shipping on every order. Express is free over $160." />
+        <Perk glyph={<GiftGlyph />} title="A birthday gift" body="A gift with purchase in your birthday month, every year." />
+        <Perk glyph={<ClockGlyph />} title="Early access" body="Early access to new shoes and sales." />
       </View>
 
       <View style={{ flex: 1 }} />
@@ -193,12 +193,11 @@ function TruckGlyph() {
   );
 }
 
-function BoxGlyph() {
+function ClockGlyph() {
   return (
     <Svg {...GLYPH}>
-      <Path d="M21 8 12 3 3 8v8l9 5 9-5V8z" />
-      <Polyline points="3 8 12 13 21 8" />
-      <Line x1={12} y1={13} x2={12} y2={21} />
+      <Circle cx={12} cy={12} r={10} />
+      <Polyline points="12 6 12 12 16 14" />
     </Svg>
   );
 }
