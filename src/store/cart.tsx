@@ -93,7 +93,6 @@ interface CartContextValue {
   subtotal: number;
   shipping: number;
   total: number;
-  freeShippingRemaining: number;
   add(input: {
     productId: string;
     colorCode: string;
@@ -167,7 +166,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       subtotal,
       shipping,
       total: subtotal + shipping,
-      freeShippingRemaining: Math.max(0, FREE_SHIPPING_OVER - subtotal),
       add,
       setQuantity: (variantId, quantity) => dispatch({ type: 'setQuantity', variantId, quantity }),
       remove: (variantId) => dispatch({ type: 'remove', variantId }),

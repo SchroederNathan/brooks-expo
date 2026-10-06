@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -19,12 +18,12 @@ import {
   BalancedCushionIcon,
   BalancedSupportIcon,
   BrooksIcon,
-  InfoIcon,
 } from '@/components/icons';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { Press } from '@/components/press';
 import { Price } from '@/components/price';
+import { RunHappyPromise } from '@/components/run-happy-promise';
 import { ShoeImage } from '@/components/shoe-image';
 import { Stars } from '@/components/stars';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
@@ -377,7 +376,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
         )}
 
         {/* ------------------------------------------------------- PROMISE -- */}
-        <RunHappyPromise />
+        <RunHappyPromise style={{ marginTop: spacing.xxl }} />
 
         {/* ------------------------------------------------------- DETAILS -- */}
         <View style={styles.detailsSection}>
@@ -492,27 +491,6 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   );
 }
 
-function RunHappyPromise() {
-  return (
-    <View style={styles.promiseBand}>
-      <Image
-        source={require('../../../assets/home/run-happy-promise.png')}
-        style={styles.promiseSeal}
-        contentFit="contain"
-      />
-      <View style={{ flex: 1 }}>
-        <View style={styles.promiseTitleRow}>
-          <Txt variant="eyebrow">90-day free returns</Txt>
-          <InfoIcon size={14} />
-        </View>
-        <Txt variant="bodySmall" style={{ marginTop: spacing.xs }}>
-          Take our gear for a 90-day test run. If you don’t love it, return it for free.
-        </Txt>
-      </View>
-    </View>
-  );
-}
-
 function AccordionHeader({
   label,
   open,
@@ -603,22 +581,6 @@ const styles = StyleSheet.create({
   optionWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: OPTION_GAP },
   sizeOption: { width: SIZE_OPTION_W },
   widthOption: { width: WIDTH_OPTION_W, paddingHorizontal: 0 },
-
-  promiseBand: {
-    marginTop: spacing.xxl,
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: spacing.gutter,
-    paddingVertical: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  promiseSeal: { width: 68, height: 68 },
-  promiseTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
 
   detailsSection: {
     marginHorizontal: spacing.gutter,

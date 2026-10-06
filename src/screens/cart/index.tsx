@@ -7,25 +7,23 @@ import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reani
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
 import { Press } from '@/components/press';
+import { RunHappyPromise } from '@/components/run-happy-promise';
 import { Screen, ScreenHeading, ScreenScrollView } from '@/components/screen';
 import { ShoeImage } from '@/components/shoe-image';
 import { Squiggle } from '@/components/squiggle';
 import { Txt } from '@/components/themed-text';
 import { fmt } from '@/utils/format-price';
-import { heroImage } from '@/data/images';
 import { VOICE } from '@/data/editorial';
 import { useCart, type CartItemView } from '@/store/cart';
 import { border, colors, spacing } from '@/theme';
 import { useTabBarOverlap } from '@/utils/native-tabs';
 
-const FREE_SHIPPING_OVER = 100;
-
 /**
  * The Bag.
  *
- * @ref LLP 0003#cart — GOAT's immediacy: swipe-to-delete with undo, a
- * free-shipping progress bar, quantity steppers, and Brooks's own empty-state
- * voice. Each line carries the real Brooks variant id (LLP 0002), which is the
+ * @ref LLP 0003#cart — GOAT's immediacy: swipe-to-delete with undo, quantity
+ * steppers, the PDP's Run Happy Promise band under the totals, and Brooks's
+ * own empty-state voice. Each line carries the real Brooks variant id (LLP 0002), which is the
  * point where this prototype's cart and Brooks's production cart speak the same
  * language.
  */
@@ -33,7 +31,6 @@ export function Cart() {
   const cart = useCart();
   const tabBarOverlap = useTabBarOverlap();
   const [undo, setUndo] = useState<CartItemView | null>(null);
-  const [scopeNote, setScopeNote] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const removeWithUndo = useCallback(
@@ -74,8 +71,6 @@ export function Cart() {
     );
   }
 
-  const progress = Math.min(1, cart.subtotal / FREE_SHIPPING_OVER);
-
   return (
     <View style={styles.root}>
       {/* @ref LLP 0003#the-header-collapses-on-scroll — the blue header is
@@ -90,28 +85,8 @@ export function Cart() {
           </Txt>
         </ScreenHeading>
 
-        {/* ------------------------------------------- FREE SHIPPING METER -- */}
-        <View style={styles.shipCard}>
-          <Txt variant="caption">
-            {cart.freeShippingRemaining > 0 ? (
-              <>
-                You're{' '}
-                <Txt variant="caption" c={colors.blue}>
-                  {fmt(cart.freeShippingRemaining)}
-                </Txt>{' '}
-                from free shipping
-              </>
-            ) : (
-              'You’ve earned free shipping 🎉'
-            )}
-          </Txt>
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${Math.max(4, progress * 100)}%` }]} />
-          </View>
-        </View>
-
         {/* ----------------------------------------------------- LINE ITEMS -- */}
-        <View style={{ marginTop: spacing.lg }}>
+        <View>
           {cart.items.map((item) => (
             <View key={item.variantId}>
               <ReanimatedSwipeable
@@ -147,10 +122,6 @@ export function Cart() {
                       Size {item.size}
                       {item.width ? ` · ${widthLabel(item)}` : ''}
                     </Txt>
-                    {/* The real Brooks variant id — the cart's proof of fidelity. */}
-                    <Txt variant="tiny" c={colors.inkFaint}>
-                      #{item.variantId}
-                    </Txt>
 
                     <View style={styles.lineFooter}>
                       <Stepper
@@ -182,38 +153,18 @@ export function Cart() {
           <Row label="Total" value={fmt(cart.total)} big />
         </View>
 
-        {scopeNote && (
-          <View style={styles.scopeNote}>
-            <Txt variant="eyebrow" c={colors.lime} style={{ fontSize: 10 }}>
-              Prototype note
-            </Txt>
-            <Txt variant="bodySmall" c={colors.surface} style={{ marginTop: spacing.xs }}>
-              The journey ends here by design — no order is ever placed. Every line
-              above already carries the exact variant id Brooks's own Cart-AddProduct
-              endpoint accepts, so the last mile is documented, not guessed.
-            </Txt>
-          </View>
-        )}
-
-        <View style={styles.promise}>
-          <Txt variant="eyebrow" c={colors.inkMuted} style={{ fontSize: 10 }}>
-            {VOICE.promiseTitle}
-          </Txt>
-          <Txt variant="bodySmall" c={colors.inkSoft} style={{ marginTop: 4 }}>
-            {VOICE.promise}
-          </Txt>
-        </View>
+        <RunHappyPromise style={{ marginTop: spacing.xl }} />
       </ScreenScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
-      {/* Under the glass tab bar the checkout bar still runs to the window's
-          bottom edge and pads its button up past the bar, so the glass sits on
-          the bar's white fill instead of on cart rows scrolling behind it. */}
+      {/* No fill and no rule: the button floats over the rows that scroll
+          behind it. Under the glass tab bar it pads up past the bar. */}
       <View style={[styles.stickyBar, { paddingBottom: spacing.md + tabBarOverlap }]}>
         <Button
           title="Checkout"
           accessory={fmt(cart.total)}
-          onPress={() => setScopeNote(true)}
+          // Checkout is out of scope: no order is ever placed, so the button
+          // has nothing to open.
         />
       </View>
 
@@ -329,15 +280,6 @@ const styles = StyleSheet.create({
   /** 100 clears the sticky checkout bar the last content would otherwise sit under. */
   content: { paddingBottom: 100 },
 
-  shipCard: {
-    marginHorizontal: spacing.gutter,
-    padding: spacing.lg,
-    backgroundColor: colors.surfaceAlt,
-    gap: spacing.md,
-  },
-  track: { height: 8, backgroundColor: colors.surface, overflow: 'hidden' },
-  fill: { height: 8, backgroundColor: colors.lime, borderWidth: border.rule, borderColor: colors.ink },
-
   line: {
     flexDirection: 'row',
     gap: spacing.lg,
@@ -372,21 +314,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
 
-  scopeNote: {
-    marginHorizontal: spacing.gutter,
-    marginTop: spacing.lg,
-    backgroundColor: colors.navy,
-    padding: spacing.lg,
-  },
-
-  promise: {
-    marginHorizontal: spacing.gutter,
-    marginTop: spacing.lg,
-    padding: spacing.lg,
-    borderWidth: border.rule,
-    borderColor: colors.hairline,
-  },
-
   stickyBar: {
     position: 'absolute',
     left: 0,
@@ -397,9 +324,6 @@ const styles = StyleSheet.create({
     // The screen's bottom edge IS the tab bar's top edge (the bar is a flex
     // sibling, not an overlay), so this clears nothing but itself.
     paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: border.rule,
-    borderTopColor: colors.hairline,
   },
 
   undo: {
