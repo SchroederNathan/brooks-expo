@@ -37,6 +37,8 @@ import { Txt } from './themed-text';
 
 /** The hard shadow's offset, and how far the face travels to meet it. */
 const SHADOW_OFFSET = 4;
+/** The face's height. Exported so a surface that morphs out of a button can start on its frame. */
+export const BUTTON_HEIGHT = 50;
 export function Button({
   title,
   onPress,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     borderWidth: border.heavy,
   },
   button: {
-    height: 50,
+    height: BUTTON_HEIGHT,
     borderRadius: radius.none,
     alignItems: 'center',
     justifyContent: 'center',

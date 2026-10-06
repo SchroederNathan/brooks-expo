@@ -1,11 +1,15 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Share, StyleSheet, View } from 'react-native';
 import Animated, {
+  Extrapolation,
+  interpolate,
   useAnimatedRef,
   useAnimatedScrollHandler,
+  useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,8 +36,9 @@ import { supportLabel } from '@/data/labels';
 import { byId, colorwayOf, formatPrice } from '@/data/query';
 import { reviewsFor } from '@/data/reviews';
 import { useCart } from '@/store/cart';
-import { border, colors, headerIcon, shadows, spacing } from '@/theme';
+import { border, colors, headerIcon, spacing } from '@/theme';
 
+import { AddedSheet, type AddedLine } from './added-sheet';
 import { ReviewsPanel } from './reviews-panel';
 
 const { width: W } = Dimensions.get('window');
@@ -61,7 +66,8 @@ const SUPPORT_DESCRIPTION: Record<string, string> = {
  * thumbnails (Brooks colorways are multi-color, so dots lie) with a sliding
  * ink underline (`UnderlineRail`), a size grid with diagonally marked
  * out-of-stock choices (`selectable: false`, LLP 0002), width at equal rank
- * with size, and a sticky blue purchase bar.
+ * with size, and a sticky blue purchase bar that grows into the add-to-bag
+ * sheet (`AddedSheet`).
  */
 export function ProductDetail({ id, colorParam }: { id: string; colorParam?: string }) {
   const insets = useSafeAreaInsets();
@@ -74,13 +80,15 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const [size, setSize] = useState<string | null>(null);
   const [width, setWidth] = useState<string | null>(null);
   const [needsSize, setNeedsSize] = useState(false);
-  const [added, setAdded] = useState<{ image: string; name: string } | null>(null);
+  const [added, setAdded] = useState<AddedLine | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [reviewsOpen, setReviewsOpen] = useState(false);
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const sizesY = useRef(0);
   const galleryProgress = useSharedValue(0);
+  /** 0 = the sticky button, 1 = the add-to-bag sheet it grows into. */
+  const sheetProgress = useSharedValue(0);
 
   const colorway = product ? colorwayOf(product, colorCode) : undefined;
   const reviewData = product ? reviewsFor(product.id) : undefined;
@@ -122,6 +130,14 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
   const handleGalleryScroll = useAnimatedScrollHandler((event) => {
     galleryProgress.set(event.contentOffset.x / W);
   });
+
+  // The sticky bar hands off to the sheet's shell, which starts on the
+  // button's face; the bar's offset outline would otherwise trail behind it.
+  const stickyBarStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(sheetProgress.get(), [0, 0.15], [1, 0], Extrapolation.CLAMP),
+  }));
+
+  const closeSheet = useCallback(() => setAdded(null), []);
 
   /**
    * The share sheet gets the product's own brooksrunning.com URL — the catalog
@@ -168,7 +184,7 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
     }
     const widthVal = width ?? colorway.widths.find((w) => w.available)?.value ?? '1D';
     cart.add({ productId: product.id, colorCode: colorway.code, size, width: widthVal });
-    setAdded({ image: heroImage(colorway.images), name: product.name });
+    setAdded({ product, colorway, size, width: widthVal });
   };
 
   return (
@@ -444,7 +460,16 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
       </StretchyParallaxScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
-      <View style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }]}>
+      <Animated.View
+        style={[styles.stickyBar, { paddingBottom: insets.bottom + spacing.md }, stickyBarStyle]}
+        pointerEvents={added ? 'none' : 'box-none'}>
+        {/* No surface of its own: the page fades to white under the button. */}
+        <LinearGradient
+          colors={['rgba(255,255,255,0)', colors.surface]}
+          locations={[0, 0.5]}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
         <Button
           variant="purchase"
           title="Add to cart"
@@ -452,15 +477,15 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
           disabled={!readyToAdd}
           onPress={onAdd}
         />
-      </View>
+      </Animated.View>
 
-      {/* --------------------------------------------------- ADDED OVERLAY -- */}
+      {/* ----------------------------------------------------- ADDED SHEET -- */}
       {added && (
-        <AddedToast
-          image={added.image}
-          name={added.name}
+        <AddedSheet
+          line={added}
+          progress={sheetProgress}
           bottomInset={insets.bottom}
-          onDone={() => setAdded(null)}
+          onClosed={closeSheet}
         />
       )}
     </View>
@@ -531,55 +556,6 @@ function ProductDetailRow({
         {icon ? <View style={styles.detailIcon}>{icon}</View> : null}
       </View>
       <View style={styles.detailValueColumn}>{children}</View>
-    </View>
-  );
-}
-
-/**
- * Add-to-bag confirmation over the sticky bar. Auto-dismisses; tapping
- * "View bag" goes straight there.
- */
-function AddedToast({
-  image,
-  name,
-  bottomInset,
-  onDone,
-}: {
-  image: string;
-  name: string;
-  bottomInset: number;
-  onDone: () => void;
-}) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 3200);
-    return () => clearTimeout(t);
-  }, [onDone]);
-
-  return (
-    <View style={[styles.toast, { bottom: bottomInset + 92 }]}>
-      <View style={styles.toastImage}>
-        <ShoeImage url={image} width={54} height={54} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Txt variant="caption" c={colors.surface} numberOfLines={1}>
-          {name}
-        </Txt>
-        <Txt variant="tiny" c="rgba(255,255,255,0.7)">
-          Added to your bag
-        </Txt>
-      </View>
-      <Press
-        onPress={() => {
-          onDone();
-          router.push('/cart');
-        }}
-        scaleTo={0.94}
-        style={styles.toastCta}
-      >
-        <Txt variant="eyebrow" c={colors.blue} style={{ fontSize: 10 }}>
-          View bag
-        </Txt>
-      </Press>
     </View>
   );
 }
@@ -683,29 +659,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: spacing.gutter,
-    paddingTop: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: border.rule,
-    borderTopColor: colors.hairline,
-    boxShadow: shadows.bar,
-  },
-
-  toast: {
-    position: 'absolute',
-    left: spacing.gutter,
-    right: spacing.gutter,
-    backgroundColor: colors.ink,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-  },
-  toastImage: { backgroundColor: colors.surfaceAlt },
-  toastCta: {
-    backgroundColor: colors.lime,
-    paddingHorizontal: spacing.md,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: spacing.xxxl,
   },
 });
