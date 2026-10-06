@@ -1532,6 +1532,14 @@ continuous morph.
   [observed 2026-08-26] It is the only one anywhere: no other tab draws a header
   at all, and Browse reaches search through the field in its own first
   screenful — see *Only Home wears the header*.
+- **Card rails snap.** [observed 2026-10-06] Every horizontal rail of cards
+  stops on a card edge: `decelerationRate="fast"` plus `snapToInterval` set to
+  the card width plus the rail's `gap`. With the rail's `gutter` padding, each
+  stop puts a card's leading edge on the gutter. Home's New arrivals and Stories
+  rails had it first; Home's gear and use-case rails, Browse's Franchises rail,
+  and the add-to-bag sheet's `You might also like…` rail now match. Selector
+  rails (the PDP colour swatches, an `UnderlineRail`) do not snap: they scroll to
+  the selected swatch on their own.
 
 ## Wow list
 

@@ -164,6 +164,8 @@ export function Home() {
             data={HOME_GEAR}
             keyExtractor={keyById}
             showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={GEAR_CARD_WIDTH + spacing.md}
             contentContainerStyle={styles.gearRail}
             renderItem={renderGearItem}
           />
@@ -178,6 +180,8 @@ export function Home() {
             data={USE_CASES}
             keyExtractor={keyById}
             showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={USE_CASE_WIDTH + spacing.md}
             contentContainerStyle={styles.useCaseRail}
             renderItem={renderUseCaseItem}
           />
