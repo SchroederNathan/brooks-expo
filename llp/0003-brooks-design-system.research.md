@@ -434,6 +434,8 @@ What the glass bar gives up and keeps:
 - [observed] **Five tabs fit.** The August "More" tab came from five regular
   triggers *plus* the detached `role="search"` trigger. Browse is the search
   screen now, so there is no search trigger and Shoe Finder keeps its tab.
+  [observed 2026-10-06] The third tab is Shoes now, with the same glyph; the
+  Finder is pushed from it (LLP 0006#the-shoes-tab).
 - [observed] **The badge is blue with white text**, as in August; iOS fixes the
   badge text to white. `NativeTabs.Trigger.Badge` ignores `hidden` when it has
   text, and shows "0" for an empty cart unless the text is left out.
@@ -1540,7 +1542,7 @@ continuous morph.
   ceiling before it overflows into a "More" tab that swallows the search role.
   Shoe Finder paid for the search slot. [observed 2026-08-21] The bar is
   app-drawn now (see *The tab bar is app-drawn again*): five tabs, Home · Browse ·
-  Shoe Finder · Cart · Profile, in Brooks's own sprite glyphs, with a sliding ink
+  Shoe Finder · Cart · Profile (Shoes since 2026-10-06, LLP 0006), in Brooks's own sprite glyphs, with a sliding ink
   dash riding the bar's top edge under the focused icon. Search traded its slot
   back for Shoe Finder's; it is a pushed screen entered from the Browse header
   field and the category header, and it still drives the live Constructor.io

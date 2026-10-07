@@ -29,5 +29,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...(config.plugins ?? []),
     // HealthKit entitlement and usage strings. @ref LLP 0005#read-only-by-default
     './modules/brooks-activity/app.plugin.js',
+    // The shoe mileage widget. The App Group is named here, not left to the
+    // plugin's fallback, because the store code and the Apple Developer portal
+    // both have to agree on it. @ref LLP 0006#the-widget-reads-the-app-group
+    [
+      'expo-widgets',
+      {
+        groupIdentifier: `group.${brand.bundleIdentifier}`,
+        widgets: [
+          {
+            name: 'ShoeMileage',
+            displayName: 'Shoe Mileage',
+            description: 'How far your running shoes have gone, and when to replace them.',
+            ios: {
+              supportedFamilies: [
+                'systemSmall',
+                'systemMedium',
+                'accessoryCircular',
+                'accessoryRectangular',
+                'accessoryInline',
+              ],
+            },
+          },
+        ],
+      },
+    ],
   ],
 });

@@ -224,7 +224,8 @@ function SettingsRows() {
   const update = useUpdateCheck();
   return (
     <>
-      <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.navigate('/(tabs)/(finder)/finder')} />
+      <Row label="Your shoes" detail="Miles on the pairs you own" onPress={() => router.navigate('/(tabs)/(shoes)/shoes')} />
+      <Row label="Shoe Finder" detail="Find your perfect shoe" onPress={() => router.push('/(tabs)/(account)/finder')} />
       <Row label={update.label} detail={update.detail} onPress={update.onPress} />
       <GlassTabsRow />
     </>

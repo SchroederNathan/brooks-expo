@@ -5,7 +5,7 @@
 **Systems:** Expo App
 **Author:** Claude Opus 5.5
 **Date:** 2026-09-29 (Health-first flow and Next button: 2026-09-30; the site's own questions: 2026-10-05)
-**Related:** LLP 0000, LLP 0002, LLP 0003
+**Related:** LLP 0000, LLP 0002, LLP 0003, LLP 0006
 
 ## Summary
 
@@ -17,6 +17,12 @@ Results quote the shopper's own numbers in their reasons.
 
 The Finder is Health-first: where Health is available, Health is the main way
 in and the quiz is the fallback (see [Health first](#health-first)).
+
+[observed 2026-10-06] The Finder is no longer a tab. The Shoes tab
+(LLP 0006#the-shoes-tab) pushes it, and so do Browse and Profile. Opened from
+a worn pair, it also knows the pair it is replacing
+(LLP 0006#replacing-a-pair). The same Health workouts now also count the
+miles on the runner's shoes (LLP 0006#mileage-is-workout-distance).
 
 The reader is a local Expo module, `modules/brooks-activity`. It is iOS only
 today. On Android and web, the module resolves to `null` and the Finder shows no
@@ -189,6 +195,11 @@ string says so.
 
 The app never asks for Health access at launch. It asks only after the tap.
 
+[observed 2026-10-06] This section is about the Finder's profile, and it is
+still true for it. Shoe mileage stores one total per pair on the device and
+copies one pair's widget strings into the App Group. See
+LLP 0006#this-changes-llp-0005s-privacy-rule.
+
 ## Read-only by default
 
 The config plugin (`modules/brooks-activity/app.plugin.js`) adds
@@ -273,4 +284,7 @@ build has been tried. The Health Connect work is:
   or enable it in the Apple Developer portal and regenerate the profile with
   `eas credentials`.
 - Should the Finder remember that the shopper connected Health, and offer the
-  Health start by default next time?
+  Health start by default next time? [observed 2026-10-06] Shoe mileage now
+  reads Health on every return to the app once the sheet is answered
+  (LLP 0006#health-access), so the Finder could skip its intro for those
+  runners. Not done yet.

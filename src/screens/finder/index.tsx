@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useScrollToTop } from 'expo-router';
+import { useNavigation, useScrollToTop } from 'expo-router';
 import { Dimensions, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -21,11 +21,14 @@ import {
   readActivityProfile,
 } from '@/data/activity';
 import { catalog } from '@/data/catalog';
+import { formatMileage, mileageOf, type OwnedShoe } from '@/data/mileage';
 import { VOICE } from '@/data/editorial';
 import type { Product } from '@/data/types';
+import { useShoes } from '@/store/shoes';
 import { border, colors, spacing } from '@/theme';
 import { useTabBarOverlap } from '@/utils/native-tabs';
 
+import { modelOf, productOf } from '../shoes/replacement';
 import { answersFromActivity, type Evidence } from './from-activity';
 import {
   type Answer,
@@ -59,6 +62,10 @@ const SIZE_W = Math.floor((W - spacing.gutter * 2 - spacing.sm * 3) / 4);
  * runs, word for word, with its branches, its scores and its barefoot videos
  * (`./quiz.ts`). The "Take 'em off" checkpoint plays as a full-screen beat, and
  * results name *why* — which is what turns a quiz into advice.
+ *
+ * @ref LLP 0006#replacing-a-pair — Opened from a worn pair on the Shoes tab,
+ * the Finder knows what the runner wears now: it says so at the top, and the
+ * results favor the same line and feel.
  */
 
 /* --------------------------------------------------------------- scoring --- */
@@ -83,9 +90,18 @@ const CUSHION_FOR_FEEL: Record<string, Product['cushion']> = {
   responsive: 'Responsive',
 };
 
+/** The pair being replaced, as the scoring needs it. */
+interface Replacing {
+  name: string;
+  model: string;
+  cushion: Product['cushion'];
+  miles: number;
+}
+
 function recommend(
   all: Answers,
-  activity: ActivityProfile | null
+  activity: ActivityProfile | null,
+  replacing: Replacing | null
 ): { product: Product; reasons: string[]; score: number }[] {
   const a = answersOnPath(all);
   const use = chosen(a, 'use');
@@ -200,6 +216,15 @@ function recommend(
       if (activity) reasons.push(`Built to take your ${formatMiles(activity.weeklyRunMiles)} miles a week`);
     }
 
+    // A worn-out pair is a vote for its own line: the runner kept it long enough
+    // to wear it out. Worth about one answer, so the quiz can still overrule it.
+    if (replacing && modelOf(p.name) === replacing.model) {
+      score += 3;
+      reasons.unshift(`The next ${p.name.replace(/\s+\d+.*$/, '')}, the line you put ${formatMileage(replacing.miles)} miles on`);
+    } else if (replacing?.cushion && p.cushion === replacing.cushion) {
+      score += 1;
+    }
+
     // Crowd wisdom, gently.
     if (p.badge === 'Best Seller') score += 1;
     if ((p.rating ?? 0) >= 4.5) score += 1;
@@ -232,7 +257,7 @@ const WEEKS = Math.round(ACTIVITY_WINDOW_DAYS / 7);
 const HEALTH_ICON = require('../../../assets/apple-health-icon.png');
 const BROOKS_ICON = require('../../../assets/icon.png');
 
-export function Finder() {
+export function Finder({ replacing: replacingId }: { replacing?: string } = {}) {
   // The Finder never carried the blue header, and still does not: its intro is a
   // full-bleed navy panel. It takes its safe area from the same primitive every
   // other headerless screen does.
@@ -245,6 +270,23 @@ export function Finder() {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
   const [phase, setPhase] = useState<Phase>('intro');
+  // The Finder is pushed now (Shoes, Browse, Profile), and its panels hide the
+  // native bar, so it draws its own way back.
+  const navigation = useNavigation();
+  const canLeave = navigation.canGoBack();
+
+  // The owned pair this Finder run is replacing, when the Shoes tab sent it.
+  const shoes = useShoes();
+  const ownedShoe = shoes.shoes.find((s) => s.id === replacingId) ?? null;
+  const replacing = useMemo<Replacing | null>(() => {
+    if (!ownedShoe) return null;
+    return {
+      name: ownedShoe.name,
+      model: modelOf(productOf(ownedShoe)?.name ?? ownedShoe.name),
+      cushion: productOf(ownedShoe)?.cushion ?? null,
+      miles: mileageOf(ownedShoe, shoes.byShoe[ownedShoe.id]).totalMiles,
+    };
+  }, [ownedShoe, shoes.byShoe]);
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -264,8 +306,8 @@ export function Finder() {
   // "Behind the Science" opens per page and closes when the page changes.
   const [scienceFor, setScienceFor] = useState<string | null>(null);
   const results = useMemo(
-    () => (phase === 'results' ? recommend(answers, activity) : []),
-    [phase, answers, activity]
+    () => (phase === 'results' ? recommend(answers, activity, replacing) : []),
+    [phase, answers, activity, replacing]
   );
 
   const forgetActivity = () => {
@@ -324,6 +366,7 @@ export function Finder() {
   if (phase === 'intro' && ACTIVITY_AVAILABLE) {
     return (
       <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
+        <TopBar onDark canLeave={canLeave} replacing={ownedShoe} />
         <View style={{ flex: 2 }} />
         <View style={styles.linkArt}>
           <Image source={HEALTH_ICON} style={styles.appIcon} accessibilityLabel="Apple Health" />
@@ -373,7 +416,8 @@ export function Finder() {
   if (phase === 'intro') {
     return (
       <Screen style={[styles.intro, { paddingBottom: spacing.xl }]}>
-        <Txt variant="eyebrow" c={colors.lime}>
+        <TopBar onDark canLeave={canLeave} replacing={ownedShoe} />
+        <Txt variant="eyebrow" c={colors.lime} style={{ marginTop: spacing.lg }}>
           Shoe Finder
         </Txt>
         <Txt variant="hero" c={colors.surface} style={{ marginTop: spacing.md }}>
@@ -406,7 +450,8 @@ export function Finder() {
           contentContainerStyle={{ paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl }}
           showsVerticalScrollIndicator={false}
         >
-          <Txt variant="h1" c={colors.surface}>
+          <TopBar onDark canLeave={canLeave} replacing={ownedShoe} />
+          <Txt variant="h1" c={colors.surface} style={{ marginTop: spacing.lg }}>
             {found
               ? `${filled.length === 1 ? 'One answer' : `${filled.length} answers`} down already.`
               : thin
@@ -471,7 +516,8 @@ export function Finder() {
     return (
       <ScreenScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
         <View style={{ paddingHorizontal: spacing.gutter }}>
-          <Txt variant="eyebrow" c={colors.inkMuted}>
+          <TopBar canLeave={canLeave} replacing={ownedShoe} />
+          <Txt variant="eyebrow" c={colors.inkMuted} style={{ marginTop: spacing.lg }}>
             Your matches
           </Txt>
           <Squiggle />
@@ -481,9 +527,11 @@ export function Finder() {
           <Txt variant="body" c={colors.inkMuted} style={{ marginTop: spacing.sm }}>
             {!results.length
               ? 'Try loosening an answer or two.'
-              : activity
-                ? 'From your Apple Health activity and your answers, we suggest:'
-                : QUIZ_UI.resultsLead}
+              : replacing
+                ? `To replace your ${replacing.name}, we suggest:`
+                : activity
+                  ? 'From your Apple Health activity and your answers, we suggest:'
+                  : QUIZ_UI.resultsLead}
           </Txt>
           {scienceNotes(answers).length ? (
             <View style={styles.scienceBox}>
@@ -713,6 +761,41 @@ export function Finder() {
   );
 }
 
+/**
+ * The row above the Finder's own panels: a back control when the Finder was
+ * pushed, and the pair it is replacing when there is one. Drawn by the screen
+ * because the navy panels run under where a native bar would sit.
+ */
+function TopBar({
+  canLeave,
+  replacing,
+  onDark = false,
+}: {
+  canLeave: boolean;
+  replacing: OwnedShoe | null;
+  onDark?: boolean;
+}) {
+  const navigation = useNavigation();
+  if (!canLeave && !replacing) return null;
+  const ink = onDark ? colors.surface : colors.ink;
+  return (
+    <View style={styles.topBar}>
+      {canLeave ? (
+        <Press hitSlop={12} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Back">
+          <BrooksIcon name="caretLeft" size={16} color={ink} />
+        </Press>
+      ) : null}
+      {replacing ? (
+        <View style={[styles.replacingTag, onDark && styles.replacingTagOnDark]}>
+          <Txt variant="tiny" c={ink} numberOfLines={1}>
+            Replacing your {replacing.name}
+          </Txt>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 /** One text answer row. A selected row fills ink; a multi-select row also ticks. */
 function TextAnswer({
   answer,
@@ -829,6 +912,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.gutter,
   },
   healthLink: { alignSelf: 'center', padding: spacing.md, marginTop: spacing.sm },
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, minHeight: 24 },
+  replacingTag: {
+    flexShrink: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderWidth: border.rule,
+    borderColor: colors.controlBorder,
+  },
+  replacingTagOnDark: { borderColor: 'rgba(255,255,255,0.4)' },
   healthLinkText: { textDecorationLine: 'underline' },
   linkArt: {
     flexDirection: 'row',
