@@ -211,9 +211,10 @@ token was retired with it.
 `Add to cart` grows the button into an `Added to your bag` sheet, and closing
 it folds the sheet back into the button. This replaced the dark auto-dismissing
 toast. The sheet holds: a grabber, the title with a close cross, the added
-line (photo, name, colorway, `Size · width`, price), `Keep shopping`
-(secondary) beside `Bag (n)` (primary) as the filter sheet's footer pair, then
-a `You might also like…` rail. Brand rules hold throughout: square corners,
+line (photo, name, colorway, `Size · width`, price), and `Keep shopping`
+(secondary) beside `Bag (n)` (primary) as the filter sheet's footer pair.
+[superseded 2026-10-06] It also ended in a `You might also like…` rail; that
+rail moved to the PDP as **Complete the look** (below). Brand rules hold throughout: square corners,
 Filson, the app's stacked buttons, `surfaceAlt` behind product photos.
 
 [observed] How the morph is built (`src/screens/product/added-sheet.tsx`):
@@ -232,7 +233,7 @@ Filson, the app's stacked buttons, `surfaceAlt` behind product photos.
   one value. Open and close are critically damped springs with overshoot
   clamped: the shell's edges may not pass the screen's.
 - A downward drag (velocity-projected) slides the sheet off at full size
-  instead of folding it. `Bag (n)` and a rail tile fold the sheet back into
+  instead of folding it. `Bag (n)` (and, until the rail moved, a rail tile) fold the sheet back into
   the button first and navigate when the fold lands. [confirmed — user
   review, 2026-10-06] The first version unmounted the sheet and navigated at
   once, and the sheet read as vanishing rather than closing.
@@ -242,10 +243,108 @@ Filson, the app's stacked buttons, `surfaceAlt` behind product photos.
 - No haptic: the add-to-bag notification was removed on purpose (see
   `utils/haptics`).
 
-[inferred] `You might also like…` is the other half of the kit — apparel
-under a shoe, shoes under apparel — same gender or unisex, in stock, most
-reviewed first. The catalog has no co-purchase data (LLP 0002), so review
-count stands in for popularity.
+[superseded 2026-10-06] `You might also like…` was the other half of the kit
+— apparel under a shoe, shoes under apparel — ranked by review count. It is
+now **Complete the look** on the PDP.
+
+### Complete the look
+
+[confirmed — user direction, 2026-10-06] The add-to-bag sheet's rail moved to
+the PDP as a `Complete the look` section, the page's last block after the
+details and reviews accordions. A reader sees it before buying, not only
+after. The sheet no longer carries a rail.
+
+[inferred] What it picks (`src/screens/product/complete-the-look.ts`): one
+piece for each slot the product does not fill. The slots are shoes, top,
+bottom, socks and layer, read from the Constructor groups
+(`-apparel-tops`, `-apparel-sports-bras`, `-apparel-bottoms|shorts|tights|pants`,
+`accessories-socks`, `-apparel-outerwear`; the shoe slot takes road-running
+and trail shoes only, because the most-reviewed men's shoe is a walker).
+Each piece is the same gender or unisex and has a colorway in stock. The
+product's own franchise ranks first (Ghost socks under a Ghost shoe), then
+review count. A unisex product takes its gender from the first gendered pick.
+
+[confirmed — user direction, 2026-10-06] **Do not call it personalized.** The
+catalog has no co-purchase, outfit or reader data (LLP 0002). Review count
+stands in for popularity, and every reader sees the same look. The section's
+subline says so: "Our most-reviewed gear to run in with it."
+
+[superseded 2026-10-06] Four designs, each from a storefront PDP, were
+built behind a Profile row that stepped through them. [confirmed — user
+choice, 2026-10-06] The flat lay won. The other three, the Profile row and the
+`brooks.lookVariant.v1` key are deleted. The table stays as the record of
+what was compared ([observed — Mobbin]):
+
+| Design | Source | What it shows |
+|---|---|---|
+| `rail` | adidas "Complete the look", lululemon "Shop this look" | A snapping rail of square tiles: slot eyebrow, name, price |
+| `bento` | lululemon "Complete the Look" | The product in the reader's chosen colorway as a tall tile, beside three stacked pieces |
+| `kit` | Nike's look sheet, UNIQLO "Styled items" | Ruled rows (the product first, then each piece) and "The full kit" total |
+| `flatlay` | Nike's outfit card | The kit laid out on one `surfaceAlt` field with square price tags |
+
+[observed] Brooks shoots apparel on a model first (`mf`), on a grey backdrop
+of its own. On the flat lay those photos read as overlapping boxes. A
+laydown shot (`lf`) is the garment alone and sits in the `surfaceAlt` field
+without an edge. About 45% of apparel has one, often only in some colorways,
+so the flat lay shows the first in-stock colorway with a laydown, and the
+piece opens its PDP on that colorway (`lookColorway`). The Shop the look
+sheet sells that same colorway.
+
+[inferred] The flat lay shows a look rather than a list. The look is three
+pieces (`LOOK_PIECES`), because the card has three spots beside the product;
+under a shoe that is a top, a bottom and socks, so the layer slot is unused.
+Each piece still opens its own PDP, on the colorway the card shows.
+
+### Shop the look
+
+[confirmed — user direction, 2026-10-06] The flat lay needed an action: a tap
+on a piece left the shoe the reader was about to buy, and the look's total
+had no button. Under the card, a secondary button, `Shop the look · 4 pieces
+· $237.95`, opens a native form sheet (`/shop-the-look`, the same
+presentation as Filter & sort; the PDP passes its product, colorway, size and
+width as params).
+
+[observed — Mobbin, 2026-10-06] The pattern is Ulta's "Now wearing" list with
+one "Add 2 to bag" button, Instacart's "Add all 3 items", and Under Armour's
+"Shop this look" sheet.
+
+[inferred] What the sheet does (`src/screens/product/shop-the-look-sheet.tsx`):
+
+- One row per piece: the PDP's own product first, then the look. Each
+  has a square checkbox, the photo the card used, name, colorway (and width
+  for a shoe), price, and a row of the PDP's size chips, sold-out sizes
+  slashed. A shoe's row opens on its picked size when that size would start
+  off screen.
+- Every piece starts checked, except one already in the bag (any colorway or
+  size), which starts unchecked and says `Already in your bag`. [observed]
+  Without this, a test added a second pair of the same shorts.
+- The starting size is the PDP's own pick for its product (`Size 10.0, as
+  picked on this page`), else the reader's earlier choice from the bag: socks
+  only from socks, shoes only from shoes, and a top, bottom or layer from any
+  of the three (`Size M, as in your bag`). This is the reader's own choice,
+  not a prediction, and the note says where it came from.
+- The footer is the purchase button: `Add 3 to bag · $213.95`. It counts the
+  checked pieces and sums their prices, with no bundle discount (the catalog
+  has none, LLP 0002). [confirmed — user direction, 2026-10-06] It stays
+  enabled with a size missing, as the PDP's button does: pressing it marks
+  each checked row without a size with a red `Pick a size` and scrolls to the
+  first one. It is disabled only when nothing is checked. The first version
+  greyed it out with `Pick a size for …` above it; the user rejected that.
+- [confirmed — user direction, 2026-10-06] The list has no rules: none
+  between rows, above the first, under the last, or above the footer.
+  Whitespace separates the rows. (A version with rules only between rows was
+  also rejected.)
+- [confirmed — user direction, 2026-10-06] The footer copies the PDP's sticky
+  bar (**Add-to-bag sheet**, above): no panel, the list scrolls under a
+  gradient from transparent to `colors.surface` at its midpoint, and the band
+  is `box-none`. The list pads its end by the footer's measured height, so the
+  last row still clears the button.
+- After the add, the same sheet confirms: `Added to your bag`, the added
+  lines, then `Keep shopping` and `Bag (n)`. The confirmation is here, not in
+  the add-to-bag sheet, because that sheet grows out of `Add to cart`, which
+  the reader did not press.
+- [observed] `Bag (n)` uses `router.dismissTo('/cart')`. `router.navigate`
+  from inside the form sheet mounted the tab navigator inside the sheet.
 
 ### Icons and the logo
 
@@ -1559,7 +1658,9 @@ continuous morph.
   the card width plus the rail's `gap`. With the rail's `gutter` padding, each
   stop puts a card's leading edge on the gutter. Home's New arrivals and Stories
   rails had it first; Home's gear and use-case rails, Browse's Franchises rail,
-  and the add-to-bag sheet's `You might also like…` rail now match. Selector
+  and the add-to-bag sheet's `You might also like…` rail now match ([observed
+  2026-10-06] that rail is now the PDP's `Complete the look` rail design, and
+  keeps the snap). Selector
   rails (the PDP colour swatches, an `UnderlineRail`) do not snap: they scroll to
   the selected swatch on their own.
 

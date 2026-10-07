@@ -38,6 +38,7 @@ import { useCart } from '@/store/cart';
 import { border, colors, headerIcon, spacing } from '@/theme';
 
 import { AddedSheet, type AddedLine } from './added-sheet';
+import { CompleteTheLookSection } from './complete-the-look-section';
 import { ReviewsPanel } from './reviews-panel';
 
 const { width: W } = Dimensions.get('window');
@@ -477,6 +478,9 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
             </Press>
           ) : null}
         </View>
+
+        {/* ---------------------------------------------- COMPLETE THE LOOK -- */}
+        <CompleteTheLookSection product={product} colorway={colorway} size={size} width={width} />
       </StretchyParallaxScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}

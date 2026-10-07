@@ -1,12 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useMemo, useRef } from 'react';
 import { Dimensions, Modal, Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-  ScrollView,
-} from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -27,14 +22,11 @@ import { Press } from '@/components/press';
 import { Price } from '@/components/price';
 import { ShoeImage } from '@/components/shoe-image';
 import { Txt } from '@/components/themed-text';
-import { catalog } from '@/data/catalog';
 import { heroImage } from '@/data/images';
 import { formatPrice } from '@/data/query';
 import type { Colorway, Product } from '@/data/types';
 import { useCart } from '@/store/cart';
 import { colors, motion, spacing } from '@/theme';
-
-import { alsoLike } from './also-like';
 
 export interface AddedLine {
   product: Product;
@@ -45,8 +37,6 @@ export interface AddedLine {
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const LINE_IMAGE = 96;
-/** Two tiles and a sliver of the third, so the rail says it scrolls. */
-const TILE_W = Math.round((SCREEN_W - spacing.gutter) / 2.25);
 
 /** No overshoot: the shell's edges must never pass the screen's. */
 const OPEN = { duration: 460, dampingRatio: 1, overshootClamping: true } as const;
@@ -106,7 +96,6 @@ export function AddedSheet({
   const detached = useSharedValue(0);
   const opened = useRef(false);
 
-  const recs = useMemo(() => alsoLike(catalog, product), [product]);
   const price = colorway.price ?? product.price;
   const sizeLabel = colorway.sizes.find((s) => s.value === line.size)?.label ?? line.size;
   const widthLabel = line.width ? colorway.widths.find((w) => w.value === line.width)?.label : undefined;
@@ -173,9 +162,7 @@ export function AddedSheet({
   const pan = useMemo(
     () =>
       Gesture.Pan()
-        // Let the horizontal rail win a sideways swipe.
         .activeOffsetY([-10, 10])
-        .failOffsetX([-10, 10])
         .onStart(() => {
           dragStart.set(drag.get());
         })
@@ -332,35 +319,6 @@ export function AddedSheet({
                 />
               </View>
 
-              {recs.length ? (
-                <>
-                  <Txt variant="h3" style={styles.recsTitle}>
-                    You might also like…
-                  </Txt>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    decelerationRate="fast"
-                    snapToInterval={TILE_W + spacing.md}
-                    contentContainerStyle={styles.rail}
-                  >
-                    {recs.map((p) => (
-                      <RecTile
-                        key={p.id}
-                        product={p}
-                        onPress={() =>
-                          foldThen(() =>
-                            router.push({
-                              pathname: '/product/[id]',
-                              params: { id: p.id, color: p.colors.find((c) => !c.soldOut)?.code },
-                            })
-                          )
-                        }
-                      />
-                    ))}
-                  </ScrollView>
-                </>
-              ) : null}
             </Animated.View>
           </Animated.View>
         </GestureDetector>
@@ -380,21 +338,6 @@ export function AddedSheet({
         </Animated.View>
       </GestureHandlerRootView>
     </Modal>
-  );
-}
-
-function RecTile({ product, onPress }: { product: Product; onPress: () => void }) {
-  const colorway = product.colors.find((c) => !c.soldOut) ?? product.colors[0];
-  return (
-    <Press accessibilityRole="link" onPress={onPress} style={styles.tile}>
-      <View style={styles.tileImage}>
-        <ShoeImage url={heroImage(colorway.images)} width={TILE_W} transition={0} />
-      </View>
-      <Txt variant="productTitle" numberOfLines={1} style={styles.tileName}>
-        {product.name}
-      </Txt>
-      <Price value={colorway.price ?? product.price} listValue={colorway.listPrice ?? product.listPrice} />
-    </Press>
   );
 }
 
@@ -443,9 +386,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   action: { flex: 1 },
-  recsTitle: { paddingHorizontal: spacing.gutter, marginTop: spacing.xxl, marginBottom: spacing.lg },
-  rail: { paddingHorizontal: spacing.gutter, gap: spacing.md },
-  tile: { width: TILE_W },
-  tileImage: { backgroundColor: colors.surfaceAlt, marginBottom: spacing.sm },
-  tileName: { marginBottom: 2 },
 });
