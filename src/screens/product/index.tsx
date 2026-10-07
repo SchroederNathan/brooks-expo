@@ -455,6 +455,27 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
               ) : null}
             </>
           ) : null}
+
+          {/* Shoes only: a row, not an accordion, because it opens a sheet.
+              @ref LLP 0006#adding-a-pair */}
+          {product.productType === 'Shoes' ? (
+            <Press
+              scaleTo={0.99}
+              style={styles.accordionHeader}
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({ pathname: '/add-shoe', params: { productId: product.id, color: colorway?.code } })
+              }
+            >
+              <View style={{ flex: 1 }}>
+                <Txt variant="productTitle">Already run in these?</Txt>
+                <Txt variant="tiny" c={colors.inkMuted}>
+                  Count their miles and know when to replace them
+                </Txt>
+              </View>
+              <BrooksIcon name="caretRight" size={14} color={colors.ink} />
+            </Press>
+          ) : null}
         </View>
       </StretchyParallaxScrollView>
 

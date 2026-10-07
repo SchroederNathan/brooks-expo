@@ -7,12 +7,12 @@ import { InTabContext } from '@/utils/native-tabs';
 export const unstable_settings = {
   index: { anchor: 'index' },
   shop: { anchor: 'shop' },
-  finder: { anchor: 'finder' },
+  shoes: { anchor: 'shoes' },
   cart: { anchor: 'cart' },
   account: { anchor: 'account' },
 };
 
-const tabNames = new Set(['index', 'shop', 'finder', 'cart', 'account']);
+const tabNames = new Set(['index', 'shop', 'shoes', 'cart', 'account']);
 
 /**
  * Shared native stack chrome for every tab.
@@ -51,12 +51,10 @@ export default function TabStackLayout({ segment }: { segment: string }) {
             headerTransparent: true,
           }}
         >
-          {screenName === 'finder' ? null : (
-            <Stack.Screen name={screenName} options={{ headerShown: false }} />
-          )}
-          {/* Declared unconditionally, not just when it is the anchor: the Browse
-              card and the Account row can land on this route inside another tab's
-              stack, and its full-bleed navy panel has no room for a header. */}
+          <Stack.Screen name={screenName} options={{ headerShown: false }} />
+          {/* Pushed in any tab: the Shoes tab, the Browse card and the Profile
+              row all open it. Its full-bleed navy panel has no room for a
+              header, so it draws its own back control. */}
           <Stack.Screen name="finder" options={{ headerShown: false }} />
         </Stack>
       </View>

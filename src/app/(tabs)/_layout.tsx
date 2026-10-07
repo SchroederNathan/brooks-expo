@@ -10,7 +10,11 @@ import { colors } from '@/theme';
 import { takeLanding, useNativeTabs } from '@/utils/native-tabs';
 
 /**
- * The bottom tab bar. Five tabs: Home, Browse, Shoe Finder, Cart, Profile.
+ * The bottom tab bar. Five tabs: Home, Browse, Shoes, Cart, Profile.
+ *
+ * @ref LLP 0006#the-shoes-tab — The third tab was the Shoe Finder. It is now
+ * Shoes: the pairs the runner owns, their miles, and the Finder for the next
+ * pair. It keeps the Finder's glyph.
  *
  * @ref LLP 0003#liquid-glass-is-a-profile-toggle — Every device starts on the
  * app-drawn `BrooksTabBar`. A Liquid Glass device can switch to the system bar
@@ -47,7 +51,7 @@ function BrooksTabs() {
     >
       <Tabs.Screen name="(index)" options={{ title: 'Home' }} />
       <Tabs.Screen name="(shop)" options={{ title: 'Browse' }} />
-      <Tabs.Screen name="(finder)" options={{ title: 'Shoe Finder' }} />
+      <Tabs.Screen name="(shoes)" options={{ title: 'Shoes' }} />
       <Tabs.Screen name="(cart)" options={{ title: 'Cart' }} />
       <Tabs.Screen name="(account)" options={{ title: 'Profile' }} />
     </Tabs>
@@ -127,13 +131,13 @@ function GlassTabs() {
         <NativeTabs.Trigger.Label hidden>Browse</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        name="(finder)"
-        accessibilityLabel="Shoe Finder"
+        name="(shoes)"
+        accessibilityLabel="Shoes"
         disableAutomaticContentInsets
         disableScrollToTop
       >
         <NativeTabs.Trigger.Icon src={ICONS.finder} renderingMode="template" />
-        <NativeTabs.Trigger.Label hidden>Shoe Finder</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label hidden>Shoes</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="(cart)"

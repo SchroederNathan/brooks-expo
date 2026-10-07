@@ -61,7 +61,7 @@ const ICON_TOP = 14;
 const TABS: { route: string; icon: TabIconName; label: string }[] = [
   { route: '(index)', icon: 'home', label: 'Home' },
   { route: '(shop)', icon: 'browse', label: 'Browse' },
-  { route: '(finder)', icon: 'finder', label: 'Shoe Finder' },
+  { route: '(shoes)', icon: 'finder', label: 'Shoes' },
   { route: '(cart)', icon: 'cart', label: 'Cart' },
   { route: '(account)', icon: 'account', label: 'Profile' },
 ];

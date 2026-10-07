@@ -10,6 +10,7 @@ A working mobile shopping prototype inspired by [Brooks Running](https://www.bro
 
 - Home mirrors the current Brooks campaign with the Ghost Amp video hero, product rails, editorial cards, and the "Longer days. Longer runs." feature.
 - Browse covers categories and franchises. Its search field swaps the screen into live Constructor.io results, with suggestions, filters, sorting, and an on-device fallback when the service is unavailable.
+- The Shoes tab tracks the pairs the runner owns. Each pair has a start date and a mileage limit; on iOS the app adds up the Apple Health workout distance since that date and says when a pair is "70% done, time to replace." A home screen and Lock Screen widget (`expo-widgets`) shows the same number, shared through an App Group.
 - Shoe Finder starts from Apple Health on iOS: it reads eight weeks of runs, walks and steps, fills the answers the data supports, and asks the rest. The questions, branches and barefoot-test videos are the ones brooksrunning.com's own Shoe Finder uses. It ranks products from the bundled catalog.
 - Product details include a swipeable gallery, colorways, widths, per-size availability, specifications, fit data, reviews, and a persistent add-to-cart flow.
 - Cart supports quantity changes, swipe-to-remove with undo, totals, and persisted items. Checkout displays the prototype boundary instead of contacting Brooks.
@@ -171,6 +172,7 @@ This repository uses [Linked Literate Programming](https://github.com/ccheever/l
 - [LLP 0003: Brooks design system and screen patterns](./llp/0003-brooks-design-system.research.md) records brand tokens, navigation, motion, and current screen decisions.
 - [LLP 0004: Building on Exact today](./llp/0004-building-on-exact.research.md) preserves research from the original monorepo.
 - [LLP 0005: Activity-informed Shoe Finder](./llp/0005-activity-informed-finder.design.md) explains how the Finder reads Apple Health through the local `modules/brooks-activity` module.
+- [LLP 0006: Shoe mileage and the Shoes tab](./llp/0006-shoe-mileage.design.md) explains the owned-shoes store, how mileage is counted, and how the widget gets its number.
 - [AGENTS.md](./AGENTS.md) contains working rules for AI agents, including LLP and diary requirements.
 
 Code uses `@ref LLP NNNN#section` comments where a non-obvious implementation decision needs its rationale close by.

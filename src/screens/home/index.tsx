@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useBrooksHeader } from '@/components/brooks-header';
+import { BrooksIcon } from '@/components/icons';
 import { ProductTile } from '@/components/product-tile';
 import { Press } from '@/components/press';
 import { StretchyParallaxScrollView } from '@/components/stretchy-parallax-scroll-view';
@@ -19,7 +20,9 @@ import { ZoomSource } from '@/components/zoom-source';
 import { catalog } from '@/data/catalog';
 import { HERO, HOME_GEAR, LONGER_DAYS, STORIES, USE_CASES } from '@/data/editorial';
 import { productsIn } from '@/data/query';
+import { mileageOf } from '@/data/mileage';
 import type { Product } from '@/data/types';
+import { mostWornShoe, useShoes } from '@/store/shoes';
 import { colors, font, spacing } from '@/theme';
 import { useTabBarOverlap } from '@/utils/native-tabs';
 
@@ -152,6 +155,8 @@ export function Home() {
           </View>
         }
       >
+        <ReplaceNudge />
+
         <View style={styles.gearSection}>
           <Image
             source={require('../../../assets/home/summer-sky.webp')}
@@ -232,6 +237,42 @@ export function Home() {
       </StretchyParallaxScrollView>
       {header}
     </View>
+  );
+}
+
+/**
+ * A worn pair, at the top of Home: the one place every session passes.
+ * Nothing at all until a pair crosses the replace line, so Home stays the
+ * Paper port for everyone else.
+ *
+ * @ref LLP 0006#the-shoes-tab — The Shoes tab holds the pairs; Home only
+ * says when one of them needs attention.
+ */
+function ReplaceNudge() {
+  const state = useShoes();
+  const shoe = mostWornShoe(state);
+  if (!shoe) return null;
+  const m = mileageOf(shoe, state.byShoe[shoe.id]);
+  if (!m.replace) return null;
+  return (
+    <Press
+      scaleTo={0.99}
+      style={styles.nudge}
+      accessibilityRole="button"
+      accessibilityLabel={`Your ${shoe.name}: ${m.status} Open your shoes.`}
+      onPress={() => router.navigate('/(tabs)/(shoes)/shoes')}
+    >
+      <View style={styles.nudgeTick} />
+      <View style={{ flex: 1 }}>
+        <Txt variant="productTitle" c={colors.surface} numberOfLines={1}>
+          Your {shoe.name}
+        </Txt>
+        <Txt variant="bodySmall" c="rgba(255,255,255,0.85)">
+          {m.status} {m.milesLabel}.
+        </Txt>
+      </View>
+      <BrooksIcon name="caretRight" size={14} color={colors.surface} />
+    </Press>
   );
 }
 
@@ -437,6 +478,17 @@ const styles = StyleSheet.create({
     fontFamily: font.bold,
     textAlign: 'center',
   },
+
+  nudge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.gutter,
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.ink,
+  },
+  // Lime is a spark, never a surface (LLP 0003).
+  nudgeTick: { width: 8, height: 8, backgroundColor: colors.lime },
 
   gearSection: { paddingTop: 36, paddingBottom: 40, overflow: 'hidden' },
   gearRail: { paddingHorizontal: spacing.gutter, gap: spacing.md },

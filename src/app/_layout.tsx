@@ -11,11 +11,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AnimatedSplash } from '@/components/animated-splash';
 import { CartProvider } from '@/store/cart';
+import { useMileageSync } from '@/store/shoes';
 import { colors, header, nativeSheetHeader } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
+  useMileageSync();
   const [fontsLoaded] = useFonts({
     'FilsonPro-Regular': require('../../assets/fonts/FilsonProRegular.otf'),
     'FilsonPro-Medium': require('../../assets/fonts/FilsonProMedium.otf'),
@@ -81,6 +83,20 @@ export default function RootLayout() {
                 name="search-filters"
                 options={{
                   title: 'Filter & sort',
+                  presentation: 'formSheet',
+                  sheetAllowedDetents: [0.92],
+                  sheetGrabberVisible: true,
+                  contentStyle: { backgroundColor: colors.surface },
+                  ...(nativeSheetHeader && header.sheet),
+                }}
+              />
+              {/* Adding a pair the runner owns, from the Shoes tab or a
+                  PDP. A form sheet like `Filter & sort`, for the same reason:
+                  the root stack presents it. @ref LLP 0006#adding-a-pair */}
+              <Stack.Screen
+                name="add-shoe"
+                options={{
+                  title: 'Add a pair',
                   presentation: 'formSheet',
                   sheetAllowedDetents: [0.92],
                   sheetGrabberVisible: true,
