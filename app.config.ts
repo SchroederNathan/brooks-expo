@@ -62,5 +62,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // The App Clip in `targets/clip`: the PDP and the bag, launched from a link
     // before the app is installed. @ref LLP 0007#what-the-clip-is
     '@bacons/apple-targets',
+    // The widget and the Clip take the app's build number at build time.
+    // @ref LLP 0007#build-numbers
+    './plugins/with-target-versions.js',
   ],
 });
