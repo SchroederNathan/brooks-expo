@@ -13,8 +13,16 @@ import { AnimatedSplash } from '@/components/animated-splash';
 import { CartProvider } from '@/store/cart';
 import { useMileageSync } from '@/store/shoes';
 import { colors, header, nativeSheetHeader } from '@/theme';
+import { isAppClip } from '@/utils/app-clip';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+/**
+ * The App Clip starts on New Arrivals, and a product link puts the PDP above
+ * it, so the PDP has a back chevron to browse with. The app keeps its default:
+ * a link opens its screen alone. @ref LLP 0007#routes
+ */
+export const unstable_settings = isAppClip ? { initialRouteName: 'new-arrivals' } : {};
 
 export default function RootLayout() {
   useMileageSync();
@@ -51,10 +59,19 @@ export default function RootLayout() {
                 contentStyle: { backgroundColor: colors.surface },
               }}
             >
-              {/* The root header stays hidden because each tab route owns its
-                  branded nested Stack header; this title still feeds web
-                  document titles and accessibility. */}
-              <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
+              {/* The App Clip is the PDP and the bag, with New Arrivals to
+                  browse from: no tabs, no Run Club, no mileage. Its own two
+                  screens exist only in the Clip. @ref LLP 0007#routes */}
+              <Stack.Protected guard={!isAppClip}>
+                {/* The root header stays hidden because each tab route owns its
+                    branded nested Stack header; this title still feeds web
+                    document titles and accessibility. */}
+                <Stack.Screen name="(tabs)" options={{ title: 'Brooks' }} />
+              </Stack.Protected>
+              <Stack.Protected guard={isAppClip}>
+                <Stack.Screen name="new-arrivals" options={{ title: 'New Arrivals', ...header.plain }} />
+                <Stack.Screen name="bag" options={{ title: 'Bag', ...header.overlay }} />
+              </Stack.Protected>
               {/* iOS 18+ zoom is opted in per Link.AppleZoom at the source —
                   the catalog tile into the PDP, and every editorial / franchise
                   card into the PLP. These screens keep the stack default so
@@ -90,20 +107,6 @@ export default function RootLayout() {
                   ...(nativeSheetHeader && header.sheet),
                 }}
               />
-              {/* Adding a pair the runner owns, from the Shoes tab or a
-                  PDP. A form sheet like `Filter & sort`, for the same reason:
-                  the root stack presents it. @ref LLP 0006#adding-a-pair */}
-              <Stack.Screen
-                name="add-shoe"
-                options={{
-                  title: 'Add a pair',
-                  presentation: 'formSheet',
-                  sheetAllowedDetents: [0.92],
-                  sheetGrabberVisible: true,
-                  contentStyle: { backgroundColor: colors.surface },
-                  ...(nativeSheetHeader && header.sheet),
-                }}
-              />
               {/* The PDP's `Shop the look`, the same form sheet. Its fit
                   starts from the PDP's own pick, passed as params; the sheet
                   writes straight to the cart. @ref LLP 0003#shop-the-look */}
@@ -118,15 +121,31 @@ export default function RootLayout() {
                   ...(nativeSheetHeader && header.sheet),
                 }}
               />
-              <Stack.Screen
-                name="login"
-                options={{
-                  title: 'Brooks Run Club',
-                  presentation: 'modal',
-                  // The card below already says "Brooks Run Club".
-                  ...(nativeSheetHeader && { ...header.sheet, headerTitle: '' }),
-                }}
-              />
+              <Stack.Protected guard={!isAppClip}>
+                {/* Adding a pair the runner owns, from the Shoes tab or a
+                    PDP. A form sheet like `Filter & sort`, for the same reason:
+                    the root stack presents it. @ref LLP 0006#adding-a-pair */}
+                <Stack.Screen
+                  name="add-shoe"
+                  options={{
+                    title: 'Add a pair',
+                    presentation: 'formSheet',
+                    sheetAllowedDetents: [0.92],
+                    sheetGrabberVisible: true,
+                    contentStyle: { backgroundColor: colors.surface },
+                    ...(nativeSheetHeader && header.sheet),
+                  }}
+                />
+                <Stack.Screen
+                  name="login"
+                  options={{
+                    title: 'Brooks Run Club',
+                    presentation: 'modal',
+                    // The card below already says "Brooks Run Club".
+                    ...(nativeSheetHeader && { ...header.sheet, headerTitle: '' }),
+                  }}
+                />
+              </Stack.Protected>
             </Stack>
             {/* Native only: web has no native splash to hand off from. */}
             {Platform.OS !== 'web' && <AnimatedSplash />}

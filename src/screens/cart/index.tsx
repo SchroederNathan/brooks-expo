@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -16,6 +17,7 @@ import { fmt } from '@/utils/format-price';
 import { VOICE } from '@/data/editorial';
 import { useCart, type CartItemView } from '@/store/cart';
 import { border, colors, spacing } from '@/theme';
+import { isAppClip, promptFullApp, shopHref } from '@/utils/app-clip';
 import { useTabBarOverlap } from '@/utils/native-tabs';
 
 /**
@@ -30,6 +32,10 @@ import { useTabBarOverlap } from '@/utils/native-tabs';
 export function Cart() {
   const cart = useCart();
   const tabBarOverlap = useTabBarOverlap();
+  // 0 in the Bag tab, which hides its header. The App Clip pushes the bag
+  // under the transparent native bar, so the heading starts below the back
+  // chevron. @ref LLP 0007#routes
+  const headerHeight = useHeaderHeight();
   const [undo, setUndo] = useState<CartItemView | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,8 +69,9 @@ export function Cart() {
           title="Find your run"
           style={{ marginTop: spacing.xl, alignSelf: 'stretch' }}
           // Switch to the Browse tab rather than push a copy of it onto the
-          // Cart stack, where the native back chevron sat over its title.
-          onPress={() => router.navigate('/(tabs)/(shop)/shop')}
+          // Cart stack, where the native back chevron sat over its title. The
+          // Clip has no tabs; it goes back to its New Arrivals.
+          onPress={() => router.navigate(shopHref)}
         />
         {undo && <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />}
       </Screen>
@@ -77,7 +84,9 @@ export function Cart() {
           Home's alone. Nothing it could carry belongs here: there is no cart
           glyph on the cart, and search, browse, and account are each one
           tab-bar tap away. */}
-      <ScreenScrollView contentContainerStyle={styles.content}>
+      <ScreenScrollView
+        contentContainerStyle={[styles.content, headerHeight > 0 && { paddingTop: headerHeight + spacing.md }]}
+      >
         <ScreenHeading>
           Bag{' '}
           <Txt variant="h3" c={colors.inkMuted}>
@@ -154,6 +163,8 @@ export function Cart() {
         </View>
 
         <RunHappyPromise style={{ marginTop: spacing.xl }} />
+
+        {isAppClip && <FullAppOffer />}
       </ScreenScrollView>
 
       {/* ------------------------------------------------------ STICKY BAR -- */}
@@ -171,6 +182,29 @@ export function Cart() {
       {undo && (
         <UndoBar item={undo} onUndo={() => restore(cart, undo, setUndo)} />
       )}
+    </View>
+  );
+}
+
+/**
+ * The App Clip's one ask: install the full app. The bag lives in the App
+ * Group, so it is already there when the app opens, and the copy can promise
+ * that. @ref LLP 0007#the-full-app-offer
+ */
+function FullAppOffer() {
+  return (
+    <View style={styles.offer}>
+      <Txt variant="eyebrow">Your bag comes with you</Txt>
+      <Txt variant="bodySmall" style={{ marginTop: spacing.xs }}>
+        Get the full app and this bag is waiting when you open it, with Shoe Finder and mileage
+        tracking for the pairs you own.
+      </Txt>
+      <Button
+        title="Get the app"
+        variant="secondary"
+        style={{ marginTop: spacing.lg, alignSelf: 'stretch' }}
+        onPress={promptFullApp}
+      />
     </View>
   );
 }
@@ -303,6 +337,8 @@ const styles = StyleSheet.create({
   },
   stepBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   stepValue: { minWidth: 26, textAlign: 'center' },
+
+  offer: { paddingHorizontal: spacing.gutter, marginTop: spacing.xl },
 
   deleteAction: { width: 96, backgroundColor: colors.sale },
   deletePress: { flex: 1, alignItems: 'center', justifyContent: 'center' },

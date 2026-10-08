@@ -151,6 +151,10 @@ iOS only, and it is not in Expo Go.
   `UserDefaults` (`WidgetsStorage.swift` uses
   `UserDefaults(suiteName: ExpoWidgetsAppGroupIdentifier)`). The widget
   extension reads them from there. This is the App Group the user asked for.
+- [observed 2026-10-08] The App Clip joins the same App Group, and the bag
+  now lives in it, so a bag filled in the Clip is in the app when it opens.
+  `brand.config.js` exports the group as `appGroup`. See
+  [LLP 0007](./0007-app-clip.design.md#the-bag-lives-in-the-app-group).
 - The widget shows the active pair closest to its limit. The store builds
   finished strings ("248", "300 mi", "Time to replace") because the widget's
   function runs in its own runtime and can reference nothing outside its

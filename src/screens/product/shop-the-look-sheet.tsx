@@ -17,6 +17,7 @@ import { byId, colorwayOf } from '@/data/query';
 import type { Colorway, Product } from '@/data/types';
 import { useCart, type CartLine } from '@/store/cart';
 import { border, colors, headerIcon, nativeSheetHeader, spacing } from '@/theme';
+import { bagHref } from '@/utils/app-clip';
 import { fmt } from '@/utils/format-price';
 
 import {
@@ -291,7 +292,9 @@ export function ShopTheLookSheet({
               style={{ flex: 1 }}
               // From a form sheet `navigate` mounts the tabs inside the sheet;
               // `dismissTo` closes the sheet and the PDP, then shows the bag.
-              onPress={() => router.dismissTo('/cart')}
+              // The Clip's `/bag` is not in the history yet, so there it
+              // replaces the sheet and the PDP stays below it.
+              onPress={() => router.dismissTo(bagHref)}
             />
           </View>
         ) : (

@@ -36,6 +36,7 @@ import { byId, colorwayOf, formatPrice } from '@/data/query';
 import { reviewsFor } from '@/data/reviews';
 import { useCart } from '@/store/cart';
 import { border, colors, headerIcon, spacing } from '@/theme';
+import { isAppClip } from '@/utils/app-clip';
 
 import { AddedSheet, type AddedLine } from './added-sheet';
 import { CompleteTheLookSection } from './complete-the-look-section';
@@ -458,8 +459,9 @@ export function ProductDetail({ id, colorParam }: { id: string; colorParam?: str
           ) : null}
 
           {/* Shoes only: a row, not an accordion, because it opens a sheet.
-              @ref LLP 0006#adding-a-pair */}
-          {product.productType === 'Shoes' ? (
+              @ref LLP 0006#adding-a-pair — Not in the App Clip, which has no
+              Health data to count miles with. @ref LLP 0007#routes */}
+          {product.productType === 'Shoes' && !isAppClip ? (
             <Press
               scaleTo={0.99}
               style={styles.accordionHeader}
