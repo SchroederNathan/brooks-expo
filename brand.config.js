@@ -17,9 +17,13 @@
  * `slug` must match the EAS project it is linked to (`extra.eas.projectId` in
  * app.json resolves to `@exponathan/<slug>`). Changing it here without
  * renaming that project in the Expo dashboard makes `eas build` fail.
+ *
+ * `domain` is the website the App Clip and universal links belong to. Its
+ * `/.well-known/apple-app-site-association` names `appleTeamId` plus each
+ * bundle identifier, so the three change together. @ref LLP 0007#the-domain
  */
 
-/** @typedef {{ name: string, bundleIdentifier: string, androidPackage: string, scheme: string, slug: string }} Brand */
+/** @typedef {{ name: string, bundleIdentifier: string, androidPackage: string, scheme: string, slug: string, appleTeamId: string, domain: string }} Brand */
 
 /** @type {Brand} */
 const brand = {
@@ -28,6 +32,15 @@ const brand = {
   androidPackage: 'com.exponathan.ecommercedemo',
   scheme: 'ecomdemo',
   slug: 'ecommerce-demo',
+  appleTeamId: 'PH3XBLZS8A',
+  domain: 'ecommerce-demo.expo.app',
 };
 
-module.exports = { brand };
+/**
+ * The App Group the app, its widget, and its App Clip share. The store code
+ * reads it too, so it is derived here rather than spelled out in each place.
+ * @ref LLP 0007#the-bag-lives-in-the-app-group
+ */
+const appGroup = `group.${brand.bundleIdentifier}`;
+
+module.exports = { brand, appGroup };

@@ -1,7 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { brand } = require('./brand.config.js');
+const { brand, appGroup } = require('./brand.config.js');
 
 /**
  * Dynamic app config.
@@ -20,6 +20,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     ...config.ios,
     bundleIdentifier: brand.bundleIdentifier,
+    appleTeamId: brand.appleTeamId,
+    // `applinks:` opens the full app from a link on the domain; `appclips:`
+    // lets the same link launch the App Clip before the app is installed.
+    // @ref LLP 0007#the-domain
+    associatedDomains: [`applinks:${brand.domain}`, `appclips:${brand.domain}`],
   },
   android: {
     ...config.android,
@@ -35,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-widgets',
       {
-        groupIdentifier: `group.${brand.bundleIdentifier}`,
+        groupIdentifier: appGroup,
         widgets: [
           {
             name: 'ShoeMileage',
@@ -54,5 +59,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ],
       },
     ],
+    // The App Clip in `targets/clip`: the PDP and the bag, launched from a link
+    // before the app is installed. @ref LLP 0007#what-the-clip-is
+    '@bacons/apple-targets',
   ],
 });

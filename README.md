@@ -116,6 +116,9 @@ src/
   store/               Cart, member, and search state
   theme/               Color, type, spacing, motion, and header tokens
   utils/               Storage, haptics, and formatting
+modules/               Local Expo modules (Apple Health, App Clip)
+targets/clip/          The iOS App Clip target
+public/                Web index.html and apple-app-site-association
 packages/catalog/      Source catalog package and schemas
 tools/harvest/         Browser capture, validation, and sync tools
 .eas/workflows/        Store (TestFlight, Google Play) and OTA delivery workflow
@@ -157,6 +160,14 @@ eas workflow:run .eas/workflows/deploy.yml -F force_native=true
 `get-build` proves that a build completed. It does not prove that Apple or Google accepted the upload or that testers installed it. Recover a failed upload with a forced run before relying on updates for that runtime.
 
 The workflow also declares a push trigger for `main`. That trigger remains inactive until this GitHub repository is connected to the EAS project.
+
+## App Clip
+
+iOS builds include an App Clip (`targets/clip`). A link on `ecommerce-demo.expo.app` opens New Arrivals, a product page, and the bag without installing the app. The bag is stored in the App Group, so it is in the full app when the app opens. See [LLP 0007](./llp/0007-app-clip.design.md).
+
+- The Clip runs the same JavaScript as the app but has no `expo-updates`. EAS Updates do not reach it. Clip changes ship with a store build.
+- iOS opens the Clip only after `public/.well-known/apple-app-site-association` is live on the domain. Deploy the web build with EAS Hosting (`npx expo export -p web` and `eas deploy --prod`).
+- To test on a simulator, build the `simulator` profile (`eas build -p ios --profile simulator`). The Clip is `AppClips/clip.app` inside the app bundle.
 
 ## Scope
 

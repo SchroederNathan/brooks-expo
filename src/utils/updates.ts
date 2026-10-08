@@ -1,14 +1,24 @@
+import { requireOptionalNativeModule } from 'expo';
 import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
+import type * as ExpoUpdates from 'expo-updates';
 import { useState } from 'react';
 
 import { colors } from '@/theme';
 
 /**
+ * Null in the App Clip, which is built without `expo-updates`: the package
+ * throws on import when its native module is missing.
+ * @ref LLP 0007#what-the-clip-leaves-out
+ */
+const Updates: typeof ExpoUpdates | null = requireOptionalNativeModule('ExpoUpdates')
+  ? (require('expo-updates') as typeof ExpoUpdates)
+  : null;
+
+/**
  * Dev clients and Expo Go load JS from Metro, so there is nothing for EAS
  * Update to swap in. Only store and internal builds check.
  */
-const updatesEnabled = Updates.isEnabled && !__DEV__;
+const updatesEnabled = !!Updates?.isEnabled && !__DEV__;
 
 /**
  * Manual EAS Update check for the Account screen. The native side already
@@ -16,7 +26,14 @@ const updatesEnabled = Updates.isEnabled && !__DEV__;
  * channel without cold-starting the app. A found update downloads straight
  * away, then the same row offers the restart.
  */
-export function useUpdateCheck() {
+export const useUpdateCheck = Updates ? () => useLiveUpdateCheck(Updates) : useNoUpdateCheck;
+
+/** The row in a binary without `expo-updates`: shown, but it does nothing. */
+function useNoUpdateCheck() {
+  return { label: 'Check for updates', detail: 'Off in this build', onPress: undefined };
+}
+
+function useLiveUpdateCheck(Updates: typeof ExpoUpdates) {
   const { isChecking, isDownloading, isUpdatePending, currentlyRunning } = Updates.useUpdates();
   const [status, setStatus] = useState<string | null>(null);
   const busy = isChecking || isDownloading;
@@ -64,7 +81,7 @@ export function useUpdateCheck() {
 }
 
 /** "Version 1.0.0 · Update from Sep 30, 2026". */
-function versionLabel(running: Updates.CurrentlyRunningInfo) {
+function versionLabel(running: ExpoUpdates.CurrentlyRunningInfo) {
   const version = Constants.expoConfig?.version;
   const update =
     !running.isEmbeddedLaunch && running.createdAt

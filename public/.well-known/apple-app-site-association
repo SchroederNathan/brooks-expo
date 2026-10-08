@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "PH3XBLZS8A.com.exponathan.ecommercedemo"
+        ],
+        "components": [
+          {
+            "/": "/product/*",
+            "comment": "Product pages open the app's PDP"
+          },
+          {
+            "/": "/category/*",
+            "comment": "Category pages open the app's PLP"
+          }
+        ]
+      }
+    ]
+  },
+  "appclips": {
+    "apps": [
+      "PH3XBLZS8A.com.exponathan.ecommercedemo.clip"
+    ]
+  }
+}

@@ -27,6 +27,7 @@ import { formatPrice } from '@/data/query';
 import type { Colorway, Product } from '@/data/types';
 import { useCart } from '@/store/cart';
 import { colors, motion, spacing } from '@/theme';
+import { bagHref } from '@/utils/app-clip';
 
 export interface AddedLine {
   product: Product;
@@ -315,7 +316,7 @@ export function AddedSheet({
                 <Button
                   title={`Bag (${cart.count})`}
                   style={styles.action}
-                  onPress={() => foldThen(() => router.navigate('/cart'))}
+                  onPress={() => foldThen(() => router.navigate(bagHref))}
                 />
               </View>
 

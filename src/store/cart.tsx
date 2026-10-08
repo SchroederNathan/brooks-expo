@@ -20,6 +20,7 @@ import { catalog } from '../data/catalog';
 import { byId, colorwayOf, variantId } from '../data/query';
 import type { Product } from '../data/types';
 import { storage } from '../utils/kv-storage';
+import { sharedStorage } from '../utils/shared-storage';
 
 const STORAGE_KEY = 'brooks.cart.v1';
 const FREE_SHIPPING_OVER = 100;
@@ -110,15 +111,19 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   // Storage is synchronous, so the cart hydrates at first render — no
   // `hydrated` flag, no blank first frame on the bag screen.
+  //
+  // @ref LLP 0007#the-bag-lives-in-the-app-group — On iOS the bag lives in the
+  // App Group, so a bag filled in the App Clip is already there when the full
+  // app first opens. A bag saved before that move is read once from the app's
+  // own storage; the next change writes it to the App Group.
   const [state, dispatch] = useReducer(reducer, undefined, () => ({
     // Drop lines whose product left the catalog between snapshots.
-    lines: storage
-      .get<CartLine[]>(STORAGE_KEY, [])
+    lines: (sharedStorage.get<CartLine[] | null>(STORAGE_KEY, null) ?? storage.get<CartLine[]>(STORAGE_KEY, []))
       .filter((l) => byId(catalog, l.productId)),
   }));
 
   useEffect(() => {
-    storage.set(STORAGE_KEY, state.lines);
+    sharedStorage.set(STORAGE_KEY, state.lines);
   }, [state.lines]);
 
   const add = useCallback<CartContextValue['add']>((input) => {

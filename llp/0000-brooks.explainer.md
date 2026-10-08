@@ -8,8 +8,8 @@
 **Role:** Root
 **Author:** Charlie Cheever / Codex
 **Date:** 2026-07-13
-**Revised:** 2026-08-12
-**Related:** LLP 0001, LLP 0002, LLP 0003, LLP 0004, LLP 0005, LLP 0006, [ccheever/llp](https://github.com/ccheever/llp)
+**Revised:** 2026-10-08
+**Related:** LLP 0001, LLP 0002, LLP 0003, LLP 0004, LLP 0005, LLP 0006, LLP 0007, [ccheever/llp](https://github.com/ccheever/llp)
 
 ## Summary
 
@@ -100,6 +100,10 @@ including:
 - product browsing and product details needed to buy shoes;
 - login; and
 - a working shopping cart through add-to-cart and cart management.
+
+[observed 2026-10-08] iOS also ships an App Clip: a link on the app's
+domain opens New Arrivals, the PDP and the bag with no install, and the bag
+moves into the full app. See [LLP 0007](./0007-app-clip.design.md).
 
 [confirmed — Charlie Cheever, 2026-07-13] Non-commerce footer and corporate
 content such as “Our Purpose” may be deferred. The priority is a convincing,
