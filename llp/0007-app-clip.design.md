@@ -231,6 +231,42 @@ developer mode can skip the CDN with `applinks:<domain>?mode=developer`.
 - `eas.json` has a `simulator` profile (unsigned, no channel) for EAS
   Simulator tests.
 
+## Build numbers
+
+[observed 2026-10-08, EAS build `49b851e7`] The first store build with the
+Clip, from the deploy workflow, failed in Xcode: "The CFBundleVersion of an
+App Clip ('1') must match that of its containing parent app ('35')." The
+widget logged the same mismatch as a warning.
+
+- EAS sets the build number after prebuild by writing `CFBundleVersion` into
+  each target's Info.plist file (`updateVersionsAsync` in
+  `@expo/build-tools`). It wrote 35 into all three files.
+- The app's target does not generate its Info.plist, so the file's 35 is
+  what ships. The Clip and the widget do (`GENERATE_INFOPLIST_FILE = YES`).
+  Apple's build setting reference says `CURRENT_PROJECT_VERSION` then sets
+  `CFBundleVersion`, and in this build it replaced the file's 35.
+- `@bacons/apple-targets` sets the Clip's `CURRENT_PROJECT_VERSION` from
+  `EAS_BUILD_IOS_BUILD_NUMBER` ("This only works with EAS Build") and falls
+  back to 1. EAS set that variable (34) for simulator build `138b4391`,
+  which the CLI started with the number already known. The workflow build
+  incremented 34 → 35 on the build machine, after the environment was set
+  up, so the variable was missing. `expo-widgets` always writes 1.
+
+`plugins/with-target-versions.js` adds a "Match the app version" run-script
+phase to every app extension and App Clip target. At build time it copies
+`CFBundleVersion` and `CFBundleShortVersionString` from the app's Info.plist
+file, which EAS has already updated, into the target's processed Info.plist.
+The processed Info.plist is a declared input, so the phase runs after Xcode
+writes it. The plugin is a finalized mod because apple-targets adds the Clip
+in a custom mod (`xcodeProjectBeta2`) that runs after the regular Xcode
+project mod.
+
+[observed 2026-10-08, EAS simulator build `730cdbd9`] With
+`EAS_BUILD_IOS_BUILD_NUMBER=35` (so the Clip's `CURRENT_PROJECT_VERSION` was
+35) and the app's Info.plist at 1, the phase ran for the widget and the Clip
+and all three bundles shipped `1`. A store build with the fix has not run
+yet.
+
 ## Testing
 
 [observed 2026-10-08] On EAS Simulator, with EAS build `138b4391`:

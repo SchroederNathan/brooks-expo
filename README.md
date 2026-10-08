@@ -118,6 +118,7 @@ src/
   utils/               Storage, haptics, and formatting
 modules/               Local Expo modules (Apple Health, App Clip)
 targets/clip/          The iOS App Clip target
+plugins/               Local config plugins
 public/                Web index.html and apple-app-site-association
 packages/catalog/      Source catalog package and schemas
 tools/harvest/         Browser capture, validation, and sync tools
