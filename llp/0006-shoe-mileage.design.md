@@ -106,8 +106,14 @@ the line the status is "45% done."
 limit. On a full bar, and on the widget's full ruler, the mark at 70% sat
 about three-quarters along. The user read it as "not done yet" on a pair that
 was 100% done. The Shoes tab hides the bar's tick at a share of 1 or more.
-The widget draws the 12th tick at the normal length when all 16 ticks are
-lit. Below the limit, both still show the line.
+Below the limit, the bar still shows the line.
+
+[superseded 2026-10-09] The widget's ruler drew the 70% line as a long tick.
+[confirmed — user, 2026-10-09] On a pair below 70%, the long tick sat above
+the filled ticks, where the progress was not. The user asked for the long
+tick to align with the current progress. The widget's ruler no longer shows
+the 70% line (see
+[The widget design](#the-widget-design)).
 
 [inferred] The limits offered (300, 400 and 500 miles, default 400) follow the
 common guidance that running shoes last 300 to 500 miles. Not checked against
@@ -196,8 +202,9 @@ less on it, and rejected lime on white for its contrast. The result:
 - **The miles lead.** "248" with "of 300 mi" under it: the number the
   widget counts, not the percent.
 - **A ruler down the right edge.** 16 ticks that fill from the bottom; the
-  long tick at the 12th is the 70% line, always ink. It repeats the 70% mark
-  on the Shoes tab's bar. A full ruler has no long tick (see
+  top filled tick is long, a needle at the miles run. An empty ruler has no
+  long tick. [superseded 2026-10-09] The long tick was the 12th, the 70% line,
+  always ink, to repeat the mark on the Shoes tab's bar (see
   [The 70% line](#the-70-line)). [observed 2026-10-06] The vertical ruler and the
   number-over-limit layout follow GO Club's steps widget on Mobbin
   (https://mobbin.com/screens/08903a39-0096-42fe-ab59-0d65ef36322e).

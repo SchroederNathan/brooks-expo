@@ -30,7 +30,7 @@ import type { ShoeMileageWidgetProps } from './shoe-mileage.types';
  * last computed.
  *
  * @ref LLP 0006#the-widget-design — The odometer: the miles lead, and a row of
- * ticks shows them against the limit, with a taller tick at the 70% line. No
+ * ticks shows them against the limit, with a longer tick at the miles run. No
  * lime: lime on the paper white fails contrast, so "Time to replace" is Brooks
  * blue.
  *
@@ -93,19 +93,18 @@ const ShoeMileage = (props: ShoeMileageWidgetProps, environment: WidgetEnvironme
   const small = family === 'systemSmall';
 
   // A measuring tape down the right edge, filling from the bottom: 16 ticks,
-  // the filled ones are the miles run, the long one is the 70% line. A full
-  // tape has no long tick: at the limit, a mark three-quarters up reads as
-  // "not done yet".
+  // the filled ones are the miles run, and the top filled one is long, so it
+  // reads as the needle. An empty tape has no long tick.
   const lit = Math.round(props.share * 16);
   const ruler = (
     <VStack alignment="trailing" spacing={4}>
       {Array.from({ length: 16 }, (_, i) => {
         const fromBottom = 15 - i;
-        const mark = fromBottom === 11 && lit < 16;
+        const mark = fromBottom === lit - 1;
         return (
           <Rectangle
             key={i}
-            modifiers={[foregroundStyle(fromBottom < lit || mark ? INK : EMPTY), frame({ width: mark ? 18 : 10, height: 3 })]}
+            modifiers={[foregroundStyle(fromBottom < lit ? INK : EMPTY), frame({ width: mark ? 18 : 10, height: 3 })]}
           />
         );
       })}
