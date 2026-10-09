@@ -301,8 +301,8 @@ Each piece still opens its own PDP, on the colorway the card shows.
 on a piece left the shoe the reader was about to buy, and the look's total
 had no button. Under the card, a secondary button, `Shop the look · 4 pieces
 · $237.95`, opens a native form sheet (`/shop-the-look`, the same
-presentation as Filter & sort; the PDP passes its product, colorway, size and
-width as params).
+presentation as Filter & sort, but fitted to its content; the PDP passes its
+product, colorway, size and width as params).
 
 [observed — Mobbin, 2026-10-06] The pattern is Ulta's "Now wearing" list with
 one "Add 2 to bag" button, Instacart's "Add all 3 items", and Under Armour's
@@ -337,8 +337,30 @@ one "Add 2 to bag" button, Instacart's "Add all 3 items", and Under Armour's
 - [confirmed — user direction, 2026-10-06] The footer copies the PDP's sticky
   bar (**Add-to-bag sheet**, above): no panel, the list scrolls under a
   gradient from transparent to `colors.surface` at its midpoint, and the band
-  is `box-none`. The list pads its end by the footer's measured height, so the
-  last row still clears the button.
+  is `box-none`. The band sits below the list and overlaps its end by the
+  48pt fade. The list pads its end by the fade, so the last row still clears
+  the button.
+- [confirmed — user direction, 2026-10-09] The sheet is as tall as its
+  content (`sheetAllowedDetents: 'fitToContents'`). A look with unchecked
+  pieces, or the one-row confirmation, no longer opens a sheet that is mostly
+  white. The fixed `0.92` detent it replaced was the same height for every
+  state. [inferred] The sheet stops at 0.92 of the screen below the status
+  bar, about the height of that fixed sheet, and past that the list scrolls.
+- [observed — iOS 26.5, iPhone 17 Pro simulator, 2026-10-09] The sheet's
+  height is not the height of the view it measures. react-native-screens adds
+  the native bar's frame (54pt), and UIKit adds the bottom safe area (34pt).
+  The sheet's content starts under the bar and pads for both, so the root
+  view takes them back out with a negative bottom margin of
+  `useHeaderHeight()` plus the bottom inset. `useHeaderHeight()` is 70pt: it
+  also counts the 16pt between the sheet's top and the bar, under the
+  grabber. So the sheet ends 16pt into the footer's bottom padding, and the
+  button keeps a 26pt margin to the sheet's edge.
+- [observed] The footer no longer floats over the list with the list padded
+  by its measured height. With `fitToContents`, a height that arrives after
+  the first layout would resize the sheet again. In the layout flow, the
+  footer counts from the first layout, and the sheet slid up in one motion
+  on the simulator. Android was not run; there the sheet has no native bar,
+  and the root takes no negative margin.
 - After the add, the same sheet confirms: `Added to your bag`, the added
   lines, then `Keep shopping` and `Bag (n)`. The confirmation is here, not in
   the add-to-bag sheet, because that sheet grows out of `Add to cart`, which

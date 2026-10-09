@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useMemo, useRef, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -37,6 +37,10 @@ const SIZE_CHIP = 56;
 const SIZE_STEP = SIZE_CHIP + spacing.xs;
 /** The size row's first chip sits under the thumb, past the checkbox. */
 const SIZES_LEAD = spacing.gutter + CHECK + spacing.md;
+/** The tallest the sheet gets, as a share of the screen below the status bar. */
+const MAX_SHEET = 0.92;
+/** The footer's faded band above the button, over the end of the list. */
+const FOOTER_FADE = spacing.xxxl;
 const { width: SCREEN_W } = Dimensions.get('window');
 
 /** One line of the look: the PDP's own product first, then each piece. */
@@ -175,8 +179,24 @@ export function ShopTheLookSheet({
    */
   const headerHeight = useHeaderHeight();
   const insetTop = nativeSheetHeader ? headerHeight : 0;
-  /** The footer floats over the list's end; the list pads by its height. */
-  const [footerH, setFooterH] = useState(0);
+  const { height: windowH } = useWindowDimensions();
+  /**
+   * @ref LLP 0003#shop-the-look — The sheet is as tall as its content, up to
+   * the height of the fixed sheet it replaced; past that the list scrolls.
+   */
+  const maxSheetH = MAX_SHEET * (windowH - insets.top);
+  /**
+   * On iOS the sheet is taller than the view it measures: react-native-screens
+   * adds the native bar, and UIKit adds the bottom safe area. This view
+   * already holds both, as the list's top padding and the footer's bottom
+   * padding, so a negative margin takes them back out. Without it, 88pt of
+   * white showed below the button (iOS 26.5).
+   *
+   * The bar is 54pt, 16pt below the grabber, and `headerHeight` counts the
+   * 16pt too. So the sheet ends 16pt into the footer's bottom padding, which
+   * still leaves the button clear of the sheet's edge.
+   */
+  const outsideFit = nativeSheetHeader ? insetTop + insets.bottom : 0;
 
   const picked = rows.filter((r) => checked[r.product.id]);
   const missing = picked.filter((r) => !fit[r.product.id]?.size);
@@ -214,7 +234,7 @@ export function ShopTheLookSheet({
   if (!product) return null;
 
   return (
-    <View collapsable={false} style={styles.root}>
+    <View collapsable={false} style={[styles.root, { maxHeight: maxSheetH, marginBottom: -outsideFit }]}>
       {nativeSheetHeader ? (
         <>
           <Stack.Screen options={{ title }} />
@@ -243,7 +263,7 @@ export function ShopTheLookSheet({
         <ScrollView
           ref={listRef}
           contentInsetAdjustmentBehavior="never"
-          contentContainerStyle={[styles.body, { paddingTop: insetTop, paddingBottom: footerH }]}
+          contentContainerStyle={[styles.body, { paddingTop: insetTop }]}
           showsVerticalScrollIndicator={false}
         >
           {added
@@ -272,10 +292,14 @@ export function ShopTheLookSheet({
 
       {/* @ref LLP 0003#add-to-bag-sheet — The PDP's sticky bar, again: no
           panel of its own, the list fades to white behind the button. The
-          band is `box-none`, so the faded part still passes taps to the list. */}
+          band is `box-none`, so the faded part still passes taps to the list.
+
+          The band sits below the list, not over it: only its fade overlaps
+          the list's end, and the list pads by that much. The sheet measures
+          this layout, so the band counts from the first layout, with no
+          measured height to arrive later. */}
       <View
         pointerEvents="box-none"
-        onLayout={(e) => setFooterH(e.nativeEvent.layout.height)}
         style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.sm }]}
       >
         <LinearGradient
@@ -445,7 +469,8 @@ function AddedRow({ row, fit }: { row: Row; fit: { size: string | null; width: s
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.surface },
+  /** No `flex: 1` here or below: the sheet takes its height from this view. */
+  root: { backgroundColor: colors.surface },
   head: {
     backgroundColor: colors.surface,
     flexDirection: 'row',
@@ -455,8 +480,10 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.md,
   },
-  scroll: { flex: 1 },
-  body: { paddingHorizontal: spacing.gutter, paddingBottom: spacing.xl },
+  /** Shrinks to the root's cap, and the list scrolls inside it. */
+  scroll: { flexShrink: 1 },
+  /** The footer's fade covers the end of the list; the last row clears it. */
+  body: { paddingHorizontal: spacing.gutter, paddingBottom: FOOTER_FADE },
   /** No rules anywhere in the list: whitespace separates the rows. */
   row: { paddingVertical: spacing.lg },
   rowHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
@@ -483,12 +510,9 @@ const styles = StyleSheet.create({
   sizeChip: { width: SIZE_CHIP },
   from: { marginTop: spacing.sm, marginLeft: CHECK + spacing.md },
   footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    marginTop: -FOOTER_FADE,
     paddingHorizontal: spacing.gutter,
-    paddingTop: spacing.xxxl,
+    paddingTop: FOOTER_FADE,
   },
   footerPair: { flexDirection: 'row', gap: spacing.md },
 });

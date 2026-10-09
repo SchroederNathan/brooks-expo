@@ -107,15 +107,16 @@ export default function RootLayout() {
                   ...(nativeSheetHeader && header.sheet),
                 }}
               />
-              {/* The PDP's `Shop the look`, the same form sheet. Its fit
-                  starts from the PDP's own pick, passed as params; the sheet
-                  writes straight to the cart. @ref LLP 0003#shop-the-look */}
+              {/* The PDP's `Shop the look`, the same form sheet, but only as
+                  tall as its rows. Its fit starts from the PDP's own pick,
+                  passed as params; the sheet writes straight to the cart.
+                  @ref LLP 0003#shop-the-look */}
               <Stack.Screen
                 name="shop-the-look"
                 options={{
                   title: 'Shop the look',
                   presentation: 'formSheet',
-                  sheetAllowedDetents: [0.92],
+                  sheetAllowedDetents: 'fitToContents',
                   sheetGrabberVisible: true,
                   contentStyle: { backgroundColor: colors.surface },
                   ...(nativeSheetHeader && header.sheet),
