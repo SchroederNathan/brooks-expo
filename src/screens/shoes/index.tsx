@@ -69,8 +69,6 @@ export function Shoes() {
         <Button title="Add a pair" variant="secondary" onPress={() => router.push('/add-shoe')} />
       </View>
 
-      <FinderCard />
-
       {retired.length ? (
         <View style={styles.retired}>
           <Txt variant="eyebrow" c={colors.inkMuted}>
@@ -156,7 +154,7 @@ function ShoeCard({ shoe, miles }: { shoe: OwnedShoe; miles: Parameters<typeof m
         <View style={styles.thumb}>
           {image ? <ShoeImage url={image} width={88} /> : <TabIcon name="finder" color={colors.inkFaint} />}
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={styles.cardTitle}>
           <Txt variant="h3" numberOfLines={2}>
             {shoe.name}
           </Txt>
@@ -217,10 +215,10 @@ function ShoeCard({ shoe, miles }: { shoe: OwnedShoe; miles: Parameters<typeof m
         </View>
       ) : null}
 
-      <Press onPress={retire} style={styles.retire} accessibilityRole="button">
-        <Txt variant="tiny" c={colors.inkMuted}>
-          Retire this pair
-        </Txt>
+      {/* Retiring is the card's close: it takes the pair out of the active
+          list. The alert says what it does before it happens. */}
+      <Press onPress={retire} style={styles.retire} accessibilityRole="button" accessibilityLabel={`Retire ${shoe.name}`}>
+        <BrooksIcon name="close" size={14} color={colors.inkMuted} />
       </Press>
     </View>
   );
@@ -232,6 +230,9 @@ function ShoeCard({ shoe, miles }: { shoe: OwnedShoe; miles: Parameters<typeof m
  *
  * @ref LLP 0003#brand — Square, like the quiz meter. Lime is a spark, not a
  * surface: it is the fill only once the pair is past the line.
+ *
+ * @ref LLP 0006#the-70-line — A full bar has no tick. At the limit, a line
+ * three-quarters along reads as "not done yet".
  */
 function MileageBar({ share, replace }: { share: number; replace: boolean }) {
   return (
@@ -242,7 +243,7 @@ function MileageBar({ share, replace }: { share: number; replace: boolean }) {
           { width: `${Math.min(1, share) * 100}%`, backgroundColor: replace ? colors.lime : colors.blue },
         ]}
       />
-      <View style={[styles.barTick, { left: `${REPLACE_AT * 100}%` }]} />
+      {share < 1 ? <View style={[styles.barTick, { left: `${REPLACE_AT * 100}%` }]} /> : null}
     </View>
   );
 }
@@ -268,23 +269,6 @@ function RetiredRow({ shoe, miles }: { shoe: OwnedShoe; miles: Parameters<typeof
         </Txt>
       </Press>
     </View>
-  );
-}
-
-/** The Finder's way in from the Shoes tab. */
-function FinderCard() {
-  return (
-    <Press scaleTo={0.98} style={styles.finderCard} onPress={() => router.push(FINDER)} accessibilityRole="button">
-      <View style={{ flex: 1, gap: spacing.xs }}>
-        <Txt variant="eyebrow" c={colors.lime}>
-          Shoe Finder
-        </Txt>
-        <Txt variant="h3" c={colors.surface}>
-          {HEALTH ? 'Find your next pair from your runs' : 'Find your next pair'}
-        </Txt>
-      </View>
-      <BrooksIcon name="caretRight" size={16} color={colors.surface} />
-    </Press>
   );
 }
 
@@ -367,6 +351,8 @@ const styles = StyleSheet.create({
     borderColor: colors.hairline,
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  // Room on the right for the retire button, so a long name wraps before it.
+  cardTitle: { flex: 1, gap: 2, paddingRight: spacing.xl },
   thumb: {
     width: 88,
     height: 88,
@@ -389,15 +375,15 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm, gap: spacing.md },
   successor: { alignSelf: 'center', padding: spacing.sm },
   underline: { textDecorationLine: 'underline' },
-  retire: { alignSelf: 'flex-start', marginTop: spacing.lg, paddingVertical: spacing.xs },
-  finderCard: {
-    flexDirection: 'row',
+  // A 44 pt target in the card's corner; the glyph sits 15 pt in from the edge.
+  retire: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 44,
+    height: 44,
     alignItems: 'center',
-    gap: spacing.lg,
-    marginHorizontal: spacing.gutter,
-    marginTop: spacing.xxl,
-    padding: spacing.xl,
-    backgroundColor: colors.navy,
+    justifyContent: 'center',
   },
   retired: { marginHorizontal: spacing.gutter, marginTop: spacing.xxl },
   retiredRow: {

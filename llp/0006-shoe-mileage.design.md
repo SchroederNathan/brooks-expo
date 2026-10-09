@@ -32,9 +32,19 @@ pairs, and the Finder is where a worn pair sends the runner:
   in the hero size, a bar with a tick at the 70% line, the miles against the
   limit, and the weeks left at the recent pace. At 70% and up, the card adds
   a lime "Time to replace" badge, a "Find its replacement" button, and a
-  "Shop the Ghost 17" link to the newest model in the same line. Retired pairs
-  are listed below.
-- **The Finder card.** A navy card under the pairs opens the Finder.
+  "Shop the Ghost 17" link to the newest model in the same line. An X in the
+  card's top right corner retires the pair, after an alert. Retired pairs are
+  listed below.
+- **The Finder card.** [superseded 2026-10-09] A navy card under the pairs
+  opened the Finder. [confirmed — user, 2026-10-09] The user removed it,
+  because "Find its replacement" already opens the Finder from a worn pair.
+  With no worn pair, the Shoes tab has no way to the Finder; Browse and
+  Profile still have one.
+
+[confirmed — user, 2026-10-09] "Retire this pair" was a gray text link under
+the card's actions. The user found it in a strange place and asked for an X
+at the card's top right. The X is a 44 pt target. The name column keeps room
+for it, so a long name wraps before it.
 
 The route group is renamed from `(finder)` to `(shoes)`:
 `src/app/(tabs)/(index,shop,shoes,cart,account)/`. The tab keeps the Finder's
@@ -91,6 +101,13 @@ younger than a week has no pace yet.
 wording, and 70% is the line (`REPLACE_AT`). [inferred] It is early on
 purpose: a new pair wants a few easy runs before it takes a long one. Below
 the line the status is "45% done."
+
+[confirmed — user, 2026-10-09] The line disappears when the pair reaches its
+limit. On a full bar, and on the widget's full ruler, the mark at 70% sat
+about three-quarters along. The user read it as "not done yet" on a pair that
+was 100% done. The Shoes tab hides the bar's tick at a share of 1 or more.
+The widget draws the 12th tick at the normal length when all 16 ticks are
+lit. Below the limit, both still show the line.
 
 [inferred] The limits offered (300, 400 and 500 miles, default 400) follow the
 common guidance that running shoes last 300 to 500 miles. Not checked against
@@ -180,7 +197,8 @@ less on it, and rejected lime on white for its contrast. The result:
   widget counts, not the percent.
 - **A ruler down the right edge.** 16 ticks that fill from the bottom; the
   long tick at the 12th is the 70% line, always ink. It repeats the 70% mark
-  on the Shoes tab's bar. [observed 2026-10-06] The vertical ruler and the
+  on the Shoes tab's bar. A full ruler has no long tick (see
+  [The 70% line](#the-70-line)). [observed 2026-10-06] The vertical ruler and the
   number-over-limit layout follow GO Club's steps widget on Mobbin
   (https://mobbin.com/screens/08903a39-0096-42fe-ab59-0d65ef36322e).
 - **One status line.** "Time to replace" in Brooks blue (`#003789`), or

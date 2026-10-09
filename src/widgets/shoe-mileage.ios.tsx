@@ -93,13 +93,15 @@ const ShoeMileage = (props: ShoeMileageWidgetProps, environment: WidgetEnvironme
   const small = family === 'systemSmall';
 
   // A measuring tape down the right edge, filling from the bottom: 16 ticks,
-  // the filled ones are the miles run, the long one is the 70% line.
+  // the filled ones are the miles run, the long one is the 70% line. A full
+  // tape has no long tick: at the limit, a mark three-quarters up reads as
+  // "not done yet".
   const lit = Math.round(props.share * 16);
   const ruler = (
     <VStack alignment="trailing" spacing={4}>
       {Array.from({ length: 16 }, (_, i) => {
         const fromBottom = 15 - i;
-        const mark = fromBottom === 11;
+        const mark = fromBottom === 11 && lit < 16;
         return (
           <Rectangle
             key={i}
